@@ -1,1 +1,1 @@
-# STEP-UP Intern
+# StepUp Intern
