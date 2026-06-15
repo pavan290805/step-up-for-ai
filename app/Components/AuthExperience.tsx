@@ -29,6 +29,7 @@ type RoleConfig = {
   accentSoft: string;
   panelBg: string;
   glow: string;
+  logoSrc: string;
 };
 
 const ROLES: RoleConfig[] = [
@@ -60,6 +61,7 @@ const ROLES: RoleConfig[] = [
     accentSoft: "rgba(37, 99, 255, .17)",
     panelBg: "#020712",
     glow: "rgba(37, 99, 255, .45)",
+    logoSrc: "/logos/logo-student.jpeg",
   },
   {
     role: "recruiter",
@@ -89,6 +91,7 @@ const ROLES: RoleConfig[] = [
     accentSoft: "rgba(168, 85, 247, .17)",
     panelBg: "#080511",
     glow: "rgba(168, 85, 247, .48)",
+    logoSrc: "/logos/logo-recruiter.jpeg",
   },
   {
     role: "investor",
@@ -118,6 +121,7 @@ const ROLES: RoleConfig[] = [
     accentSoft: "rgba(47, 191, 100, .17)",
     panelBg: "#020d09",
     glow: "rgba(47, 191, 100, .44)",
+    logoSrc: "/logos/logo-investor.jpeg",
   },
   {
     role: "admin",
@@ -147,6 +151,7 @@ const ROLES: RoleConfig[] = [
     accentSoft: "rgba(239, 52, 52, .17)",
     panelBg: "#120405",
     glow: "rgba(239, 52, 52, .44)",
+    logoSrc: "/logos/logo-admin.jpeg",
   },
 ];
 
@@ -184,12 +189,9 @@ function FormField({ config, value, onChange }: { config: FieldConfig; value: st
   );
 }
 
-function BrandMark({ accent }: { accent: string }) {
+function BrandMark({ config }: { config: RoleConfig }) {
   return (
-    <div className="brand-mark">
-      <span>step up</span>
-      <span>for <b style={{ color: accent }}>AI</b></span>
-    </div>
+    <img className="brand-logo" src={config.logoSrc} alt={`step up for AI ${config.label} logo`} />
   );
 }
 
@@ -248,7 +250,7 @@ function HeroPanel({ config, activeRole, setActiveRole }: { config: RoleConfig; 
     <section className="hero-panel">
       <div className="hero-bg" />
       <div className="hero-top">
-        <BrandMark accent={config.accent} />
+        <BrandMark config={config} />
         <div className="role-switch" aria-label="Choose role">
           {ROLES.map((role) => (
             <button key={role.role} type="button" onClick={() => setActiveRole(role.role)} className={activeRole === role.role ? "active" : ""} style={{ "--role-accent": role.accent } as React.CSSProperties}>
@@ -401,7 +403,7 @@ export default function AuthExperience({ mode }: { mode: Mode }) {
         .github-mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: white; color: #111827; font-size: 8px; font-weight: 900; }
         .switch-copy { text-align: center; margin: 20px 0 0 !important; }
         @media (max-width: 920px) { .auth-layout { grid-template-columns: 1fr; } .hero-panel { min-height: 520px; } .auth-panel { width: min(520px, calc(100% - 32px)); margin: 28px 0; } }
-        @media (max-width: 620px) { .auth-shell { padding: 0; place-items: stretch; } .auth-layout { min-height: 100vh; border: 0; } .hero-panel { min-height: 500px; padding: 28px 22px; } .hero-top { flex-direction: column; } .role-switch { width: 100%; } .hero-copy { margin-top: 38px; } .hero-visual { inset: 180px 12px 82px 12px; } .person { left: 18px; width: 108px; height: 190px; } .hero-svg { width: 82%; } .stat-row { gap: 14px; justify-content: space-between; } .stat-row div { min-width: 0; flex: 1; } .auth-panel { width: calc(100% - 28px); padding: 26px 18px; } }
+        @media (max-width: 620px) { .auth-shell { padding: 0; place-items: stretch; } .brand-logo { width: 92px; height: 92px; } .auth-layout { min-height: 100vh; border: 0; } .hero-panel { min-height: 500px; padding: 28px 22px; } .hero-top { flex-direction: column; } .role-switch { width: 100%; } .hero-copy { margin-top: 38px; } .hero-visual { inset: 180px 12px 82px 12px; } .person { left: 18px; width: 108px; height: 190px; } .hero-svg { width: 82%; } .stat-row { gap: 14px; justify-content: space-between; } .stat-row div { min-width: 0; flex: 1; } .auth-panel { width: calc(100% - 28px); padding: 26px 18px; } }
       `}</style>
       <div className="auth-layout">
         <HeroPanel config={config} activeRole={activeRole} setActiveRole={setActiveRole} />
@@ -410,3 +412,5 @@ export default function AuthExperience({ mode }: { mode: Mode }) {
     </main>
   );
 }
+
+
