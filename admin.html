@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepUp for AI - Admin Dashboard</title>
+  
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- ==========================================
+         SIDEBAR NAVIGATION
+         ========================================== -->
+    <aside class="sidebar">
+      
+      <!-- Brand Logo -->
+      <div class="logo-container">
+        <div class="logo-text">
+          <span class="logo-top">step up</span>
+          <span class="logo-bottom">for <span class="logo-accent">AI;</span></span>
+        </div>
+      </div>
+      
+      <!-- Secure Button -->
+      <button class="secure-btn" id="secure-btn">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Secure the Platform</span>
+      </button>
+      
+      <!-- Navigation Menu -->
+      <nav style="flex-grow: 1;">
+        <ul class="nav-menu">
+          <li class="nav-item active" data-tab="dashboard">
+            <a href="#dashboard">
+              <i class="fa-solid fa-chart-pie"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-item" data-tab="events">
+            <a href="#events">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Events</span>
+            </a>
+          </li>
+          <li class="nav-item" data-tab="students">
+            <a href="#students">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <span>Students</span>
+            </a>
+          </li>
+          <li class="nav-item" data-tab="settings">
+            <a href="#settings">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+          <li class="nav-item" id="sidebar-logout-btn">
+            <a href="#logout">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <span>Logout</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      
+      <!-- Widgets Column -->
+      <div class="sidebar-widgets">
+        <div class="security-widget">
+          <div class="security-icon-container">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <h4>Platform Security</h4>
+          <p><span>100%</span> Secure</p>
+          <button class="security-btn" onclick="alert('Security system status: ACTIVE. Shield firewall running.')">View Security</button>
+        </div>
+      </div>
+      
+      <!-- User Profile Footer -->
+      <div class="user-profile-footer">
+        <div class="user-avatar-wrapper">
+          <div class="user-avatar">A</div>
+          <div class="status-dot"></div>
+        </div>
+        <div class="user-info">
+          <span class="user-name">Admin</span>
+          <span class="user-role">Super Admin</span>
+        </div>
+        <button class="user-menu-trigger" id="profile-dropdown-btn">
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+      </div>
+      
+    </aside>
+
+    <!-- ==========================================
+         MAIN CONTENT AREA
+         ========================================== -->
+    <main class="main-content">
+      
+      <!-- ==========================================
+           DASHBOARD VIEW PANEL
+           ========================================== -->
+      <section id="dashboard-view" class="content-panel active">
+        <header class="view-header">
+          <div class="header-title-block">
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back, Admin! Here is a summary of activities.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-solid-red" onclick="window.dashboardApp.openCreateEventModal()">
+              <i class="fa-solid fa-plus"></i> Create New Event
+            </button>
+          </div>
+        </header>
+
+        <!-- Metric Counter Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="dash-total-events">0</span>
+              <span class="metric-label">Total Events</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box green">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="dash-total-students">0</span>
+              <span class="metric-label">Total Students</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box blue">
+              <i class="fa-solid fa-video"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="dash-total-webinars">0</span>
+              <span class="metric-label">Active Webinars</span>
+            </div>
+          </div>
+          <div class="metric-card animate-pulse">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-code"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="dash-total-hackathons">0</span>
+              <span class="metric-label">Active Hackathons</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Panel Sections -->
+        <div class="dashboard-sections">
+          
+          <div class="dashboard-panel-box">
+            <div class="panel-box-header">
+              <h3>Recent Student Registrations</h3>
+              <a href="#" class="view-all-link" style="color: var(--accent-red); font-size: 13px; font-weight: 600;" onclick="window.dashboardApp.switchTab('students')">View All</a>
+            </div>
+            <div class="recent-list" id="dash-recent-registrations">
+              <!-- Dynamically populated -->
+              <div class="table-empty-state">
+                <i class="fa-solid fa-inbox"></i>
+                <p>No recent registrations recorded</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-panel-box" style="gap: 16px;">
+            <div class="panel-box-header">
+              <h3>Quick Actions</h3>
+            </div>
+            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.openCreateEventModal()">
+              <i class="fa-solid fa-calendar-plus" style="color: var(--accent-red);"></i> Create New Webinar/Hackathon
+            </button>
+            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.openAddStudentModal()">
+              <i class="fa-solid fa-user-plus" style="color: var(--accent-blue);"></i> Add New Student Account
+            </button>
+            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.loadDemoData()">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-green);"></i> Load Premium Demo Data
+            </button>
+            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px; border-color: rgba(255,46,75,0.15);" onclick="window.dashboardApp.resetApp()">
+              <i class="fa-solid fa-trash-can" style="color: var(--accent-red);"></i> Reset Dashboard Data
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==========================================
+           EVENTS VIEW PANEL (SPLIT SYSTEM)
+           ========================================== -->
+      <section id="events-view" class="content-panel">
+        <header class="view-header">
+          <div class="header-title-block">
+            <h1>Events Management</h1>
+            <p>Create, manage and monitor all webinars and hackathons.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-solid-red" onclick="window.dashboardApp.openCreateEventModal()">
+              <i class="fa-solid fa-plus"></i> Create New Event
+            </button>
+          </div>
+        </header>
+
+        <!-- Split Layout Wrapper -->
+        <div class="events-split-layout">
+          
+          <!-- LEFT SIDE: Event Cards Column -->
+          <div class="events-list-panel">
+            
+            <!-- Category Tabs -->
+            <div class="filter-tabs-container">
+              <button class="filter-tab active" data-filter="all">All Events</button>
+              <button class="filter-tab" data-filter="webinar">Webinars</button>
+              <button class="filter-tab" data-filter="hackathon">Hackathons</button>
+              <button class="filter-tab" data-filter="upcoming">Upcoming</button>
+              <button class="filter-tab" data-filter="completed">Completed</button>
+            </div>
+            
+            <!-- Scroll Grid -->
+            <div class="events-scroll-container" id="events-cards-list">
+              <!-- Dynamically populated with event cards -->
+              <div class="details-empty-state">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <h3>No Events Available</h3>
+                <p>Get started by clicking the "+ Create New Event" button to schedule a webinar or hackathon.</p>
+              </div>
+            </div>
+            
+            <!-- List Pagination -->
+            <div class="events-pagination" id="events-list-pagination">
+              <!-- Dynamically generated buttons -->
+            </div>
+            
+          </div>
+
+          <!-- RIGHT SIDE: Detailed View Panel -->
+          <div class="event-details-panel" id="event-details-pane">
+            
+            <!-- Default Empty State -->
+            <div class="details-empty-state" id="details-empty-view">
+              <i class="fa-solid fa-calendar-days"></i>
+              <h3>No Event Selected</h3>
+              <p>Click on any event card from the list on the left to view detailed metadata and registrations.</p>
+              <button class="btn-solid-red" style="margin-top: 10px;" onclick="window.dashboardApp.loadDemoData()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo Events
+              </button>
+            </div>
+            
+            <!-- Loaded Details Container (Hidden initially) -->
+            <div class="event-details-wrapper" id="details-content-view" style="display: none;">
+              
+              <!-- Action Button Bar -->
+              <div class="details-actions-bar">
+                <a href="#" class="back-to-events-btn" onclick="document.getElementById('event-details-pane').classList.remove('active-mobile')">
+                  <i class="fa-solid fa-arrow-left"></i> Back to Events
+                </a>
+                <div class="action-buttons">
+                  <button class="action-btn edit" id="details-edit-btn">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Event
+                  </button>
+                  <button class="action-btn delete" id="details-delete-btn">
+                    <i class="fa-solid fa-trash-can"></i> Delete Event
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Info Section -->
+              <div class="details-info-section">
+                <div class="details-banner-container" id="details-banner">
+                  <!-- Image or Canvas Text banner -->
+                </div>
+                
+                <div class="details-specs">
+                  <div class="details-title-row">
+                    <h2 id="details-name">Event Name Placeholder</h2>
+                    <div id="details-type-tag"></div>
+                  </div>
+                  
+                  <div class="details-specs-grid">
+                    <div class="spec-item">
+                      <span class="spec-label">Conducted By</span>
+                      <span class="spec-value" id="details-conducted">Company</span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Date</span>
+                      <span class="spec-value"><i class="fa-regular fa-calendar"></i> <span id="details-date">Date</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Time</span>
+                      <span class="spec-value"><i class="fa-regular fa-clock"></i> <span id="details-time">Time</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Mode</span>
+                      <span class="spec-value"><i class="fa-solid fa-network-wired"></i> <span id="details-mode">Online</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Eligibility</span>
+                      <span class="spec-value"><i class="fa-solid fa-user-graduate"></i> <span id="details-eligibility">Eligibility</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Team / Solo</span>
+                      <span class="spec-value"><i class="fa-solid fa-users"></i> <span id="details-participation">Solo</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Registration Start</span>
+                      <span class="spec-value"><i class="fa-solid fa-circle-play"></i> <span id="details-reg-start">Reg Start</span></span>
+                    </div>
+                    <div class="spec-item">
+                      <span class="spec-label">Registration End</span>
+                      <span class="spec-value"><i class="fa-solid fa-circle-stop"></i> <span id="details-reg-end">Reg End</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Venue and Description Row -->
+              <div class="details-info-section" style="flex-direction: column; gap: 14px;">
+                <div>
+                  <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Platform or Venue Details</h4>
+                  <p id="details-venue" style="font-size: 14px; font-weight: 600;">Platform details...</p>
+                </div>
+                <div>
+                  <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Event Description</h4>
+                  <p id="details-description" style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">Description...</p>
+                </div>
+              </div>
+
+              <!-- Detail Mini-Metrics Grid -->
+              <div class="details-metrics-row">
+                <div class="detail-metric-card">
+                  <div class="detail-metric-icon red">
+                    <i class="fa-solid fa-user-group"></i>
+                  </div>
+                  <div class="detail-metric-info">
+                    <span class="detail-metric-value" id="event-stat-registrations">0</span>
+                    <span class="detail-metric-label">Total Registrations</span>
+                  </div>
+                </div>
+                <div class="detail-metric-card">
+                  <div class="detail-metric-icon red">
+                    <i class="fa-solid fa-user-plus"></i>
+                  </div>
+                  <div class="detail-metric-info">
+                    <span class="detail-metric-value" id="event-stat-yesterday">0</span>
+                    <span class="detail-metric-label">Registered Yesterday</span>
+                  </div>
+                </div>
+                <div class="detail-metric-card">
+                  <div class="detail-metric-icon red">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                  </div>
+                  <div class="detail-metric-info">
+                    <span class="detail-metric-value" id="event-stat-countdown">-</span>
+                    <span class="detail-metric-label">Registration Closed In</span>
+                  </div>
+                </div>
+                <div class="detail-metric-card">
+                  <div class="detail-metric-icon green" id="event-stat-status-icon">
+                    <i class="fa-regular fa-circle-check"></i>
+                  </div>
+                  <div class="detail-metric-info">
+                    <span class="detail-metric-value" id="event-stat-status" style="color: var(--accent-green);">Upcoming</span>
+                    <span class="detail-metric-label">Event Status</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Registered Students Table Section -->
+              <div class="table-section">
+                <div class="table-controls">
+                  <span class="table-section-title">Registered Students</span>
+                  <button class="btn-solid-red" style="padding: 8px 14px; font-size: 12px;" id="register-student-to-event-btn">
+                    <i class="fa-solid fa-user-plus"></i> Register Student
+                  </button>
+                </div>
+                
+                <div class="table-controls">
+                  <div class="search-input-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" class="search-input" id="event-students-search" placeholder="Search student name or email...">
+                  </div>
+                  
+                  <div class="table-actions-right">
+                    <button class="btn-export" id="event-students-export-btn">
+                      <i class="fa-solid fa-download"></i> Export Data
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Table Content Container -->
+                <div class="table-responsive">
+                  <table class="data-table" id="event-students-table">
+                    <thead>
+                      <tr>
+                        <th>Reg ID</th>
+                        <th>Student Name</th>
+                        <th>Email</th>
+                        <th>College Name</th>
+                        <th>Phone</th>
+                        <th>Registered On</th>
+                      </tr>
+                    </thead>
+                    <tbody id="event-students-tbody">
+                      <!-- Populated dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                <div class="table-pagination-footer">
+                  <span class="pagination-info" id="event-students-pagination-info">Showing 0 to 0 of 0 students</span>
+                  <div class="pagination-controls">
+                    <div class="page-selector-wrapper">
+                      <select class="page-size-select" id="event-students-page-size">
+                        <option value="5">5 / page</option>
+                        <option value="10" selected>10 / page</option>
+                        <option value="25">25 / page</option>
+                      </select>
+                    </div>
+                    <div class="events-pagination" id="event-students-pagination-controls" style="padding: 0; border: none; margin: 0;">
+                      <!-- Generated dynamically -->
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==========================================
+           STUDENTS ACCOUNT VIEW PANEL
+           ========================================== -->
+      <section id="students-view" class="content-panel">
+        <header class="view-header">
+          <div class="header-title-block">
+            <h1>Student Sign-up Data</h1>
+            <p>View and manage all students who have created accounts on the platform.</p>
+          </div>
+          <div class="header-actions">
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.openAddStudentModal()">
+                <i class="fa-solid fa-user-plus"></i> Add Student
+              </button>
+              <button class="btn-solid-red" id="global-students-export-btn">
+                <i class="fa-solid fa-download"></i> Export Master Data
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Metric Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="stud-total-students">0</span>
+              <span class="metric-label">Total Students</span>
+              <span class="metric-sublabel">All time registered</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="stud-month-students">0</span>
+              <span class="metric-label">Registered This Month</span>
+              <span class="metric-sublabel" id="stud-month-label">June 2026</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-calendar-days"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="stud-week-students">0</span>
+              <span class="metric-label">Registered This Week</span>
+              <span class="metric-sublabel">Last 7 days</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon-box red">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div class="metric-details">
+              <span class="metric-value" id="stud-today-students">0</span>
+              <span class="metric-label">New Today</span>
+              <span class="metric-sublabel" id="stud-today-label">26 May 2025</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Table Section -->
+        <div class="students-container">
+          <div class="table-section">
+            
+            <div class="table-controls" style="position: relative;">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="global-students-search" placeholder="Search student ID, name, email...">
+              </div>
+              
+              <div class="table-actions-right">
+                <button class="btn-filter" id="global-students-filter-trigger">
+                  <i class="fa-solid fa-filter"></i> Filter
+                </button>
+                
+                <!-- Filter Dropdown Popover -->
+                <div class="filter-popover" id="global-students-filter-popover">
+                  <div class="filter-popover-header">Filter Students</div>
+                  
+                  <div class="form-group">
+                    <label for="filter-branch">Branch</label>
+                    <select class="form-control-input" id="filter-branch" style="padding: 8px 12px; font-size: 13px;">
+                      <option value="">All Branches</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Information Technology">Information Technology</option>
+                      <option value="Electronics & Communication">Electronics & Communication</option>
+                      <option value="Electrical Engineering">Electrical Engineering</option>
+                      <option value="Mechanical Engineering">Mechanical Engineering</option>
+                      <option value="Civil Engineering">Civil Engineering</option>
+                    </select>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="filter-year">Eligible Year</label>
+                    <select class="form-control-input" id="filter-year" style="padding: 8px 12px; font-size: 13px;">
+                      <option value="">All Years</option>
+                      <option value="1">1st Year</option>
+                      <option value="2">2nd Year</option>
+                      <option value="3">3rd Year</option>
+                      <option value="4">4th Year</option>
+                    </select>
+                  </div>
+                  
+                  <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
+                    <button class="btn-outline-gray" style="padding: 6px 12px; font-size: 12px;" id="filter-reset-btn">Reset</button>
+                    <button class="btn-solid-red" style="padding: 6px 12px; font-size: 12px;" id="filter-apply-btn">Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Table Responsive Container -->
+            <div class="table-responsive" style="max-height: 500px;">
+              <table class="data-table" id="global-students-table">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>College Name</th>
+                    <th>Branch</th>
+                    <th>Year</th>
+                    <th>Created Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="global-students-tbody">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="global-students-pagination-info">Showing 0 to 0 of 0 students</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="global-students-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                    <option value="50">50 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="global-students-pagination-controls" style="padding: 0; border: none; margin: 0;">
+                  <!-- Dynamically generated page buttons -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           SETTINGS VIEW PANEL
+           ========================================== -->
+      <section id="settings-view" class="content-panel">
+        <header class="view-header">
+          <div class="header-title-block">
+            <h1>Platform Settings</h1>
+            <p>Modify application parameters, reset schemas, and configure developer overrides.</p>
+          </div>
+        </header>
+
+        <div class="settings-grid">
+          
+          <!-- Admin Profile Settings -->
+          <div class="settings-card">
+            <h3><i class="fa-solid fa-user-gear"></i> Admin Account Details</h3>
+            <form id="admin-profile-form" onsubmit="event.preventDefault(); alert('Profile details updated successfully!');">
+              <div class="form-group-row">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" class="form-control-input" value="Srikrishna Thaniya Vemula" required>
+                </div>
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" class="form-control-input" value="admin@stepupforai.com" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Admin Title</label>
+                <input type="text" class="form-control-input" value="Super Administrator" readonly>
+              </div>
+              <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" class="form-control-input" placeholder="••••••••" required>
+              </div>
+              <button class="btn-solid-red" style="margin-top: 10px;" type="submit">Update Account</button>
+            </form>
+          </div>
+
+          <!-- Developer Tools & Seed Operations -->
+          <div class="settings-card">
+            <h3><i class="fa-solid fa-square-terminal"></i> Platform & Evaluation Controls</h3>
+            <div class="developer-tools">
+              
+              <div class="dev-tool-item">
+                <div class="dev-tool-text">
+                  <h4>Developer Seed Demo Data</h4>
+                  <p>Pre-populate the tables with premium webinars, hackathons, and registered student data profiles for visual testing.</p>
+                </div>
+                <button class="btn-solid-red" style="padding: 8px 16px; font-size: 13px;" onclick="window.dashboardApp.loadDemoData()">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> Load Data
+                </button>
+              </div>
+
+              <div class="dev-tool-item">
+                <div class="dev-tool-text">
+                  <h4>Reset Application Schemas</h4>
+                  <p>Wipe all database schemas clean. Removes all custom events, student listings, and registration logs from localStorage.</p>
+                </div>
+                <button class="btn-outline-red" style="padding: 8px 16px; font-size: 13px;" onclick="window.dashboardApp.resetApp()">
+                  <i class="fa-solid fa-trash-can"></i> Reset App
+                </button>
+              </div>
+
+              <div class="dev-tool-item">
+                <div class="dev-tool-text">
+                  <h4>Mock API Gateway Latency</h4>
+                  <p>Enable artificial latency (300ms) on dashboard updates to test UI skeletons and micro-animations.</p>
+                </div>
+                <input type="checkbox" id="mock-latency-chk" style="width: 20px; height: 20px; accent-color: var(--accent-red); cursor: pointer;">
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ==========================================
+       MODAL DIALOGS
+       ========================================== -->
+
+  <!-- Modal: Create / Edit Event Form -->
+  <div class="modal-overlay" id="create-event-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3 id="event-modal-title">Create New Event</h3>
+          <p>Fill in the details to schedule a new webinar or hackathon.</p>
+        </div>
+        <button class="modal-close-btn" onclick="window.dashboardApp.closeCreateEventModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <form id="create-event-form" class="modal-body">
+        <input type="hidden" id="form-event-id"> <!-- Hidden ID field for editing -->
+        
+        <!-- Basic Details Section -->
+        <div class="form-section-title">Basic Details</div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-event-type">Event Type <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-event-type" required>
+              <option value="" disabled selected>Select event type</option>
+              <option value="webinar">Webinar</option>
+              <option value="hackathon">Hackathon</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="form-event-name">Event Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="form-event-name" placeholder="Enter event name" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-conducted-by">Conducted By (Company/Organization) <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="form-conducted-by" placeholder="Enter company/organization name" required>
+        </div>
+
+        <div class="upload-card-wrapper">
+          <div class="form-group">
+            <label>Company/Organization Logo</label>
+            <div class="file-upload-card">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Click to upload Logo</span>
+              <p>PNG, JPG (max. 2MB)</p>
+              <input type="file" id="form-company-logo" accept="image/*">
+            </div>
+            <div id="company-logo-preview-box"></div>
+          </div>
+          
+          <div class="form-group">
+            <label>Banner Image</label>
+            <div class="file-upload-card">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Click to upload Banner</span>
+              <p>PNG, JPG (max. 5MB)</p>
+              <input type="file" id="form-banner-image" accept="image/*">
+            </div>
+            <div id="banner-preview-box"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="form-description">Description <span style="color: var(--accent-red);">*</span></label>
+          <textarea class="form-control-input" id="form-description" rows="3" placeholder="Enter event description details..." style="resize: vertical;" required></textarea>
+        </div>
+
+        <!-- Date & Time Section -->
+        <div class="form-section-title">Date & Time</div>
+        
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="form-event-date">Event Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="form-event-date" required>
+          </div>
+          <div class="form-group">
+            <label for="form-start-time">Start Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="form-start-time" required>
+          </div>
+          <div class="form-group">
+            <label for="form-end-time">End Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="form-end-time" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-reg-start">Registration Start Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="form-reg-start" required>
+          </div>
+          <div class="form-group">
+            <label for="form-reg-end">Registration End Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="form-reg-end" required>
+          </div>
+        </div>
+
+        <!-- Eligibility Section -->
+        <div class="form-section-title">Eligibility</div>
+        
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="form-eligible-years">Eligible Years <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-eligible-years" required>
+              <option value="" disabled selected>Select years</option>
+              <option value="All Years">All Years</option>
+              <option value="1st Year and Above">1st Year and Above</option>
+              <option value="2nd Year and Above">2nd Year and Above</option>
+              <option value="3rd Year and Above">3rd Year and Above</option>
+              <option value="Final Year Only">Final Year Only</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-branches">Branches Allowed <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="form-branches" placeholder="e.g. CSE, IT, ECE" required>
+          </div>
+          <div class="form-group">
+            <label for="form-min-cgpa">Minimum CGPA (Optional)</label>
+            <input type="number" step="0.1" min="0" max="10" class="form-control-input" id="form-min-cgpa" placeholder="e.g. 7.5">
+          </div>
+        </div>
+
+        <!-- Participation Section -->
+        <div class="form-section-title">Participation</div>
+        
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="form-participation">Team / Solo Selection <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-participation" required>
+              <option value="" disabled selected>Select mode</option>
+              <option value="Solo">Solo</option>
+              <option value="Team">Team</option>
+              <option value="Both">Both (Solo or Team)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-min-team">Min Team Size (if Team)</label>
+            <input type="number" min="1" class="form-control-input" id="form-min-team" placeholder="Min">
+          </div>
+          <div class="form-group">
+            <label for="form-max-team">Max Team Size (if Team)</label>
+            <input type="number" min="1" class="form-control-input" id="form-max-team" placeholder="Max">
+          </div>
+        </div>
+
+        <!-- Additional Information Section -->
+        <div class="form-section-title">Additional Information</div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-mode">Mode <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-mode" required>
+              <option value="" disabled selected>Select mode</option>
+              <option value="Online">Online</option>
+              <option value="Offline">Offline</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="form-venue">Venue or Platform Details <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="form-venue" placeholder="e.g. Zoom or Campus Seminar Hall" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-prize">Prize Details</label>
+            <input type="text" class="form-control-input" id="form-prize" placeholder="e.g. Cash prize of ₹25,000 + Goodies">
+          </div>
+          <div class="form-group">
+            <label for="form-certificate">Certificate Available <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-certificate" required>
+              <option value="" disabled selected>Select option</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="form-contact-name">Contact Person <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="form-contact-name" placeholder="Name" required>
+          </div>
+          <div class="form-group">
+            <label for="form-contact-email">Contact Email <span style="color: var(--accent-red);">*</span></label>
+            <input type="email" class="form-control-input" id="form-contact-email" placeholder="Email" required>
+          </div>
+          <div class="form-group">
+            <label for="form-contact-phone">Contact Phone <span style="color: var(--accent-red);">*</span></label>
+            <input type="tel" class="form-control-input" id="form-contact-phone" placeholder="Phone number" required>
+          </div>
+        </div>
+      </form>
+      
+      <div class="modal-footer">
+        <button class="btn-outline-gray" onclick="window.dashboardApp.closeCreateEventModal()">Cancel</button>
+        <button class="btn-solid-red" type="submit" form="create-event-form" id="event-form-submit-btn">Create Event</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Student Account (Global or Local Registration) -->
+  <div class="modal-overlay" id="add-student-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3 id="student-modal-title">Register Student</h3>
+          <p>Register a student on the StepUp for AI platform.</p>
+        </div>
+        <button class="modal-close-btn" onclick="window.dashboardApp.closeAddStudentModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <form id="add-student-form" class="modal-body">
+        <input type="hidden" id="form-student-event-id"> <!-- If registering for a specific event -->
+        
+        <div class="form-group">
+          <label for="form-student-name">Full Name <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="form-student-name" placeholder="Enter student's full name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="form-student-email">Email Address <span style="color: var(--accent-red);">*</span></label>
+          <input type="email" class="form-control-input" id="form-student-email" placeholder="Enter email address" required>
+        </div>
+
+        <div class="form-group">
+          <label for="form-student-phone">Phone Number <span style="color: var(--accent-red);">*</span></label>
+          <input type="tel" class="form-control-input" id="form-student-phone" placeholder="Enter phone number" required>
+        </div>
+
+        <div class="form-group">
+          <label for="form-student-college">College Name <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="form-student-college" placeholder="Enter college/university name" required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="form-student-branch">Branch <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-student-branch" required>
+              <option value="" disabled selected>Select Branch</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Electronics & Communication">Electronics & Communication</option>
+              <option value="Electrical Engineering">Electrical Engineering</option>
+              <option value="Mechanical Engineering">Mechanical Engineering</option>
+              <option value="Civil Engineering">Civil Engineering</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="form-student-year">Year of Study <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="form-student-year" required>
+              <option value="" disabled selected>Select Year</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+          </div>
+        </div>
+      </form>
+      
+      <div class="modal-footer">
+        <button class="btn-outline-gray" type="button" onclick="window.dashboardApp.closeAddStudentModal()">Cancel</button>
+        <button class="btn-solid-red" type="submit" form="add-student-form">Add & Register</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: View Student Full Profile Details -->
+  <div class="modal-overlay" id="view-student-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Student Profile Info</h3>
+          <p>Viewing verified platform account registration details.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('view-student-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="text-align: center; padding: 20px 0 10px; border-bottom: 1px solid var(--border-color);">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background-color: var(--accent-red-glow); border: 2px solid var(--accent-red); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; font-weight: 700; color: var(--accent-red);">S</div>
+          <h3 id="view-student-name" style="font-size: 20px; font-weight: 800;">Student Name</h3>
+          <span id="view-student-id" style="font-size: 13px; font-weight: 700; color: var(--accent-red);">STUD001</span>
+        </div>
+        
+        <div class="details-specs-grid" style="grid-template-columns: 1fr; gap: 14px; padding: 10px 0;">
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Email Address</span>
+            <span class="spec-value" id="view-student-email">email@gmail.com</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Phone Number</span>
+            <span class="spec-value" id="view-student-phone">9876543210</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">College / Institution</span>
+            <span class="spec-value" id="view-student-college">ABC College of Eng</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Academic Department</span>
+            <span class="spec-value" id="view-student-branch">Computer Science</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Academic Year</span>
+            <span class="spec-value"><span id="view-student-year">3</span> Year</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Account Created</span>
+            <span class="spec-value" id="view-student-created">20 May 2025</span>
+          </div>
+        </div>
+        
+        <div>
+          <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Events Registered For</h4>
+          <ul id="view-student-events-list" style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-solid-red" onclick="document.getElementById('view-student-modal').classList.remove('active')">Close Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Logout Confirmation Dialog -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Logout Confirmation</h3>
+          <p>Securely sign out of the dashboard session.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('logout-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.5;">Are you sure you want to end your administration session? This will redirect you back to the StepUp Intern home portal.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-outline-gray" onclick="document.getElementById('logout-modal').classList.remove('active')">Cancel</button>
+        <button class="btn-solid-red" onclick="window.dashboardApp.performLogout()">Sign Out Session</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Scripts -->
+  <script src="admin.js"></script>
+</body>
+</html>
