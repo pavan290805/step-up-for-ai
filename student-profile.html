@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StepUp for AI - Student Portal</title>
+  
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Base Shared Design Variables -->
+  <link rel="stylesheet" href="admin.css">
+
+  <style>
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .portal-navbar {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 16px 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .portal-container {
+      display: flex;
+      flex-grow: 1;
+      padding: 30px 5%;
+      gap: 30px;
+      overflow: hidden;
+      height: calc(100vh - 75px);
+    }
+
+    .profile-sidebar {
+      width: 320px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+      flex-shrink: 0;
+    }
+
+    .student-badge-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--accent-red-glow);
+      border: 2px solid var(--accent-red);
+      color: var(--accent-red);
+      font-size: 32px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 0 15px rgba(255, 46, 75, 0.1);
+    }
+
+    .portal-main {
+      flex-grow: 1;
+      height: 100%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .portal-tabs {
+      display: flex;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 2px;
+      flex-shrink: 0;
+    }
+
+    .portal-tab {
+      padding: 12px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: var(--transition);
+    }
+
+    .portal-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .portal-tab.active {
+      color: var(--accent-red);
+      border-bottom-color: var(--accent-red);
+    }
+
+    .portal-pane {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .portal-pane.active {
+      display: flex;
+    }
+
+    /* Event Card in Student view */
+    .portal-event-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: var(--transition);
+    }
+
+    .portal-event-card:hover {
+      border-color: rgba(255, 46, 75, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .portal-event-banner {
+      width: 110px;
+      height: 110px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent-red) 0%, #161e30 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #fff;
+      text-align: center;
+      line-height: 1.2;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+      position: relative;
+    }
+
+    .portal-event-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .portal-event-info {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .portal-event-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .portal-event-conducted {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .portal-event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .portal-event-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .portal-reg-id-badge {
+      background: var(--accent-red-glow);
+      border: 1px solid rgba(255, 46, 75, 0.2);
+      color: var(--accent-red);
+      font-family: monospace;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 1024px) {
+      .portal-container {
+        flex-direction: column;
+        overflow-y: auto;
+        height: auto;
+      }
+      .profile-sidebar {
+        width: 100%;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .portal-event-card {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .portal-event-banner {
+        width: 100%;
+        height: 140px;
+      }
+      .portal-event-meta {
+        justify-content: center;
+      }
+      .portal-reg-id-badge {
+        align-self: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Portal Header Navbar -->
+  <header class="portal-navbar">
+    <div class="logo-container" style="padding: 0;">
+      <div class="logo-text">
+        <span class="logo-top" style="font-size: 18px;">step up</span>
+        <span class="logo-bottom" style="font-size: 24px;">for <span class="logo-accent">AI;</span></span>
+      </div>
+    </div>
+    
+    <button class="btn-outline-red" style="padding: 8px 16px; font-size: 13px;" onclick="handleLogout()">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+    </button>
+  </header>
+
+  <!-- Main Portal Layout -->
+  <div class="portal-container">
+    
+    <!-- LEFT COLUMN: Profile Sidebar -->
+    <aside class="profile-sidebar">
+      <div class="student-badge-avatar" id="profile-avatar">S</div>
+      <h2 id="profile-name" style="font-size: 20px; font-weight: 800; margin-bottom: 4px;">Student Name</h2>
+      <strong id="profile-id" style="color: var(--accent-red); font-size: 14px; font-family: monospace; display: block; margin-bottom: 24px;">STU001</strong>
+      
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 16px; text-align: left; font-size: 13px; line-height: 1.5; border-top: 1px solid var(--border-color); padding-top: 24px;">
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">Email Address</span>
+          <strong id="profile-email">email@gmail.com</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">Phone Number</span>
+          <strong id="profile-phone">9876543210</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">College / University</span>
+          <strong id="profile-college">College Name</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">Academic Branch</span>
+          <strong id="profile-branch">Computer Science</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">Year of Study</span>
+          <strong id="profile-year">3 Year</strong>
+        </div>
+        <div>
+          <span style="color: var(--text-secondary); display: block; font-size: 11px; text-transform: uppercase;">Registered On</span>
+          <strong id="profile-created">Date</strong>
+        </div>
+      </div>
+    </aside>
+
+    <!-- RIGHT COLUMN: Main Interaction View -->
+    <main class="portal-main">
+      
+      <!-- Tab Headers -->
+      <div class="portal-tabs">
+        <div class="portal-tab active" id="tab-regs" onclick="switchPane('regs')">My Registrations (<span id="count-regs">0</span>)</div>
+        <div class="portal-tab" id="tab-explore" onclick="switchPane('explore')">Explore Events (<span id="count-explore">0</span>)</div>
+      </div>
+
+      <!-- View 1: My Registered Events list -->
+      <div class="portal-pane active" id="pane-regs">
+        <!-- Dynamically loaded registered events -->
+      </div>
+
+      <!-- View 2: Explore new events for registration -->
+      <div class="portal-pane" id="pane-explore">
+        <!-- Dynamically loaded upcoming events -->
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Registration Success Success Dialog -->
+  <div class="modal-overlay" id="reg-success-modal">
+    <div class="modal-card small" style="text-align: center;">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+        <div class="security-icon-container" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2); width: 60px; height: 60px; margin-top: 10px;">
+          <i class="fa-regular fa-circle-check" style="color: var(--accent-green); font-size: 30px;"></i>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Event Registration Successful</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">You have successfully enrolled in the event.</p>
+        
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: var(--radius-md); margin-bottom: 10px;">
+          <span style="display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Registration ID</span>
+          <strong id="success-reg-id" style="font-size: 24px; color: var(--accent-red); font-family: monospace; letter-spacing: 1px;">REG001</strong>
+        </div>
+        
+        <div style="text-align: left; font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Event Name:</span><strong id="success-event-name" style="font-weight: 600;">Event Name</strong></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Conducted By:</span><span id="success-event-conducted" style="font-weight: 600;">Company</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Mode/Platform:</span><span id="success-event-mode" style="font-weight: 600;">Online</span></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: none; background: none; padding-top: 0;">
+        <button class="btn-solid-red" onclick="document.getElementById('reg-success-modal').classList.remove('active')" style="width: 100%;">Got it!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State Manager
+    let currentStudent = null;
+    let db = {
+      events: [],
+      students: [],
+      registrations: []
+    };
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check authentication session
+      const loggedId = sessionStorage.getItem('logged_student_id');
+      if (!loggedId) {
+        alert("Session expired. Redirecting to Portal Sign-In...");
+        window.location.href = 'login.html';
+        return;
+      }
+
+      loadDatabase();
+
+      // Find current student profile
+      currentStudent = db.students.find(s => s.id === loggedId);
+      if (!currentStudent) {
+        alert("Student profile not found. Redirecting to Portal Sign-In...");
+        window.location.href = 'login.html';
+        return;
+      }
+
+      renderProfile();
+      renderEvents();
+    });
+
+    function loadDatabase() {
+      try {
+        db.events = JSON.parse(localStorage.getItem('stepup_events')) || [];
+        db.students = JSON.parse(localStorage.getItem('stepup_students')) || [];
+        db.registrations = JSON.parse(localStorage.getItem('stepup_registrations')) || [];
+      } catch (e) {
+        console.error("Storage corrupted", e);
+      }
+    }
+
+    function saveDatabase() {
+      try {
+        localStorage.setItem('stepup_registrations', JSON.stringify(db.registrations));
+      } catch (e) {
+        console.error("Failed to save registrations", e);
+      }
+    }
+
+    // Render Student profile sidebar details
+    function renderProfile() {
+      document.getElementById('profile-avatar').innerText = currentStudent.name.charAt(0).toUpperCase();
+      document.getElementById('profile-name').innerText = currentStudent.name;
+      document.getElementById('profile-id').innerText = currentStudent.id;
+      document.getElementById('profile-email').innerText = currentStudent.email;
+      document.getElementById('profile-phone').innerText = currentStudent.phone;
+      document.getElementById('profile-college').innerText = currentStudent.college;
+      document.getElementById('profile-branch').innerText = currentStudent.branch;
+      document.getElementById('profile-year').innerText = `${currentStudent.year} Year`;
+      document.getElementById('profile-created').innerText = new Date(currentStudent.createdDate).toLocaleDateString();
+    }
+
+    // Render registrations & explore tabs list
+    function renderEvents() {
+      loadDatabase();
+
+      // My registrations list
+      const regIds = db.registrations.filter(r => r.studentId === currentStudent.id).map(r => r.eventId);
+      const studentRegs = db.registrations.filter(r => r.studentId === currentStudent.id);
+      
+      const paneRegs = document.getElementById('pane-regs');
+      const countRegsElement = document.getElementById('count-regs');
+      countRegsElement.innerText = studentRegs.length;
+
+      if (studentRegs.length === 0) {
+        paneRegs.innerHTML = `
+          <div class="details-empty-state" style="border:1px dashed var(--border-color); background:none; border-radius:var(--radius-lg); padding:40px;">
+            <i class="fa-solid fa-inbox" style="font-size:36px;"></i>
+            <h3>No Active Registrations</h3>
+            <p>You have not registered for any upcoming webinars or hackathons. Click "Explore Events" to find active enrollments.</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        studentRegs.forEach(reg => {
+          const event = db.events.find(e => e.id === reg.eventId);
+          if (event) {
+            html += generateEventCardHTML(event, reg.id);
+          }
+        });
+        paneRegs.innerHTML = html;
+      }
+
+      // Explore events list (all events the student hasn't registered for)
+      const exploreEvents = db.events.filter(e => !regIds.includes(e.id));
+      const paneExplore = document.getElementById('pane-explore');
+      const countExploreElement = document.getElementById('count-explore');
+      countExploreElement.innerText = exploreEvents.length;
+
+      if (exploreEvents.length === 0) {
+        paneExplore.innerHTML = `
+          <div class="details-empty-state" style="border:1px dashed var(--border-color); background:none; border-radius:var(--radius-lg); padding:40px;">
+            <i class="fa-regular fa-circle-check" style="font-size:36px; color:var(--accent-green);"></i>
+            <h3>You're All Caught Up!</h3>
+            <p>No new events available for registration right now. Check back later for new hackathons and webinars!</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+        exploreEvents.forEach(event => {
+          html += generateEventCardHTML(event, null);
+        });
+        paneExplore.innerHTML = html;
+      }
+    }
+
+    // Helper: generate card element HTML
+    function generateEventCardHTML(event, regId = null) {
+      const isWebinar = event.type === 'webinar';
+      const badgeClass = isWebinar ? 'badge-webinar' : 'badge-hackathon';
+      const badgeText = isWebinar ? 'Webinar' : 'Hackathon';
+      const dateFormatted = new Date(event.date).toLocaleDateString();
+
+      // Banner fallback
+      let bannerHTML = '';
+      if (event.bannerImage) {
+        bannerHTML = `<img src="${event.bannerImage}" alt="Banner">`;
+      } else {
+        const gradColor = isWebinar ? 'linear-gradient(135deg, #ff2e4b 0%, #05070c 100%)' : 'linear-gradient(135deg, #e0243d 0%, #131824 100%)';
+        bannerHTML = `<div class="portal-event-banner" style="background: ${gradColor}">${escapeHTML(event.name)}</div>`;
+      }
+
+      // Action block
+      let actionHTML = '';
+      if (regId) {
+        actionHTML = `<span class="portal-reg-id-badge"><i class="fa-solid fa-ticket" style="margin-right:6px;"></i> ${regId}</span>`;
+      } else {
+        actionHTML = `
+          <button class="btn-solid-red" style="padding: 10px 18px; font-size:13px;" onclick="registerForEvent(${event.id})">
+            <i class="fa-solid fa-user-plus"></i> Register Now
+          </button>
+        `;
+      }
+
+      return `
+        <div class="portal-event-card">
+          <div class="portal-event-banner">
+            ${bannerHTML}
+          </div>
+          <div class="portal-event-info">
+            <span class="event-row-badge ${badgeClass}" style="align-self: flex-start; margin-bottom:4px;">${badgeText}</span>
+            <h3 class="portal-event-title">${escapeHTML(event.name)}</h3>
+            <div class="portal-event-conducted">Conducted by <strong>${escapeHTML(event.conductedBy)}</strong></div>
+            <div class="portal-event-meta">
+              <span><i class="fa-regular fa-calendar"></i> ${dateFormatted}</span>
+              <span><i class="fa-regular fa-clock"></i> ${formatTime12h(event.startTime)}</span>
+              <span><i class="fa-solid fa-network-wired"></i> ${event.mode}</span>
+            </div>
+          </div>
+          <div style="flex-shrink:0;">
+            ${actionHTML}
+          </div>
+        </div>
+      `;
+    }
+
+    // Register student for event
+    function registerForEvent(eventId) {
+      loadDatabase();
+      const event = db.events.find(e => e.id === eventId);
+      if (!event) return;
+
+      const regId = `REG${String(db.registrations.length + 1).padStart(3, '0')}`;
+      
+      const newReg = {
+        id: regId,
+        studentId: currentStudent.id,
+        eventId: eventId,
+        registrationDate: new Date().toISOString()
+      };
+
+      db.registrations.push(newReg);
+      saveDatabase();
+
+      // Show success modal
+      document.getElementById('success-reg-id').innerText = regId;
+      document.getElementById('success-event-name').innerText = event.name;
+      document.getElementById('success-event-conducted').innerText = event.conductedBy;
+      document.getElementById('success-event-mode').innerText = `${event.mode} (${event.venue})`;
+      
+      document.getElementById('reg-success-modal').classList.add('active');
+
+      renderEvents();
+    }
+
+    // Tab switcher
+    function switchPane(paneId) {
+      document.querySelectorAll('.portal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.portal-pane').forEach(p => p.classList.remove('active'));
+
+      document.getElementById(`tab-${paneId}`).classList.add('active');
+      document.getElementById(`pane-${paneId}`).classList.add('active');
+    }
+
+    function formatTime12h(timeString) {
+      if (!timeString) return '';
+      const parts = timeString.split(':');
+      let hours = parseInt(parts[0]);
+      const minutes = parts[1] || '00';
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+    }
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('logged_student_id');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

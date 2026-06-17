@@ -1049,6 +1049,35 @@
     </div>
   </div>
 
+  <!-- Modal: Student Registration Success Notification -->
+  <div class="modal-overlay" id="student-success-modal">
+    <div class="modal-card small" style="text-align: center;">
+      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+        <div class="security-icon-container" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2); width: 60px; height: 60px; margin-top: 10px;">
+          <i class="fa-regular fa-circle-check" style="color: var(--accent-green); font-size: 30px;"></i>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 8px;">Registration Successful</h3>
+        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 20px;">The student account has been created and verified successfully.</p>
+        
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); padding: 16px; border-radius: var(--radius-md); margin-bottom: 10px;">
+          <span style="display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">Student Unique ID</span>
+          <strong id="success-student-id" style="font-size: 24px; color: var(--accent-red); font-family: monospace; letter-spacing: 1px;">STU001</strong>
+        </div>
+        
+        <div style="text-align: left; font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Full Name:</span><span id="success-student-name" style="font-weight: 600;">Srikrishna</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Department:</span><span id="success-student-branch" style="font-weight: 600;">Computer Science</span></div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span style="color: var(--text-secondary);">Academic Year:</span><span id="success-student-year" style="font-weight: 600;">3 Year</span></div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: center; border-top: none; background: none; padding-top: 0;">
+        <button class="btn-solid-red" onclick="document.getElementById('student-success-modal').classList.remove('active')" style="width: 100%;">Acknowledge & Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript Scripts -->
   <script src="admin.js"></script>
 </body>

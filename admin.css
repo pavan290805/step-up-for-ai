@@ -25,8 +25,8 @@
   /* Other Accents */
   --accent-green: #10b981;
   --accent-green-glow: rgba(16, 185, 129, 0.15);
-  --accent-blue: #0880ef;
-  --accent-blue-glow: rgba(8, 128, 239, 0.15);
+  --accent-blue: #ff2e4b;
+  --accent-blue-glow: rgba(255, 46, 75, 0.15);
   
   /* Layout & Sizing */
   --sidebar-width: 270px;
@@ -649,9 +649,9 @@ button {
 }
 
 .activity-badge.student-type {
-  background: rgba(8, 128, 239, 0.08);
-  border: 1px solid rgba(8, 128, 239, 0.15);
-  color: var(--accent-blue);
+  background: rgba(255, 46, 75, 0.08);
+  border: 1px solid rgba(255, 46, 75, 0.15);
+  color: var(--accent-red);
 }
 
 .activity-content {
@@ -788,7 +788,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-red) 100%);
+  background: linear-gradient(135deg, var(--accent-red) 0%, #161e30 100%);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -873,9 +873,9 @@ button {
 }
 
 .badge-hackathon {
-  background: rgba(8, 128, 239, 0.08);
-  border: 1px solid rgba(8, 128, 239, 0.15);
-  color: var(--accent-blue);
+  background: rgba(255, 46, 75, 0.03);
+  border: 1px solid rgba(255, 46, 75, 0.25);
+  color: #ff5c75;
 }
 
 .event-row-caret {
@@ -1067,7 +1067,7 @@ button {
   border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-red) 100%);
+  background: linear-gradient(135deg, var(--accent-red) 0%, #161e30 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1371,13 +1371,13 @@ button {
 }
 
 .data-table .row-action-btn.view {
-  color: var(--accent-blue);
-  background: rgba(8, 128, 239, 0.05);
-  border: 1px solid rgba(8, 128, 239, 0.15);
+  color: var(--accent-red);
+  background: rgba(255, 46, 75, 0.05);
+  border: 1px solid rgba(255, 46, 75, 0.15);
 }
 
 .data-table .row-action-btn.view:hover {
-  background: var(--accent-blue);
+  background: var(--accent-red);
   color: #fff;
 }
 

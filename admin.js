@@ -484,7 +484,7 @@
       if (event.bannerImage) {
         bannerHTML = `<img src="${event.bannerImage}" alt="${escapeHTML(event.name)} banner">`;
       } else {
-        const gradColor = isWebinar ? 'linear-gradient(135deg, #8b5cf6 0%, #ff2e4b 100%)' : 'linear-gradient(135deg, #0ea5e9 0%, #10b981 100%)';
+        const gradColor = isWebinar ? 'linear-gradient(135deg, #ff2e4b 0%, #05070c 100%)' : 'linear-gradient(135deg, #e0243d 0%, #131824 100%)';
         bannerHTML = `
           <div class="event-row-banner" style="background: ${gradColor}">
             <div class="event-row-banner-text">${escapeHTML(event.name)}</div>
@@ -600,7 +600,7 @@
     if (event.bannerImage) {
       bannerBox.innerHTML = `<img src="${event.bannerImage}" alt="Event Banner">`;
     } else {
-      const gradColor = event.type === 'webinar' ? 'linear-gradient(135deg, #8b5cf6 0%, #ff2e4b 100%)' : 'linear-gradient(135deg, #0ea5e9 0%, #10b981 100%)';
+      const gradColor = event.type === 'webinar' ? 'linear-gradient(135deg, #ff2e4b 0%, #05070c 100%)' : 'linear-gradient(135deg, #e0243d 0%, #131824 100%)';
       bannerBox.style.background = gradColor;
       bannerBox.innerHTML = `<div class="details-banner-text">${escapeHTML(event.name)}</div>`;
     }
@@ -1176,11 +1176,17 @@
     }
 
     // Handle event specific registration
+    let successTitle = "Registration Successful";
+    let successSubtitle = "The student account has been created and verified successfully.";
+    let displayCodeLabel = "Student Unique ID";
+    let displayCodeValue = student.id;
+
     if (targetEventId) {
       // Check duplicate registration
       const isRegistered = state.registrations.some(r => r.studentId === student.id && r.eventId === targetEventId);
       if (isRegistered) {
         alert(`${student.name} is already registered for this event.`);
+        return;
       } else {
         const registrationId = `REG${String(state.registrations.length + 1).padStart(3, '0')}`;
         state.registrations.push({
@@ -1189,11 +1195,23 @@
           eventId: targetEventId,
           registrationDate: new Date().toISOString()
         });
-        alert(`Student registered successfully! Registration ID: ${registrationId}`);
+        
+        successTitle = "Enrollment Successful";
+        successSubtitle = "The student has been enrolled in the event successfully.";
+        displayCodeLabel = "Event Registration ID";
+        displayCodeValue = registrationId;
       }
-    } else {
-      alert(`Student account created successfully! Unique Student ID: ${student.id}`);
     }
+
+    // Populate and open success modal
+    document.getElementById('student-success-modal').querySelector('h3').innerText = successTitle;
+    document.getElementById('student-success-modal').querySelector('p').innerText = successSubtitle;
+    document.getElementById('student-success-modal').querySelector('span').innerText = displayCodeLabel;
+    document.getElementById('success-student-id').innerText = displayCodeValue;
+    document.getElementById('success-student-name').innerText = student.name;
+    document.getElementById('success-student-branch').innerText = student.branch;
+    document.getElementById('success-student-year').innerText = `${student.year} Year`;
+    document.getElementById('student-success-modal').classList.add('active');
 
     saveDatabase();
     closeAddStudentModal();
