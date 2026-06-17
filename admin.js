@@ -49,7 +49,7 @@
 
   function handleHashRoute() {
     const hash = window.location.hash.substring(1);
-    const validTabs = ['dashboard', 'events', 'students', 'settings'];
+    const validTabs = ['dashboard', 'events', 'students'];
     if (validTabs.includes(hash)) {
       switchTab(hash);
     }
@@ -118,6 +118,22 @@
         window.location.hash = tab;
       });
     });
+
+    // Profile Footer Dropdown Toggle
+    const profileFooter = document.getElementById('user-profile-footer');
+    const profileMenu = document.getElementById('profile-dropdown-menu');
+    if (profileFooter && profileMenu) {
+      profileFooter.addEventListener('click', (e) => {
+        e.stopPropagation();
+        profileMenu.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!profileMenu.contains(e.target) && e.target !== profileFooter) {
+          profileMenu.classList.remove('active');
+        }
+      });
+    }
 
     // Logout button click trigger
     const logoutBtn = document.getElementById('sidebar-logout-btn');
@@ -1284,7 +1300,7 @@
   function performLogout() {
     document.getElementById('logout-modal').classList.remove('active');
     alert("Administrative session closed. Redirecting to home portal...");
-    window.location.href = 'home.html';
+    window.location.href = 'index.html';
   }
 
   // ==========================================
