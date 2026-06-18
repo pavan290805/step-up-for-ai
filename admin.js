@@ -7,135 +7,321 @@
 (function() {
   'use strict';
 
-  // Constants
-  const STORAGE_KEY_EVENTS = 'stepup_events';
-  const STORAGE_KEY_STUDENTS = 'stepup_students';
-  const STORAGE_KEY_REGISTRATIONS = 'stepup_registrations';
+  // Storage Keys
+  const STORAGE_KEY_WEBINARS = 'stepup_webinars_v3';
+  const STORAGE_KEY_HACKATHONS = 'stepup_hackathons_v3';
+  const STORAGE_KEY_PITCH_EVENTS = 'stepup_pitch_events_v3';
+  const STORAGE_KEY_STARTUP_APPS = 'stepup_startup_apps_v3';
+  const STORAGE_KEY_RECRUITERS = 'stepup_recruiters_v3';
+  const STORAGE_KEY_INVESTORS = 'stepup_investors_v3';
+  const STORAGE_KEY_STUDENTS = 'stepup_students_v3';
+  const STORAGE_KEY_REGISTRATIONS = 'stepup_regs_v3';
+  const STORAGE_KEY_PITCH_REGISTRATIONS = 'stepup_pitch_regs_v3';
 
-  // App State Database
+  // App state
   let state = {
-    events: [],
+    webinars: [],
+    hackathons: [],
+    pitchEvents: [],
+    startupApplications: [],
+    recruiters: [],
+    investors: [],
     students: [],
-    registrations: []
+    registrations: [], // maps students to webinars and hackathons
+    pitchRegistrations: [] // maps participants to pitch events
   };
 
   // Pagination states
-  let eventsPagination = { page: 1, limit: 5 };
-  let eventStudentsPagination = { page: 1, limit: 10 };
-  let globalStudentsPagination = { page: 1, limit: 10 };
+  let pagWebinars = { page: 1, limit: 6 };
+  let pagHackathons = { page: 1, limit: 6 };
+  let pagPitchEvents = { page: 1, limit: 6 };
+  let pagStartups = { page: 1, limit: 6 };
+  let pagStudents = { page: 1, limit: 10 };
+  let pagApprovePending = { page: 1, limit: 5 };
+  let pagRecruiters = { page: 1, limit: 10 };
+  let pagInvestors = { page: 1, limit: 10 };
+  let pagPendingTable = { page: 1, limit: 10 };
+  let pagApprovedTable = { page: 1, limit: 10 };
+  let pagRejectedTable = { page: 1, limit: 10 };
+  let pagDetailsStudents = { page: 1, limit: 10 };
 
-  // Currently active filter values
-  let currentEventFilter = 'all'; 
-  let selectedEventId = null;
-  let globalStudentsFilter = { search: '', branch: '', year: '' };
-  let eventStudentsSearch = '';
+  // Current active selections
+  let currentActiveTab = 'dashboard';
+  let selectedWebinarId = null;
+  let selectedHackathonId = null;
+  let selectedPitchEventId = null;
 
-  // Company logo and Banner image Base64 cache during form editing
-  let formLogoBase64 = null;
-  let formBannerBase64 = null;
+  // Selected checkboxes in Pending Requests
+  let selectedPendingIds = new Set();
 
-  // Initialize Application
-  window.addEventListener('DOMContentLoaded', () => {
+  // Search & Filter storage
+  let webinarsFilter = { search: '', mode: '' };
+  let hackathonsFilter = { search: '', participation: '' };
+  let pitchEventsFilter = { search: '' };
+  let startupsFilter = { search: '', stage: '', status: '' };
+  let studentsFilter = { search: '', branch: '', year: '' };
+  let recruitersFilter = { search: '', status: '' };
+  let investorsFilter = { search: '', status: '' };
+  let pendingFilter = { search: '', type: '' };
+  let approvedFilter = { search: '', type: '' };
+  let rejectedFilter = { search: '', type: '' };
+  let approveDashPendingSearch = '';
+  let detailsStudentsSearch = '';
+
+  // Base64 upload caches
+  let cachedWebinarPoster = null;
+  let cachedHackathonLogo = null;
+  let cachedHackathonPoster = null;
+  let cachedPitchEventPoster = null;
+
+  // Initialize
+  window.addEventListener('load', () => {
     initDatabase();
     bindEvents();
-    renderAll();
-    
-    // Check hash route for direct tabs
     handleHashRoute();
+    requestAnimationFrame(() => {
+      renderAll();
+    });
+    setupGlobalShortcuts();
   });
 
-  // Handle direct tab deep links via URL hash
   window.addEventListener('hashchange', handleHashRoute);
 
   function handleHashRoute() {
-    const hash = window.location.hash.substring(1);
-    const validTabs = ['dashboard', 'events', 'students'];
-    if (validTabs.includes(hash)) {
-      switchTab(hash);
+    let hash = window.location.hash.substring(1);
+    if (!hash) {
+      window.location.hash = "/admin/dashboard";
+      return;
+    }
+    
+    // Check for details routes with ID
+    // e.g. /admin/webinars/2001
+    if (hash.startsWith('/admin/webinars/')) {
+      const idStr = hash.replace('/admin/webinars/', '');
+      if (idStr === 'create') {
+        switchTab('webinars-list');
+        openCreateWebinarModal();
+        return;
+      }
+      const id = parseInt(idStr);
+      if (!isNaN(id)) {
+        selectedWebinarId = id;
+        switchTab('webinar-details');
+        return;
+      }
+    }
+    
+    if (hash.startsWith('/admin/hackathons/')) {
+      const idStr = hash.replace('/admin/hackathons/', '');
+      if (idStr === 'create') {
+        switchTab('hackathons-list');
+        openCreateHackathonModal();
+        return;
+      }
+      const id = parseInt(idStr);
+      if (!isNaN(id)) {
+        selectedHackathonId = id;
+        switchTab('hackathon-details');
+        return;
+      }
+    }
+    
+    if (hash.startsWith('/admin/pitch-events/')) {
+      const idStr = hash.replace('/admin/pitch-events/', '');
+      if (idStr === 'create') {
+        switchTab('pitch-events-list');
+        openCreatePitchEventModal();
+        return;
+      }
+      const id = parseInt(idStr);
+      if (!isNaN(id)) {
+        selectedPitchEventId = id;
+        switchTab('pitch-event-details');
+        return;
+      }
+    }
+
+    // Map parent hashes and path-like hashes
+    const routeMap = {
+      '/admin/dashboard': 'dashboard',
+      '/admin/webinars': 'webinars-list',
+      '/admin/webinars/create': 'webinars-list',
+      '/admin/hackathons': 'hackathons-list',
+      '/admin/pitch-events': 'pitch-events-list',
+      '/admin/startup-applications': 'startup-applications',
+      '/admin/students': 'students',
+      '/admin/approval-management': 'approval-dashboard',
+      '/admin/approval-management/recruiters': 'approval-recruiters',
+      '/admin/approval-management/investors': 'approval-investors',
+      '/admin/approval-management/pending': 'approval-pending',
+      '/admin/approval-management/approved': 'approval-approved',
+      '/admin/approval-management/rejected': 'approval-rejected',
+      '/admin/settings': 'settings'
+    };
+
+    const tabId = routeMap[hash] || 'dashboard';
+    switchTab(tabId);
+
+    // If route was create, trigger the corresponding modal
+    if (hash === '/admin/webinars/create') {
+      openCreateWebinarModal();
+    } else if (hash === '/admin/hackathons/create') {
+      openCreateHackathonModal();
+    } else if (hash === '/admin/pitch-events/create') {
+      openCreatePitchEventModal();
     }
   }
 
   // ==========================================
-  // DATABASE / LOCAL STORAGE MANAGER
+  // DATABASE MANAGER
   // ==========================================
   function initDatabase() {
     try {
-      const storedEvents = localStorage.getItem(STORAGE_KEY_EVENTS);
-      const storedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
-      const storedRegs = localStorage.getItem(STORAGE_KEY_REGISTRATIONS);
-
-      state.events = storedEvents ? JSON.parse(storedEvents) : [];
-      state.students = storedStudents ? JSON.parse(storedStudents) : [];
-      state.registrations = storedRegs ? JSON.parse(storedRegs) : [];
+      state.webinars = JSON.parse(localStorage.getItem(STORAGE_KEY_WEBINARS)) || [];
+      state.hackathons = JSON.parse(localStorage.getItem(STORAGE_KEY_HACKATHONS)) || [];
+      state.pitchEvents = JSON.parse(localStorage.getItem(STORAGE_KEY_PITCH_EVENTS)) || [];
+      state.startupApplications = JSON.parse(localStorage.getItem(STORAGE_KEY_STARTUP_APPS)) || [];
+      state.recruiters = JSON.parse(localStorage.getItem(STORAGE_KEY_RECRUITERS)) || [];
+      state.investors = JSON.parse(localStorage.getItem(STORAGE_KEY_INVESTORS)) || [];
+      state.students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
+      state.registrations = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTRATIONS)) || [];
+      state.pitchRegistrations = JSON.parse(localStorage.getItem(STORAGE_KEY_PITCH_REGISTRATIONS)) || [];
     } catch (e) {
-      console.error("Failed to load local storage state", e);
-      state.events = [];
-      state.students = [];
-      state.registrations = [];
+      console.error("Failed to parse LocalStorage", e);
     }
   }
 
   function saveDatabase() {
     try {
-      localStorage.setItem(STORAGE_KEY_EVENTS, JSON.stringify(state.events));
+      localStorage.setItem(STORAGE_KEY_WEBINARS, JSON.stringify(state.webinars));
+      localStorage.setItem(STORAGE_KEY_HACKATHONS, JSON.stringify(state.hackathons));
+      localStorage.setItem(STORAGE_KEY_PITCH_EVENTS, JSON.stringify(state.pitchEvents));
+      localStorage.setItem(STORAGE_KEY_STARTUP_APPS, JSON.stringify(state.startupApplications));
+      localStorage.setItem(STORAGE_KEY_RECRUITERS, JSON.stringify(state.recruiters));
+      localStorage.setItem(STORAGE_KEY_INVESTORS, JSON.stringify(state.investors));
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(state.students));
       localStorage.setItem(STORAGE_KEY_REGISTRATIONS, JSON.stringify(state.registrations));
+      localStorage.setItem(STORAGE_KEY_PITCH_REGISTRATIONS, JSON.stringify(state.pitchRegistrations));
     } catch (e) {
-      console.error("Failed to save state to local storage", e);
-      alert("Local storage limit exceeded! Banners/Logos might be too large. Try uploading smaller images.");
+      console.error("Local storage save error", e);
+      alert("Local storage limit exceeded! Consider uploading smaller logos/posters.");
     }
   }
 
-  // Reset all application data
   function resetApp() {
-    if (confirm("Are you sure you want to delete all events, registered students, and settings? This action is irreversible.")) {
-      localStorage.removeItem(STORAGE_KEY_EVENTS);
-      localStorage.removeItem(STORAGE_KEY_STUDENTS);
-      localStorage.removeItem(STORAGE_KEY_REGISTRATIONS);
-      state.events = [];
-      state.students = [];
-      state.registrations = [];
-      selectedEventId = null;
-      eventsPagination.page = 1;
-      globalStudentsPagination.page = 1;
+    if (confirm("Are you sure you want to delete all webinars, hackathons, pitch events, applications, approvals and students? This action is irreversible.")) {
+      localStorage.clear();
+      state = {
+        webinars: [],
+        hackathons: [],
+        pitchEvents: [],
+        startupApplications: [],
+        recruiters: [],
+        investors: [],
+        students: [],
+        registrations: [],
+        pitchRegistrations: []
+      };
       saveDatabase();
+      selectedWebinarId = null;
+      selectedHackathonId = null;
+      selectedPitchEventId = null;
+      selectedPendingIds.clear();
+      window.location.hash = "/admin/dashboard";
       renderAll();
-      switchTab('dashboard');
-      alert("Application storage successfully reset!");
+      alert("Ecosystem data reset successfully!");
     }
   }
 
   // ==========================================
-  // BIND DOM EVENT LISTENERS
+  // EVENT BINDINGS
   // ==========================================
   function bindEvents() {
-    // Sidebar Tabs Navigation
-    document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
-      item.addEventListener('click', (e) => {
+    // Collapsible sidebar accordions
+    document.querySelectorAll('.submenu-toggle').forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
         e.preventDefault();
-        const tab = item.getAttribute('data-tab');
-        switchTab(tab);
-        window.location.hash = tab;
+        const navItem = toggle.closest('.nav-item');
+        
+        // Toggle expanded
+        const isExpanded = navItem.classList.contains('expanded');
+        document.querySelectorAll('.nav-item.has-submenu').forEach(item => {
+          if (item !== navItem) item.classList.remove('expanded');
+        });
+        
+        if (isExpanded) {
+          navItem.classList.remove('expanded');
+        } else {
+          navItem.classList.add('expanded');
+          // Automatically switch to the first submenu item's tab path if one exists
+          const firstSub = navItem.querySelector('.submenu-item[data-tab]');
+          if (firstSub) {
+            const anchor = firstSub.querySelector('a');
+            if (anchor) {
+              const href = anchor.getAttribute('href');
+              if (href && href.startsWith('#')) {
+                window.location.hash = href.substring(1);
+              }
+            }
+          }
+        }
       });
     });
 
-    // Profile Footer Dropdown Toggle
+    // Tab clicks (main and submenu items)
+    document.querySelectorAll('.nav-item[data-tab], .submenu-item[data-tab]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        const tabId = item.getAttribute('data-tab');
+        
+        // Avoid interrupting direct modal triggers
+        if (tabId && tabId.includes('-create')) return;
+        
+        // If clicking the anchor directly, let hashchange handle it naturally
+        if (e.target.closest('a')) {
+          return;
+        }
+        
+        // If clicking the LI background wrapper, find the anchor and navigate
+        const anchor = item.querySelector('a');
+        if (anchor) {
+          const href = anchor.getAttribute('href');
+          if (href && href.startsWith('#')) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.hash = href.substring(1);
+          }
+        }
+      });
+    });
+
+    // Profile Trigger dropdowns (Sidebar Footer and Top Nav)
     const profileFooter = document.getElementById('user-profile-footer');
     const profileMenu = document.getElementById('profile-dropdown-menu');
+    const topProfileTrigger = document.getElementById('top-user-menu-trigger');
+    const topProfileMenu = document.getElementById('top-profile-dropdown-menu');
+
     if (profileFooter && profileMenu) {
       profileFooter.addEventListener('click', (e) => {
         e.stopPropagation();
         profileMenu.classList.toggle('active');
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!profileMenu.contains(e.target) && e.target !== profileFooter) {
-          profileMenu.classList.remove('active');
-        }
+        if (topProfileMenu) topProfileMenu.classList.remove('active');
       });
     }
 
-    // Logout button click trigger
+    if (topProfileTrigger && topProfileMenu) {
+      topProfileTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        topProfileMenu.classList.toggle('active');
+        if (profileMenu) profileMenu.classList.remove('active');
+      });
+    }
+
+    document.addEventListener('click', () => {
+      if (profileMenu) profileMenu.classList.remove('active');
+      if (topProfileMenu) topProfileMenu.classList.remove('active');
+    });
+
+    // Logout trigger
     const logoutBtn = document.getElementById('sidebar-logout-btn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', (e) => {
@@ -144,1103 +330,1986 @@
       });
     }
 
-    // Event filter tabs click trigger
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentEventFilter = tab.getAttribute('data-filter');
-        eventsPagination.page = 1;
-        renderEventsList();
+    // Search and Filters binders
+    bindSearchFilter('global-nav-search', (val) => {
+      // route search queries depending on active view
+      triggerGlobalSearch(val);
+    });
+
+    bindSearchFilter('webinars-search-input', (val) => {
+      webinarsFilter.search = val.toLowerCase();
+      pagWebinars.page = 1;
+      renderWebinarsGrid();
+    });
+    bindSelectFilter('webinars-filter-mode', (val) => {
+      webinarsFilter.mode = val;
+      pagWebinars.page = 1;
+      renderWebinarsGrid();
+    });
+
+    bindSearchFilter('hackathons-search-input', (val) => {
+      hackathonsFilter.search = val.toLowerCase();
+      pagHackathons.page = 1;
+      renderHackathonsGrid();
+    });
+    bindSelectFilter('hackathons-filter-participation', (val) => {
+      hackathonsFilter.participation = val;
+      pagHackathons.page = 1;
+      renderHackathonsGrid();
+    });
+
+    bindSearchFilter('pitch-events-search-input', (val) => {
+      pitchEventsFilter.search = val.toLowerCase();
+      pagPitchEvents.page = 1;
+      renderPitchEventsGrid();
+    });
+
+    bindSearchFilter('startup-search-input', (val) => {
+      startupsFilter.search = val.toLowerCase();
+      pagStartups.page = 1;
+      renderStartupsGrid();
+    });
+    bindSelectFilter('startup-filter-stage', (val) => {
+      startupsFilter.stage = val;
+      pagStartups.page = 1;
+      renderStartupsGrid();
+    });
+    bindSelectFilter('startup-filter-status', (val) => {
+      startupsFilter.status = val;
+      pagStartups.page = 1;
+      renderStartupsGrid();
+    });
+
+    bindSearchFilter('students-search-input', (val) => {
+      studentsFilter.search = val.toLowerCase();
+      pagStudents.page = 1;
+      renderStudentsTable();
+    });
+    bindSelectFilter('students-filter-branch', (val) => {
+      studentsFilter.branch = val;
+      pagStudents.page = 1;
+      renderStudentsTable();
+    });
+    bindSelectFilter('students-filter-year', (val) => {
+      studentsFilter.year = val;
+      pagStudents.page = 1;
+      renderStudentsTable();
+    });
+
+    // Approval sub-view filters
+    bindSearchFilter('recruiters-search-input', (val) => {
+      recruitersFilter.search = val.toLowerCase();
+      pagRecruiters.page = 1;
+      renderRecruitersTable();
+    });
+    bindSelectFilter('recruiters-filter-status', (val) => {
+      recruitersFilter.status = val;
+      pagRecruiters.page = 1;
+      renderRecruitersTable();
+    });
+
+    bindSearchFilter('investors-search-input', (val) => {
+      investorsFilter.search = val.toLowerCase();
+      pagInvestors.page = 1;
+      renderInvestorsTable();
+    });
+    bindSelectFilter('investors-filter-status', (val) => {
+      investorsFilter.status = val;
+      pagInvestors.page = 1;
+      renderInvestorsTable();
+    });
+
+    bindSearchFilter('pending-search-input', (val) => {
+      pendingFilter.search = val.toLowerCase();
+      pagPendingTable.page = 1;
+      renderPendingTable();
+    });
+    bindSelectFilter('pending-filter-type', (val) => {
+      pendingFilter.type = val;
+      pagPendingTable.page = 1;
+      renderPendingTable();
+    });
+
+    bindSearchFilter('approved-search-input', (val) => {
+      approvedFilter.search = val.toLowerCase();
+      pagApprovedTable.page = 1;
+      renderApprovedTable();
+    });
+    bindSelectFilter('approved-filter-type', (val) => {
+      approvedFilter.type = val;
+      pagApprovedTable.page = 1;
+      renderApprovedTable();
+    });
+
+    bindSearchFilter('rejected-search-input', (val) => {
+      rejectedFilter.search = val.toLowerCase();
+      pagRejectedTable.page = 1;
+      renderRejectedTable();
+    });
+    bindSelectFilter('rejected-filter-type', (val) => {
+      rejectedFilter.type = val;
+      pagRejectedTable.page = 1;
+      renderRejectedTable();
+    });
+
+    bindSearchFilter('approve-dash-pending-search', (val) => {
+      approveDashPendingSearch = val.toLowerCase();
+      pagApprovePending.page = 1;
+      renderApproveDashPendingTable();
+    });
+
+    bindSelectFilter('dash-line-chart-range', () => {
+      renderDashboard();
+    });
+    bindSelectFilter('approve-trend-range', () => {
+      renderApprovalDashboard();
+    });
+
+    // Page limits binders
+    bindLimitSelect('webinars-page-size', pagWebinars, renderWebinarsGrid);
+    bindLimitSelect('hackathons-page-size', pagHackathons, renderHackathonsGrid);
+    bindLimitSelect('pitch-events-page-size', pagPitchEvents, renderPitchEventsGrid);
+    bindLimitSelect('startup-page-size', pagStartups, renderStartupsGrid);
+    bindLimitSelect('students-table-page-size', pagStudents, renderStudentsTable);
+    bindLimitSelect('recruiters-page-size', pagRecruiters, renderRecruitersTable);
+    bindLimitSelect('investors-page-size', pagInvestors, renderInvestorsTable);
+    bindLimitSelect('pending-page-size', pagPendingTable, renderPendingTable);
+    bindLimitSelect('approved-page-size', pagApprovedTable, renderApprovedTable);
+    bindLimitSelect('rejected-page-size', pagRejectedTable, renderRejectedTable);
+
+    // Export dropdown bells triggers
+    bindPopoverToggle('dash-export-btn', 'dash-export-menu');
+    bindPopoverToggle('webinars-export-btn', 'webinars-export-menu');
+    bindPopoverToggle('applications-export-btn', 'applications-export-menu');
+    bindPopoverToggle('students-export-btn', 'students-export-menu');
+    bindPopoverToggle('approvals-export-btn', 'approvals-export-menu');
+
+    // Forms File uploads handlers
+    bindImageUpload('webinar-form-poster', (base64, filename) => {
+      cachedWebinarPoster = base64;
+      showPosterPreview('webinar-poster-preview', base64, filename, () => {
+        cachedWebinarPoster = null;
       });
     });
 
-    // Handle Company Logo File Upload
-    const logoInput = document.getElementById('form-company-logo');
-    if (logoInput) {
-      logoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          if (file.size > 2 * 1024 * 1024) {
-            alert("Company logo size cannot exceed 2MB.");
-            logoInput.value = '';
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            formLogoBase64 = event.target.result;
-            showLogoPreview(file.name);
-          };
-          reader.readAsDataURL(file);
-        }
+    bindImageUpload('hackathon-form-logo', (base64, filename) => {
+      cachedHackathonLogo = base64;
+      showPosterPreview('hackathon-logo-preview', base64, filename, () => {
+        cachedHackathonLogo = null;
       });
-    }
+    });
 
-    // Handle Banner File Upload
-    const bannerInput = document.getElementById('form-banner-image');
-    if (bannerInput) {
-      bannerInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          if (file.size > 5 * 1024 * 1024) {
-            alert("Banner image size cannot exceed 5MB.");
-            bannerInput.value = '';
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            formBannerBase64 = event.target.result;
-            showBannerPreview(file.name);
-          };
-          reader.readAsDataURL(file);
-        }
+    bindImageUpload('hackathon-form-poster', (base64, filename) => {
+      cachedHackathonPoster = base64;
+      showPosterPreview('hackathon-poster-preview', base64, filename, () => {
+        cachedHackathonPoster = null;
       });
-    }
+    });
 
-    // Event creation/edit form submit handler
-    const eventForm = document.getElementById('create-event-form');
-    if (eventForm) {
-      eventForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveEventForm();
+    bindImageUpload('pitch-event-form-poster', (base64, filename) => {
+      cachedPitchEventPoster = base64;
+      showPosterPreview('pitch-event-poster-preview', base64, filename, () => {
+        cachedPitchEventPoster = null;
       });
-    }
+    });
 
-    // Student global filters
-    const filterTrigger = document.getElementById('global-students-filter-trigger');
-    const filterPopover = document.getElementById('global-students-filter-popover');
-    if (filterTrigger && filterPopover) {
-      filterTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        filterPopover.classList.toggle('active');
-      });
-      // Close popover when clicking elsewhere
-      document.addEventListener('click', (e) => {
-        if (!filterPopover.contains(e.target) && e.target !== filterTrigger) {
-          filterPopover.classList.remove('active');
-        }
-      });
-    }
-
-    // Apply global student filters
-    const applyFilterBtn = document.getElementById('filter-apply-btn');
-    if (applyFilterBtn) {
-      applyFilterBtn.addEventListener('click', () => {
-        globalStudentsFilter.branch = document.getElementById('filter-branch').value;
-        globalStudentsFilter.year = document.getElementById('filter-year').value;
-        globalStudentsPagination.page = 1;
-        renderGlobalStudents();
-        filterPopover.classList.remove('active');
-      });
-    }
-
-    // Reset global student filters
-    const resetFilterBtn = document.getElementById('filter-reset-btn');
-    if (resetFilterBtn) {
-      resetFilterBtn.addEventListener('click', () => {
-        document.getElementById('filter-branch').value = '';
-        document.getElementById('filter-year').value = '';
-        globalStudentsFilter.branch = '';
-        globalStudentsFilter.year = '';
-        globalStudentsPagination.page = 1;
-        renderGlobalStudents();
-        filterPopover.classList.remove('active');
-      });
-    }
-
-    // Global students search
-    const globalSearchInput = document.getElementById('global-students-search');
-    if (globalSearchInput) {
-      globalSearchInput.addEventListener('input', (e) => {
-        globalStudentsFilter.search = e.target.value.trim().toLowerCase();
-        globalStudentsPagination.page = 1;
-        renderGlobalStudents();
-      });
-    }
-
-    // Event students search
-    const eventStudentsSearchInput = document.getElementById('event-students-search');
-    if (eventStudentsSearchInput) {
-      eventStudentsSearchInput.addEventListener('input', (e) => {
-        eventStudentsSearch = e.target.value.trim().toLowerCase();
-        eventStudentsPagination.page = 1;
-        renderEventStudents();
-      });
-    }
-
-    // Event students pagination page size select
-    const eventPageSize = document.getElementById('event-students-page-size');
-    if (eventPageSize) {
-      eventPageSize.addEventListener('change', (e) => {
-        eventStudentsPagination.limit = parseInt(e.target.value);
-        eventStudentsPagination.page = 1;
-        renderEventStudents();
-      });
-    }
-
-    // Global students pagination page size select
-    const globalPageSize = document.getElementById('global-students-page-size');
-    if (globalPageSize) {
-      globalPageSize.addEventListener('change', (e) => {
-        globalStudentsPagination.limit = parseInt(e.target.value);
-        globalStudentsPagination.page = 1;
-        renderGlobalStudents();
-      });
-    }
-
-    // Add Student form submit
-    const studentForm = document.getElementById('add-student-form');
-    if (studentForm) {
-      studentForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveStudentForm();
-      });
-    }
-
-    // Event Details action buttons
-    const editBtn = document.getElementById('details-edit-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        openEditEventModal(selectedEventId);
-      });
-    }
-
-    const deleteBtn = document.getElementById('details-delete-btn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
-        deleteEvent(selectedEventId);
-      });
-    }
-
-    // Add student specifically to event
-    const regToEventBtn = document.getElementById('register-student-to-event-btn');
-    if (regToEventBtn) {
-      regToEventBtn.addEventListener('click', () => {
-        openAddStudentModal(selectedEventId);
-      });
-    }
-
-    // Export Buttons
-    const eventStudentsExport = document.getElementById('event-students-export-btn');
-    if (eventStudentsExport) {
-      eventStudentsExport.addEventListener('click', () => {
-        exportEventRegistrationsCSV(selectedEventId);
-      });
-    }
-
-    const globalStudentsExport = document.getElementById('global-students-export-btn');
-    if (globalStudentsExport) {
-      globalStudentsExport.addEventListener('click', () => {
-        exportGlobalStudentsCSV();
-      });
-    }
-    
-    const masterExport = document.getElementById('global-students-export-btn');
-    if (masterExport) {
-      masterExport.addEventListener('click', () => {
-        exportGlobalStudentsCSV();
-      });
-    }
+    // Form Submits
+    document.getElementById('create-webinar-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitWebinarForm();
+    });
+    document.getElementById('create-hackathon-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitHackathonForm();
+    });
+    document.getElementById('create-pitch-event-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitPitchEventForm();
+    });
+    document.getElementById('add-student-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitStudentForm();
+    });
   }
 
   // ==========================================
-  // VIEW SWITCHING (TAB ROUTER)
+  // UI ROUTING (TABS SWITCHER)
   // ==========================================
   function switchTab(tabId) {
-    // Hide all panels, deactivate nav items
+    currentActiveTab = tabId;
+    
+    // Remove active from all panels & sidebar items
     document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.nav-item, .submenu-item').forEach(i => i.classList.remove('active'));
 
+    // Activate the main panel
     const targetPanel = document.getElementById(`${tabId}-view`);
-    const targetItem = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
-
-    if (targetPanel && targetItem) {
+    if (targetPanel) {
       targetPanel.classList.add('active');
-      targetItem.classList.add('active');
     }
 
-    // Render components related to that tab
+    // Activate sidebar parent or child
+    const sidebarItem = document.querySelector(`[data-tab="${tabId}"]`);
+    if (sidebarItem) {
+      sidebarItem.classList.add('active');
+      
+      // If it is inside a submenu list, expand parent nav-item
+      const subMenu = sidebarItem.closest('.submenu-list');
+      if (subMenu) {
+        const parentNavItem = subMenu.closest('.nav-item');
+        if (parentNavItem) {
+          parentNavItem.classList.add('expanded');
+          parentNavItem.classList.add('active'); // highlight parent as active as well
+        }
+      }
+    }
+
+    // Refresh tab statistics or lists
+    triggerTabRenders(tabId);
+  }
+
+  function triggerTabRenders(tabId) {
     if (tabId === 'dashboard') {
       renderDashboard();
-    } else if (tabId === 'events') {
-      renderEventsList();
-      renderEventDetails();
+    } else if (tabId === 'webinars-list') {
+      renderWebinarsGrid();
+    } else if (tabId === 'webinar-details') {
+      renderWebinarDetailsPane();
+    } else if (tabId === 'hackathons-list') {
+      renderHackathonsGrid();
+    } else if (tabId === 'hackathon-details') {
+      renderHackathonDetailsPane();
+    } else if (tabId === 'pitch-events-list') {
+      renderPitchEventsGrid();
+    } else if (tabId === 'startup-applications') {
+      renderStartupsGrid();
     } else if (tabId === 'students') {
-      renderGlobalStudents();
+      renderStudentsTable();
+    } else if (tabId === 'approval-dashboard') {
+      renderApprovalDashboard();
+    } else if (tabId === 'approval-recruiters') {
+      renderRecruitersTable();
+    } else if (tabId === 'approval-investors') {
+      renderInvestorsTable();
+    } else if (tabId === 'approval-pending') {
+      selectedPendingIds.clear();
+      renderPendingTable();
+    } else if (tabId === 'approval-approved') {
+      renderApprovedTable();
+    } else if (tabId === 'approval-rejected') {
+      renderRejectedTable();
     }
   }
 
-  // ==========================================
-  // RENDERING FUNCTIONS
-  // ==========================================
   function renderAll() {
     renderDashboard();
-    renderEventsList();
-    renderEventDetails();
-    renderGlobalStudents();
+    renderWebinarsGrid();
+    renderHackathonsGrid();
+    renderPitchEventsGrid();
+    renderStartupsGrid();
+    renderStudentsTable();
+    renderApprovalDashboard();
   }
 
-  // 1. Dashboard Renderer
-  function renderDashboard() {
-    const totalEvents = state.events.length;
-    const totalStudents = state.students.length;
-    
-    const totalWebinars = state.events.filter(e => e.type === 'webinar').length;
-    const totalHackathons = state.events.filter(e => e.type === 'hackathon').length;
+  // ==========================================
+  // HELPER FUNCTIONS FOR DYNAMIC VISUALIZATIONS & EMPTY STATES
+  // ==========================================
+  function getCumulativeTrend(list, dateField, days = 7) {
+    const trend = [];
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      d.setHours(23, 59, 59, 999);
+      const count = list.filter(item => {
+        const val = item[dateField];
+        if (!val) return false;
+        return new Date(val) <= d;
+      }).length;
+      trend.push(count);
+    }
+    return trend;
+  }
 
-    // Set UI indicators
-    document.getElementById('dash-total-events').innerText = totalEvents;
-    document.getElementById('dash-total-students').innerText = totalStudents;
-    document.getElementById('dash-total-webinars').innerText = totalWebinars;
-    document.getElementById('dash-total-hackathons').innerText = totalHackathons;
-
-    // Render Recent registrations list
-    const recentListContainer = document.getElementById('dash-recent-registrations');
-    
-    // Sort registrations by date descending, take top 5
-    const recentRegs = [...state.registrations]
-      .sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate))
-      .slice(0, 5);
-
-    if (recentRegs.length === 0) {
-      recentListContainer.innerHTML = `
-        <div class="table-empty-state">
-          <i class="fa-solid fa-inbox"></i>
-          <p>No student registrations recorded yet</p>
+  function createEmptyStateHTML(message, actionText, actionFn) {
+    return `
+      <div class="empty-state-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 20px; text-align: center; background: rgba(255,255,255,0.01); border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px; width: 100%; height: 100%; min-height: 180px; box-sizing: border-box;">
+        <div style="font-size: 28px; color: var(--accent-red); margin-bottom: 10px; opacity: 0.8;">
+          <i class="fa-solid fa-folder-open"></i>
         </div>
-      `;
+        <div style="font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px;">${escapeHTML(message)}</div>
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; max-width: 240px;">Get started by loading demo data or creating new records.</div>
+        ${actionText ? `<button class="btn-solid-red" style="padding: 6px 12px; font-size: 11px;" onclick="${actionFn}">${escapeHTML(actionText)}</button>` : ''}
+      </div>
+    `;
+  }
+
+  function renderDonutOrEmptyState(cardBody, canvasId, totalCountId, totalVal, segments, legendId, emptyMessage) {
+    if (totalVal === 0) {
+      cardBody.innerHTML = createEmptyStateHTML(emptyMessage, "Load Demo Data", "window.dashboardApp.loadDemoData()");
       return;
     }
-
-    let html = '';
-    recentRegs.forEach(reg => {
-      const student = state.students.find(s => s.id === reg.studentId);
-      const event = state.events.find(e => e.id === reg.eventId);
-
-      if (student && event) {
-        const typeClass = event.type === 'webinar' ? 'event-type' : 'student-type';
-        const typeIcon = event.type === 'webinar' ? 'fa-solid fa-video' : 'fa-solid fa-code';
-        const regDateFormatted = formatDate(reg.registrationDate);
-
-        html += `
-          <div class="recent-item">
-            <div class="activity-badge ${typeClass}">
-              <i class="${typeIcon}"></i>
+    
+    // Restore template if not present
+    if (!cardBody.querySelector(`#${canvasId}`)) {
+      if (canvasId === 'chart-registrations-donut') {
+        cardBody.innerHTML = `
+          <div class="donut-container" style="width:100%;">
+            <div style="position:relative; width:140px; height:140px; display:flex; align-items:center; justify-content:center;">
+              <canvas id="chart-registrations-donut" width="140" height="140"></canvas>
+              <div class="donut-inner-text">
+                <div id="donut-total-count" style="font-size:24px; font-weight:700; color:#ffffff; line-height:1;">0</div>
+                <div style="font-size:10px; text-transform:uppercase; color:#8e9bb2; font-weight:600; margin-top:4px;">Total</div>
+              </div>
             </div>
-            <div class="activity-content">
-              <div class="activity-title">${escapeHTML(student.name)}</div>
-              <div class="activity-desc">Registered for <strong style="color: var(--accent-red);">${escapeHTML(event.name)}</strong></div>
+            <div class="donut-legend" id="donut-registrations-legend"></div>
+          </div>
+        `;
+      } else {
+        cardBody.innerHTML = `
+          <div class="donut-container" style="width:100%;">
+            <div style="position:relative; width:140px; height:140px; display:flex; align-items:center; justify-content:center;">
+              <canvas id="chart-approvals-donut" width="120" height="120"></canvas>
+              <div class="donut-inner-text">
+                <span class="donut-inner-value" id="donut-approvals-total">0</span>
+                <span class="donut-inner-label">Total</span>
+              </div>
             </div>
-            <div class="activity-time">${regDateFormatted}</div>
+            <div class="donut-legend" id="donut-approvals-legend" style="font-size:11px;"></div>
           </div>
         `;
       }
-    });
-
-    recentListContainer.innerHTML = html;
-  }
-
-  // 2. Events List Renderer (Left panel)
-  function renderEventsList() {
-    const container = document.getElementById('events-cards-list');
-    
-    // Filter events
-    let filteredEvents = [...state.events];
-    const today = new Date();
-
-    if (currentEventFilter === 'webinar') {
-      filteredEvents = filteredEvents.filter(e => e.type === 'webinar');
-    } else if (currentEventFilter === 'hackathon') {
-      filteredEvents = filteredEvents.filter(e => e.type === 'hackathon');
-    } else if (currentEventFilter === 'upcoming') {
-      filteredEvents = filteredEvents.filter(e => new Date(e.date) >= today);
-    } else if (currentEventFilter === 'completed') {
-      filteredEvents = filteredEvents.filter(e => new Date(e.date) < today);
     }
+    
+    document.getElementById(totalCountId).innerText = totalVal.toLocaleString();
+    drawDonutChart(canvasId, segments);
 
-    // Sort by date descending
-    filteredEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Handle empty state
-    if (filteredEvents.length === 0) {
-      container.innerHTML = `
-        <div class="details-empty-state">
-          <i class="fa-solid fa-calendar-xmark"></i>
-          <h3>No matching events</h3>
-          <p>No events match the selected category filter.</p>
+    const legendContainer = document.getElementById(legendId);
+    let legendHTML = '';
+    segments.forEach(seg => {
+      const pct = totalVal > 0 ? Math.round((seg.value / totalVal) * 100) : 0;
+      legendHTML += `
+        <div class="legend-item" style="margin-bottom:2px;">
+          <div class="legend-label-block">
+            <span class="legend-color-dot" style="background-color: ${seg.color}"></span>
+            <span>${seg.label}</span>
+          </div>
+          <div class="legend-value-block">
+            <span>${seg.value}</span>
+            <span class="legend-value-percentage">(${pct}%)</span>
+          </div>
         </div>
       `;
-      document.getElementById('events-list-pagination').innerHTML = '';
+    });
+    legendContainer.innerHTML = legendHTML;
+  }
+
+  function renderLineChartOrEmptyState(cardBody, canvasId, dates, datasets, emptyMessage) {
+    let hasData = false;
+    datasets.forEach(d => {
+      if (d.points.some(p => p > 0)) hasData = true;
+    });
+    
+    if (!hasData) {
+      cardBody.innerHTML = createEmptyStateHTML(emptyMessage, "Load Demo Data", "window.dashboardApp.loadDemoData()");
+      return;
+    }
+    
+    if (!cardBody.querySelector(`#${canvasId}`)) {
+      cardBody.innerHTML = `<canvas class="canvas-chart" id="${canvasId}"></canvas>`;
+    }
+    
+    drawLineChart(canvasId, dates, datasets);
+  }
+
+  // ==========================================
+  // RENDERER: DASHBOARD OVERVIEW
+  // ==========================================
+  function renderDashboard() {
+    // 1. Counter metrics
+    const totalStudents = state.students.length;
+    const totalWebinars = state.webinars.length;
+    const totalHackathons = state.hackathons.length;
+    const totalPitches = state.pitchEvents.length;
+    const totalApplications = state.startupApplications.length;
+    
+    // Total event registrations count
+    const totalRegs = state.registrations.length + state.pitchRegistrations.length;
+
+    document.getElementById('dash-stat-students').innerText = totalStudents.toLocaleString();
+    document.getElementById('dash-stat-webinars').innerText = totalWebinars.toLocaleString();
+    document.getElementById('dash-stat-hackathons').innerText = totalHackathons.toLocaleString();
+    document.getElementById('dash-stat-pitches').innerText = totalPitches.toLocaleString();
+    document.getElementById('dash-stat-applications').innerText = totalApplications.toLocaleString();
+    document.getElementById('dash-stat-registrations').innerText = totalRegs.toLocaleString();
+
+    // 2. Draw Mini Sparklines (Cumulative trends for last 7 days)
+    drawSparkline('sparkline-students', getCumulativeTrend(state.students, 'createdDate'), '#ff2e4b');
+    drawSparkline('sparkline-webinars', getCumulativeTrend(state.webinars, 'startDate'), '#8b5cf6');
+    drawSparkline('sparkline-hackathons', getCumulativeTrend(state.hackathons, 'startDate'), '#3b82f6');
+    drawSparkline('sparkline-pitches', getCumulativeTrend(state.pitchEvents, 'startDate'), '#f59e0b');
+    drawSparkline('sparkline-applications', getCumulativeTrend(state.startupApplications, 'appliedDate'), '#10b981');
+    
+    const combinedRegs = [
+      ...state.registrations,
+      ...state.pitchRegistrations
+    ];
+    drawSparkline('sparkline-registrations', getCumulativeTrend(combinedRegs, 'registrationDate'), '#ff2e4b');
+
+    // 3. Draw Main Line Chart: Registration Analytics
+    const lineChartCardBody = document.getElementById('card-registrations-line-body');
+    const rangeSelect = document.getElementById('dash-line-chart-range');
+    const range = rangeSelect ? rangeSelect.value : 'month';
+    
+    const dates = [];
+    const studentPoints = [];
+    const webinarPoints = [];
+    const hackathonPoints = [];
+    const pitchPoints = [];
+    
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+    
+    const intervals = 7;
+    const daysBack = range === 'week' ? 7 : 30;
+    
+    for (let i = intervals - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - Math.round((i / (intervals - 1)) * daysBack));
+      d.setHours(23, 59, 59, 999);
+      
+      const day = d.getDate();
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      dates.push(`${day} ${months[d.getMonth()]}`);
+      
+      studentPoints.push(state.students.filter(s => new Date(s.createdDate) <= d).length);
+      webinarPoints.push(state.registrations.filter(r => {
+        const ev = state.webinars.find(w => w.id === r.eventId);
+        return ev && new Date(r.registrationDate) <= d;
+      }).length);
+      hackathonPoints.push(state.registrations.filter(r => {
+        const ev = state.hackathons.find(h => h.id === r.eventId);
+        return ev && new Date(r.registrationDate) <= d;
+      }).length);
+      pitchPoints.push(state.pitchRegistrations.filter(pr => new Date(pr.registrationDate) <= d).length);
+    }
+
+    renderLineChartOrEmptyState(lineChartCardBody, 'chart-registrations-line', dates, [
+      { label: 'Students', points: studentPoints, color: '#ff2e4b' },
+      { label: 'Webinars', points: webinarPoints, color: '#8b5cf6' },
+      { label: 'Hackathons', points: hackathonPoints, color: '#3b82f6' },
+      { label: 'Pitch Events', points: pitchPoints, color: '#f59e0b' }
+    ], "No registration data available.");
+
+    // 4. Draw Donut Chart: Registrations by Type
+    const donutCardBody = document.getElementById('card-registrations-donut-body');
+    
+    const webRegsCount = state.registrations.filter(r => state.webinars.some(w => w.id === r.eventId)).length;
+    const hackRegsCount = state.registrations.filter(r => state.hackathons.some(h => h.id === r.eventId)).length;
+    const pitchRegsCount = state.pitchRegistrations.length;
+    
+    const donutTotal = totalStudents + webRegsCount + hackRegsCount + pitchRegsCount + totalApplications;
+    
+    const segments = [
+      { label: 'Students', value: totalStudents, color: '#ff2e4b' },
+      { label: 'Webinars', value: webRegsCount, color: '#8b5cf6' },
+      { label: 'Hackathons', value: hackRegsCount, color: '#3b82f6' },
+      { label: 'Pitch Events', value: pitchRegsCount, color: '#f59e0b' },
+      { label: 'Startup Applications', value: totalApplications, color: '#10b981' }
+    ];
+
+    renderDonutOrEmptyState(
+      donutCardBody, 
+      'chart-registrations-donut', 
+      'donut-total-count', 
+      donutTotal, 
+      segments, 
+      'donut-registrations-legend', 
+      "No registration data available."
+    );
+
+    // 5. Populate Upcoming Events lists by type
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // 5a. Upcoming Webinars
+    const upcomingWebinarsContainer = document.getElementById('dash-upcoming-webinars');
+    if (upcomingWebinarsContainer) {
+      const list = state.webinars
+        .filter(w => new Date(w.startDate) >= today)
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        .slice(0, 4);
+      
+      if (list.length === 0) {
+        upcomingWebinarsContainer.innerHTML = createEmptyStateHTML("No upcoming events available.", "Create Webinar", "window.location.hash = '/admin/webinars/create'");
+      } else {
+        let html = '';
+        list.forEach(w => {
+          const dateStr = formatDate(w.startDate);
+          const regCount = state.registrations.filter(r => r.eventId === w.id).length;
+          html += `
+            <div class="recent-item" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="window.location.hash = '/admin/webinars/' + ${w.id}">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="activity-badge" style="background: rgba(139, 92, 246, 0.05); color: #8b5cf6;">
+                  <i class="fa-solid fa-video"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">${escapeHTML(w.name)}</div>
+                  <div class="activity-desc">${dateStr} &bull; ${formatTime12h(w.startTime)}</div>
+                </div>
+              </div>
+              <span class="event-row-badge" style="font-size:11px; padding:2px 8px; background:rgba(139, 92, 246,0.08); color:#8b5cf6;">${regCount} regs</span>
+            </div>
+          `;
+        });
+        upcomingWebinarsContainer.innerHTML = html;
+      }
+    }
+
+    // 5b. Upcoming Hackathons
+    const upcomingHackathonsContainer = document.getElementById('dash-upcoming-hackathons');
+    if (upcomingHackathonsContainer) {
+      const list = state.hackathons
+        .filter(h => new Date(h.startDate) >= today)
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        .slice(0, 4);
+      
+      if (list.length === 0) {
+        upcomingHackathonsContainer.innerHTML = createEmptyStateHTML("No upcoming events available.", "Create Hackathon", "window.location.hash = '/admin/hackathons/create'");
+      } else {
+        let html = '';
+        list.forEach(h => {
+          const dateStr = formatDate(h.startDate);
+          const regCount = state.registrations.filter(r => r.eventId === h.id).length;
+          html += `
+            <div class="recent-item" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="window.location.hash = '/admin/hackathons/' + ${h.id}">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="activity-badge" style="background: rgba(59, 130, 246, 0.05); color: #3b82f6;">
+                  <i class="fa-solid fa-code"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">${escapeHTML(h.name)}</div>
+                  <div class="activity-desc">${dateStr} &bull; ${escapeHTML(h.participation)}</div>
+                </div>
+              </div>
+              <span class="event-row-badge" style="font-size:11px; padding:2px 8px; background:rgba(59, 130, 246,0.08); color:#3b82f6;">${regCount} regs</span>
+            </div>
+          `;
+        });
+        upcomingHackathonsContainer.innerHTML = html;
+      }
+    }
+
+    // 5c. Upcoming Pitch Events
+    const upcomingPitchesContainer = document.getElementById('dash-upcoming-pitch-events');
+    if (upcomingPitchesContainer) {
+      const list = state.pitchEvents
+        .filter(p => new Date(p.startDate) >= today)
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+        .slice(0, 4);
+      
+      if (list.length === 0) {
+        upcomingPitchesContainer.innerHTML = createEmptyStateHTML("No upcoming events available.", "Create Pitch Event", "window.location.hash = '/admin/pitch-events/create'");
+      } else {
+        let html = '';
+        list.forEach(p => {
+          const dateStr = formatDate(p.startDate);
+          const regCount = state.pitchRegistrations.filter(pr => pr.eventId === p.id).length;
+          html += `
+            <div class="recent-item" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="window.location.hash = '/admin/pitch-events'">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="activity-badge" style="background: rgba(245, 158, 11, 0.05); color: #f59e0b;">
+                  <i class="fa-solid fa-microphone"></i>
+                </div>
+                <div class="activity-content">
+                  <div class="activity-title">${escapeHTML(p.name)}</div>
+                  <div class="activity-desc">${dateStr} &bull; ${formatTime12h(p.startTime)}</div>
+                </div>
+              </div>
+              <span class="event-row-badge" style="font-size:11px; padding:2px 8px; background:rgba(245, 158, 11,0.08); color:#f59e0b;">${regCount} regs</span>
+            </div>
+          `;
+        });
+        upcomingPitchesContainer.innerHTML = html;
+      }
+    }
+
+    // 6. Populate Recent Applications
+    const appsContainer = document.getElementById('dash-recent-applications');
+    const recentApps = [...state.startupApplications]
+      .sort((a, b) => new Date(b.createdDate || b.appliedDate) - new Date(a.createdDate || a.appliedDate))
+      .slice(0, 4);
+
+    if (recentApps.length === 0) {
+      appsContainer.innerHTML = createEmptyStateHTML("No startup applications available.", "Load Demo Data", "window.dashboardApp.loadDemoData()");
+    } else {
+      let appsHTML = '';
+      recentApps.forEach(app => {
+        const badgeClass = app.status === 'Approved' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+        appsHTML += `
+          <div class="recent-item" style="cursor:pointer;" onclick="window.dashboardApp.viewStartupApplication(${app.id})">
+            <div class="activity-badge" style="background: rgba(16, 185, 129, 0.05); color: var(--accent-green);">
+              <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">${escapeHTML(app.startupName)}</div>
+              <div class="activity-desc">Founder: ${escapeHTML(app.founderName)} &bull; ${escapeHTML(app.industry)} &bull; Date: ${escapeHTML(app.appliedDate || app.createdDate)}</div>
+            </div>
+            <span class="${badgeClass}" style="font-size:10px; padding:2px 6px;">${app.status}</span>
+          </div>
+        `;
+      });
+      appsContainer.innerHTML = appsHTML;
+    }
+
+    // 7. Recent registrations list
+    const regsContainer = document.getElementById('dash-recent-registrations-list');
+    const allRegs = [
+      ...state.registrations.map(r => ({ ...r, regType: 'event' })),
+      ...state.pitchRegistrations.map(pr => ({ ...pr, regType: 'pitch' }))
+    ];
+
+    const sortedRegs = allRegs
+      .sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate))
+      .slice(0, 4);
+
+    if (sortedRegs.length === 0) {
+      regsContainer.innerHTML = createEmptyStateHTML("No student registrations available.", "Load Demo Data", "window.dashboardApp.loadDemoData()");
+    } else {
+      let regsHTML = '';
+      sortedRegs.forEach(reg => {
+        const student = state.students.find(s => s.id === reg.studentId);
+        if (student) {
+          const dateStr = formatDate(reg.registrationDate.split('T')[0]);
+          regsHTML += `
+            <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/students'">
+              <div class="activity-badge" style="background: rgba(255, 255, 255, 0.04); color: var(--text-secondary);">
+                <i class="fa-solid fa-user-graduate"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">${escapeHTML(student.name)}</div>
+                <div class="activity-desc">${escapeHTML(student.college)} &bull; ${dateStr}</div>
+              </div>
+              <span class="event-row-badge" style="font-size:10px; padding:2px 6px; background: rgba(255, 46, 75, 0.05); color: var(--accent-red); border: 1px solid rgba(255, 46, 75, 0.15);">${student.id}</span>
+            </div>
+          `;
+        }
+      });
+      regsContainer.innerHTML = regsHTML;
+    }
+  }
+
+  // ==========================================
+  // RENDERER: WEBINARS MANAGEMENT
+  // ==========================================
+  function renderWebinarsGrid() {
+    const grid = document.getElementById('webinars-cards-grid');
+    let list = [...state.webinars];
+
+    // Filters
+    if (webinarsFilter.search) {
+      list = list.filter(w => w.name.toLowerCase().includes(webinarsFilter.search));
+    }
+    if (webinarsFilter.mode) {
+      list = list.filter(w => w.mode === webinarsFilter.mode);
+    }
+
+    // Sort descending by date
+    list.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; display:flex; justify-content:center; padding: 40px 0;">
+          <div class="table-empty-state">
+            <i class="fa-solid fa-video-slash" style="font-size:36px; color:var(--text-muted); margin-bottom:12px;"></i>
+            <h3>No webinars found</h3>
+            <p>Modify search keywords or click "+ Create Webinar" to launch one.</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('webinars-pagination-info').innerText = 'Showing 0 to 0 of 0 webinars';
+      document.getElementById('webinars-pagination-controls').innerHTML = '';
       return;
     }
 
     // Pagination
-    const totalEvents = filteredEvents.length;
-    const totalPages = Math.ceil(totalEvents / eventsPagination.limit);
-    if (eventsPagination.page > totalPages) eventsPagination.page = totalPages || 1;
+    const total = list.length;
+    const pages = Math.ceil(total / pagWebinars.limit);
+    if (pagWebinars.page > pages) pagWebinars.page = pages || 1;
 
-    const startIdx = (eventsPagination.page - 1) * eventsPagination.limit;
-    const paginatedEvents = filteredEvents.slice(startIdx, startIdx + eventsPagination.limit);
+    const start = (pagWebinars.page - 1) * pagWebinars.limit;
+    const pagList = list.slice(start, start + pagWebinars.limit);
 
     let html = '';
-    paginatedEvents.forEach(event => {
-      const activeClass = selectedEventId === event.id ? 'active' : '';
-      const dateFormatted = formatDate(event.date);
-      const isWebinar = event.type === 'webinar';
-      const badgeText = isWebinar ? 'Webinar' : 'Hackathon';
-      const badgeClass = isWebinar ? 'badge-webinar' : 'badge-hackathon';
+    pagList.forEach(web => {
+      const dateFormatted = formatDate(web.startDate);
+      const regsCount = state.registrations.filter(r => r.eventId === web.id).length;
       
-      // Conducted logo image fallback
-      const conductLogoHTML = event.companyLogo 
-        ? `<img src="${event.companyLogo}" alt="${escapeHTML(event.conductedBy)} logo">`
-        : `<div style="width:14px; height:14px; border-radius:50%; background:var(--accent-red); display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff;">${event.conductedBy.charAt(0).toUpperCase()}</div>`;
-
-      // Event Banner fallback
-      let bannerHTML = '';
-      if (event.bannerImage) {
-        bannerHTML = `<img src="${event.bannerImage}" alt="${escapeHTML(event.name)} banner">`;
-      } else {
-        const gradColor = isWebinar ? 'linear-gradient(135deg, #ff2e4b 0%, #05070c 100%)' : 'linear-gradient(135deg, #e0243d 0%, #131824 100%)';
-        bannerHTML = `
-          <div class="event-row-banner" style="background: ${gradColor}">
-            <div class="event-row-banner-text">${escapeHTML(event.name)}</div>
-          </div>
-        `;
-      }
+      const posterHTML = web.posterBanner
+        ? `<img src="${web.posterBanner}" alt="webinar banner">`
+        : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(255,46,75,0.2) 0%, rgba(139,92,246,0.2) 100%); font-size:18px; font-weight:700;">${escapeHTML(web.name)}</div>`;
 
       html += `
-        <div class="event-row-card ${activeClass}" data-id="${event.id}">
-          <div class="event-row-banner">
-            ${bannerHTML}
+        <div class="startup-card" style="gap:10px;">
+          <div style="height:120px; border-radius:var(--radius-md); overflow:hidden; background:var(--bg-primary);">
+            ${posterHTML}
           </div>
-          <div class="event-row-info">
-            <div class="event-row-title">${escapeHTML(event.name)}</div>
-            <div class="event-row-conducted">
-              ${conductLogoHTML}
-              <span>${escapeHTML(event.conductedBy)}</span>
-            </div>
-            <div class="event-row-meta">
-              <span><i class="fa-regular fa-calendar"></i> ${dateFormatted}</span>
-              <span><i class="fa-regular fa-clock"></i> ${formatTime12h(event.startTime)}</span>
-            </div>
-            <span class="event-row-badge ${badgeClass}">${badgeText}</span>
+          <div style="margin-top: 4px;">
+            <div class="startup-card-title">${escapeHTML(web.name)}</div>
+            <div class="startup-card-subtitle" style="font-weight:600; color:var(--accent-red); margin-top:2px;">${escapeHTML(web.overview)}</div>
           </div>
-          <div class="event-row-caret">
-            <i class="fa-solid fa-chevron-right"></i>
+          
+          <div class="startup-one-liner" style="font-size:12px; margin-top:4px; max-height:40px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+            ${escapeHTML(web.description)}
+          </div>
+          
+          <div class="startup-stats-row" style="margin-top:10px;">
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Date</span>
+              <span class="startup-stat-value">${dateFormatted}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Mode</span>
+              <span class="startup-stat-value"><i class="fa-solid fa-globe" style="font-size:10px; margin-right:4px;"></i>${web.mode}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Registrations</span>
+              <span class="startup-stat-value">${regsCount}</span>
+            </div>
+          </div>
+          
+          <div class="startup-card-actions">
+            <button class="btn-outline-gray" style="flex:1; padding:8px 12px; font-size:12px;" onclick="window.dashboardApp.viewWebinarDetails(${web.id})">View Details</button>
+            <button class="btn-action-check" onclick="window.dashboardApp.openEditWebinarModal(${web.id})"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button class="btn-action-cross" onclick="window.dashboardApp.deleteWebinar(${web.id})"><i class="fa-regular fa-trash-can"></i></button>
           </div>
         </div>
       `;
     });
+    grid.innerHTML = html;
 
-    container.innerHTML = html;
-
-    // Bind click handlers to cards
-    container.querySelectorAll('.event-row-card').forEach(card => {
-      card.addEventListener('click', () => {
-        selectedEventId = parseInt(card.getAttribute('data-id'));
-        
-        // Mobile layout: slide-in active panel
-        document.getElementById('event-details-pane').classList.add('active-mobile');
-        
-        renderEventsList();
-        renderEventDetails();
-      });
-    });
-
-    // Render list pagination controls
-    renderPaginationControls('events-list-pagination', totalPages, eventsPagination, (newPage) => {
-      eventsPagination.page = newPage;
-      renderEventsList();
+    // Pagination info
+    const end = Math.min(start + pagWebinars.limit, total);
+    document.getElementById('webinars-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} webinars`;
+    renderPaginationControls('webinars-pagination-controls', pages, pagWebinars, (p) => {
+      pagWebinars.page = p;
+      renderWebinarsGrid();
     });
   }
 
-  // 3. Event Details Renderer (Right panel)
-  function renderEventDetails() {
-    const emptyView = document.getElementById('details-empty-view');
-    const contentView = document.getElementById('details-content-view');
+  // ==========================================
+  // WEBINAR DETAILS VIEW
+  // ==========================================
+  function viewWebinarDetails(id) {
+    window.location.hash = "/admin/webinars/" + id;
+  }
 
-    if (!selectedEventId) {
-      emptyView.style.display = 'flex';
-      contentView.style.display = 'none';
+  function renderWebinarDetailsPane() {
+    const pane = document.getElementById('webinar-details-view');
+    const web = state.webinars.find(w => w.id === selectedWebinarId);
+    
+    if (!web) {
+      pane.innerHTML = `<div class="table-empty-state"><i class="fa-solid fa-inbox"></i><p>Webinar details not found.</p></div>`;
       return;
     }
 
-    const event = state.events.find(e => e.id === selectedEventId);
-    if (!event) {
-      selectedEventId = null;
-      emptyView.style.display = 'flex';
-      contentView.style.display = 'none';
-      return;
-    }
+    const regCount = state.registrations.filter(r => r.eventId === web.id).length;
+    const posterHTML = web.posterBanner 
+      ? `<img src="${web.posterBanner}" style="width:100%; height:100%; object-fit:cover;" alt="webinar poster">`
+      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #ff2e4b 0%, #0b0f19 100%); font-size:24px; font-weight:700;">${escapeHTML(web.name)}</div>`;
 
-    emptyView.style.display = 'none';
-    contentView.style.display = 'block';
+    pane.innerHTML = `
+      <header class="view-header">
+        <div class="header-title-block">
+          <a href="#" class="back-to-events-btn" onclick="window.dashboardApp.switchTab('webinars-list'); return false;" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Webinars List
+          </a>
+          <h1 style="font-size:24px; font-weight:800;">${escapeHTML(web.name)}</h1>
+          <p>${escapeHTML(web.overview)}</p>
+        </div>
+        <div class="header-actions" style="display:flex; gap:10px;">
+          <button class="btn-outline-gray" onclick="window.dashboardApp.openEditWebinarModal(${web.id})"><i class="fa-regular fa-pen-to-square"></i> Edit Webinar</button>
+          <button class="btn-solid-red" style="background-color:var(--accent-red-hover);" onclick="window.dashboardApp.deleteWebinar(${web.id})"><i class="fa-regular fa-trash-can"></i> Delete</button>
+        </div>
+      </header>
+      
+      <!-- Specs details Grid -->
+      <div class="dashboard-panel-box" style="margin-bottom:24px; padding:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="width:220px; height:140px; border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; background:var(--bg-primary);">
+            ${posterHTML}
+          </div>
+          
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:12px; min-width:300px;">
+            <div class="details-specs-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+              <div class="spec-item">
+                <span class="spec-label">Conducted Date</span>
+                <span class="spec-value"><i class="fa-regular fa-calendar" style="color:var(--accent-red); margin-right:6px;"></i>${formatDate(web.startDate)} to ${formatDate(web.endDate)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Session Hours</span>
+                <span class="spec-value"><i class="fa-regular fa-clock" style="color:var(--accent-red); margin-right:6px;"></i>${formatTime12h(web.startTime)} - ${formatTime12h(web.endTime)} (${web.timezone})</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Platform / Mode</span>
+                <span class="spec-value"><span class="event-row-badge badge-webinar" style="margin-right:6px;">${web.mode}</span>${escapeHTML(web.venue)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Registrations Count</span>
+                <span class="spec-value" style="font-weight:700; color:#fff;"><i class="fa-solid fa-users" style="color:var(--accent-red); margin-right:6px;"></i>${regCount} Students</span>
+              </div>
+            </div>
+            
+            <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:8px;">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Webinar Description</h4>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">${escapeHTML(web.description)}</p>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:12px; border-radius:var(--radius-sm);">
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Coordinator:</span> <strong style="color:#fff;">${escapeHTML(web.contactName)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Mobile:</span> <strong style="color:#fff;">${escapeHTML(web.contactPhone)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Email:</span> <strong style="color:#fff;">${escapeHTML(web.contactEmail)}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Nested Registrations List -->
+      <div class="table-section">
+        <div class="table-header-flex">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="table-section-title">Registered Students</span>
+            <button class="btn-solid-red" style="padding:6px 12px; font-size:11px;" onclick="window.dashboardApp.openAddStudentToEventModal('webinar', ${web.id})">
+              <i class="fa-solid fa-user-plus"></i> Register Student
+            </button>
+          </div>
+          
+          <div class="table-search-box">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="details-students-search" placeholder="Search student name or email...">
+            </div>
+            
+            <div class="dropdown-action-container" id="details-students-export-container">
+              <button class="btn-export" id="details-students-export-btn">
+                <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+              </button>
+              <div class="export-popover-menu" id="details-students-export-menu">
+                <div class="export-popover-item" onclick="window.dashboardApp.exportWebinarDetailsCSV('Registrations')"><i class="fa-solid fa-users"></i> Export Registrations</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportWebinarDetailsCSV('Details')"><i class="fa-solid fa-user-graduate"></i> Export Student Details</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportWebinarDetailsCSV('Complete')"><i class="fa-solid fa-database"></i> Export Complete Webinar Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Registration ID</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>College</th>
+                <th>Branch</th>
+                <th>Year</th>
+                <th>Registration Date</th>
+              </tr>
+            </thead>
+            <tbody id="details-students-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-pagination-footer">
+          <span class="pagination-info" id="details-students-pagination-info">Showing 0 to 0 of 0 students</span>
+          <div class="pagination-controls">
+            <div class="page-selector-wrapper">
+              <select class="page-size-select" id="details-students-page-size">
+                <option value="5">5 / page</option>
+                <option value="10" selected>10 / page</option>
+                <option value="25">25 / page</option>
+              </select>
+            </div>
+            <div class="events-pagination" id="details-students-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+          </div>
+        </div>
+      </div>
+    `;
 
-    // Populate metadata fields
-    document.getElementById('details-name').innerText = event.name;
+    // Re-bind popover toggle to details export
+    bindPopoverToggle('details-students-export-btn', 'details-students-export-menu');
     
-    // Event type badge tag
-    const typeBadge = document.getElementById('details-type-tag');
-    if (event.type === 'webinar') {
-      typeBadge.innerHTML = `<span class="event-row-badge badge-webinar">Webinar</span>`;
-    } else {
-      typeBadge.innerHTML = `<span class="event-row-badge badge-hackathon">Hackathon</span>`;
-    }
+    // Bind search and size select inputs
+    const detSearch = document.getElementById('details-students-search');
+    detSearch.value = detailsStudentsSearch;
+    detSearch.addEventListener('input', (e) => {
+      detailsStudentsSearch = e.target.value.toLowerCase();
+      pagDetailsStudents.page = 1;
+      renderWebinarDetailsStudents();
+    });
 
-    // Conducted by with Logo
-    const conductedBlock = document.getElementById('details-conducted');
-    if (event.companyLogo) {
-      conductedBlock.innerHTML = `<img src="${event.companyLogo}" class="company-logo-spec" alt="Company Logo"> ${escapeHTML(event.conductedBy)}`;
-    } else {
-      conductedBlock.innerText = event.conductedBy;
-    }
+    const detSize = document.getElementById('details-students-page-size');
+    detSize.value = pagDetailsStudents.limit;
+    detSize.addEventListener('change', (e) => {
+      pagDetailsStudents.limit = parseInt(e.target.value);
+      pagDetailsStudents.page = 1;
+      renderWebinarDetailsStudents();
+    });
 
-    document.getElementById('details-date').innerText = formatDate(event.date);
-    document.getElementById('details-time').innerText = `${formatTime12h(event.startTime)} - ${formatTime12h(event.endTime)}`;
-    document.getElementById('details-mode').innerText = `${event.mode} (${event.venue})`;
-    document.getElementById('details-eligibility').innerText = `${event.eligibleYears} (Branches: ${event.branchesAllowed}${event.minCgpa ? `, CGPA ≥ ${event.minCgpa}` : ''})`;
+    renderWebinarDetailsStudents();
+  }
+
+  function renderWebinarDetailsStudents() {
+    const tbody = document.getElementById('details-students-tbody');
+    const web = state.webinars.find(w => w.id === selectedWebinarId);
+    if (!web) return;
+
+    // Filter registrations
+    let regs = state.registrations.filter(r => r.eventId === web.id);
+    let rows = [];
     
-    // Team mode details
-    let teamText = event.participation;
-    if (event.participation === 'Team' && event.minTeamSize && event.maxTeamSize) {
-      teamText += ` (Size: ${event.minTeamSize}-${event.maxTeamSize} students)`;
-    }
-    document.getElementById('details-participation').innerText = teamText;
-    document.getElementById('details-reg-start').innerText = formatDate(event.regStartDate);
-    document.getElementById('details-reg-end').innerText = formatDate(event.regEndDate);
-    document.getElementById('details-venue').innerText = event.venue;
-    document.getElementById('details-description').innerText = event.description;
-
-    // Load Banner image
-    const bannerBox = document.getElementById('details-banner');
-    if (event.bannerImage) {
-      bannerBox.innerHTML = `<img src="${event.bannerImage}" alt="Event Banner">`;
-    } else {
-      const gradColor = event.type === 'webinar' ? 'linear-gradient(135deg, #ff2e4b 0%, #05070c 100%)' : 'linear-gradient(135deg, #e0243d 0%, #131824 100%)';
-      bannerBox.style.background = gradColor;
-      bannerBox.innerHTML = `<div class="details-banner-text">${escapeHTML(event.name)}</div>`;
-    }
-
-    // Calculate details metric counters
-    const regStudents = getRegisteredStudentsForEvent(event.id);
-    document.getElementById('event-stat-registrations').innerText = regStudents.length;
-
-    // Registered yesterday
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const registeredYesterday = regStudents.filter(s => {
-      const regObj = state.registrations.find(r => r.studentId === s.id && r.eventId === event.id);
-      if (regObj) {
-        const regDate = new Date(regObj.registrationDate);
-        return regDate.toDateString() === yesterday.toDateString();
+    regs.forEach(reg => {
+      const stud = state.students.find(s => s.id === reg.studentId);
+      if (stud) {
+        rows.push({ reg, stud });
       }
-      return false;
-    }).length;
-    document.getElementById('event-stat-yesterday').innerText = registeredYesterday;
+    });
 
-    // Time left countdown
-    const regEnd = new Date(event.regEndDate);
-    const currentDate = new Date();
-    const msDiff = regEnd - currentDate;
-    const daysLeft = Math.ceil(msDiff / (1000 * 60 * 60 * 24));
-    
-    const closedBox = document.getElementById('event-stat-countdown');
-    if (daysLeft < 0) {
-      closedBox.innerText = '- (Closed)';
-      closedBox.style.color = 'var(--text-muted)';
-    } else if (daysLeft === 0) {
-      closedBox.innerText = 'Today';
-      closedBox.style.color = 'var(--accent-red)';
-    } else {
-      closedBox.innerText = `${daysLeft} Day${daysLeft > 1 ? 's' : ''}`;
-      closedBox.style.color = 'var(--text-primary)';
-    }
-
-    // Event status (Upcoming, Ongoing, Completed)
-    const eventStatusVal = document.getElementById('event-stat-status');
-    const eventStatusIcon = document.getElementById('event-stat-status-icon');
-    const eventDate = new Date(event.date);
-
-    // Remove classes
-    eventStatusVal.style.color = '';
-    eventStatusIcon.className = 'detail-metric-icon';
-
-    if (currentDate.toDateString() === eventDate.toDateString()) {
-      eventStatusVal.innerText = 'Ongoing';
-      eventStatusVal.style.color = 'var(--accent-blue)';
-      eventStatusIcon.classList.add('blue');
-      eventStatusIcon.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-    } else if (currentDate > eventDate) {
-      eventStatusVal.innerText = 'Completed';
-      eventStatusVal.style.color = 'var(--text-muted)';
-      eventStatusIcon.classList.add('green');
-      eventStatusIcon.innerHTML = `<i class="fa-regular fa-circle-check"></i>`;
-    } else {
-      eventStatusVal.innerText = 'Upcoming';
-      eventStatusVal.style.color = 'var(--accent-green)';
-      eventStatusIcon.classList.add('green');
-      eventStatusIcon.innerHTML = `<i class="fa-regular fa-calendar-check"></i>`;
-    }
-
-    // Render Registered Students list for this event
-    renderEventStudents();
-  }
-
-  // Registered students table list rendering (nested inside Event Details)
-  function renderEventStudents() {
-    const tbody = document.getElementById('event-students-tbody');
-    let regStudents = getRegisteredStudentsForEvent(selectedEventId);
-
-    // Apply search filter
-    if (eventStudentsSearch) {
-      regStudents = regStudents.filter(s => 
-        s.name.toLowerCase().includes(eventStudentsSearch) || 
-        s.email.toLowerCase().includes(eventStudentsSearch)
+    if (detailsStudentsSearch) {
+      rows = rows.filter(item => 
+        item.stud.name.toLowerCase().includes(detailsStudentsSearch) ||
+        item.stud.email.toLowerCase().includes(detailsStudentsSearch)
       );
     }
 
-    if (regStudents.length === 0) {
+    if (rows.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center">
+          <td colspan="9" class="text-center">
             <div class="table-empty-state">
               <i class="fa-solid fa-users-slash"></i>
-              <p>No registered students match criteria</p>
+              <p>No registered students found.</p>
             </div>
           </td>
         </tr>
       `;
-      document.getElementById('event-students-pagination-info').innerText = 'Showing 0 to 0 of 0 students';
-      document.getElementById('event-students-pagination-controls').innerHTML = '';
+      document.getElementById('details-students-pagination-info').innerText = 'Showing 0 to 0 of 0 students';
+      document.getElementById('details-students-pagination-controls').innerHTML = '';
       return;
     }
 
-    // Sort registrations by registration date descending
-    regStudents.sort((a, b) => {
-      const regA = state.registrations.find(r => r.studentId === a.id && r.eventId === selectedEventId);
-      const regB = state.registrations.find(r => r.studentId === b.id && r.eventId === selectedEventId);
-      return new Date(regB.registrationDate) - new Date(regA.registrationDate);
-    });
+    // Sort descending by registration date
+    rows.sort((a, b) => new Date(b.reg.registrationDate) - new Date(a.reg.registrationDate));
 
     // Pagination
-    const totalStudents = regStudents.length;
-    const totalPages = Math.ceil(totalStudents / eventStudentsPagination.limit);
-    if (eventStudentsPagination.page > totalPages) eventStudentsPagination.page = totalPages || 1;
+    const total = rows.length;
+    const pages = Math.ceil(total / pagDetailsStudents.limit);
+    if (pagDetailsStudents.page > pages) pagDetailsStudents.page = pages || 1;
 
-    const startIdx = (eventStudentsPagination.page - 1) * eventStudentsPagination.limit;
-    const paginatedStudents = regStudents.slice(startIdx, startIdx + eventStudentsPagination.limit);
+    const start = (pagDetailsStudents.page - 1) * pagDetailsStudents.limit;
+    const pagRows = rows.slice(start, start + pagDetailsStudents.limit);
 
     let html = '';
-    paginatedStudents.forEach((student, index) => {
-      const regObj = state.registrations.find(r => r.studentId === student.id && r.eventId === selectedEventId);
-      const regId = regObj ? regObj.id : `REG-${student.id}`;
-      const regDate = regObj ? formatDate(regObj.registrationDate) : '-';
-
+    pagRows.forEach(item => {
+      const rDate = formatDate(item.reg.registrationDate);
       html += `
         <tr>
-          <td class="row-id">${regId}</td>
-          <td style="font-weight:700;">${escapeHTML(student.name)}</td>
-          <td>${escapeHTML(student.email)}</td>
-          <td>${escapeHTML(student.college)}</td>
-          <td>${escapeHTML(student.phone)}</td>
-          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i> ${regDate}</td>
+          <td class="row-id">${escapeHTML(item.reg.id)}</td>
+          <td>${escapeHTML(item.stud.id)}</td>
+          <td style="font-weight:700;">${escapeHTML(item.stud.name)}</td>
+          <td>${escapeHTML(item.stud.email)}</td>
+          <td>${escapeHTML(item.stud.phone)}</td>
+          <td>${escapeHTML(item.stud.college)}</td>
+          <td>${escapeHTML(item.stud.branch)}</td>
+          <td>${item.stud.year} Year</td>
+          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i>${rDate}</td>
         </tr>
       `;
     });
-
     tbody.innerHTML = html;
 
-    // Update pagination stats
-    const endIdx = Math.min(startIdx + eventStudentsPagination.limit, totalStudents);
-    document.getElementById('event-students-pagination-info').innerText = `Showing ${startIdx + 1} to ${endIdx} of ${totalStudents} students`;
-
-    // Render pagination controls
-    renderPaginationControls('event-students-pagination-controls', totalPages, eventStudentsPagination, (newPage) => {
-      eventStudentsPagination.page = newPage;
-      renderEventStudents();
+    const end = Math.min(start + pagDetailsStudents.limit, total);
+    document.getElementById('details-students-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} students`;
+    renderPaginationControls('details-students-pagination-controls', pages, pagDetailsStudents, (p) => {
+      pagDetailsStudents.page = p;
+      renderWebinarDetailsStudents();
     });
   }
 
-  // Helper: Get registered student accounts for a specific event
-  function getRegisteredStudentsForEvent(eventId) {
-    const studentIds = state.registrations
-      .filter(r => r.eventId === eventId)
-      .map(r => r.studentId);
-    
-    return state.students.filter(s => studentIds.includes(s.id));
+  // ==========================================
+  // RENDERER: HACKATHONS MANAGEMENT
+  // ==========================================
+  function renderHackathonsGrid() {
+    const grid = document.getElementById('hackathons-cards-grid');
+    let list = [...state.hackathons];
+
+    // Filters
+    if (hackathonsFilter.search) {
+      list = list.filter(h => h.name.toLowerCase().includes(hackathonsFilter.search));
+    }
+    if (hackathonsFilter.participation) {
+      list = list.filter(h => h.participation === hackathonsFilter.participation);
+    }
+
+    list.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; display:flex; justify-content:center; padding: 40px 0;">
+          <div class="table-empty-state">
+            <i class="fa-solid fa-code-compare" style="font-size:36px; color:var(--text-muted); margin-bottom:12px;"></i>
+            <h3>No hackathons found</h3>
+            <p>Modify search filters or click "+ Create Hackathon" to schedule.</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('hackathons-pagination-info').innerText = 'Showing 0 to 0 of 0 hackathons';
+      document.getElementById('hackathons-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagHackathons.limit);
+    if (pagHackathons.page > pages) pagHackathons.page = pages || 1;
+
+    const start = (pagHackathons.page - 1) * pagHackathons.limit;
+    const pagList = list.slice(start, start + pagHackathons.limit);
+
+    let html = '';
+    pagList.forEach(hack => {
+      const dateFormatted = formatDate(hack.startDate);
+      const regsCount = state.registrations.filter(r => r.eventId === hack.id).length;
+      
+      const posterHTML = hack.posterBanner
+        ? `<img src="${hack.posterBanner}" alt="hackathon banner">`
+        : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(8,128,239,0.2) 0%, rgba(255,46,75,0.2) 100%); font-size:18px; font-weight:700;">${escapeHTML(hack.name)}</div>`;
+
+      html += `
+        <div class="startup-card" style="gap:10px;">
+          <div style="height:120px; border-radius:var(--radius-md); overflow:hidden; background:var(--bg-primary);">
+            ${posterHTML}
+          </div>
+          <div style="margin-top: 4px;">
+            <div class="startup-card-title">${escapeHTML(hack.name)}</div>
+            <div class="startup-card-subtitle" style="font-weight:600; color:var(--accent-red); margin-top:2px;">Conducted by: ${escapeHTML(hack.conductedBy)}</div>
+          </div>
+          
+          <div class="startup-one-liner" style="font-size:12px; margin-top:4px; max-height:40px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+            ${escapeHTML(hack.description)}
+          </div>
+          
+          <div class="startup-stats-row" style="margin-top:10px;">
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Format</span>
+              <span class="startup-stat-value">${hack.participation} (${hack.minTeamSize}-${hack.maxTeamSize} size)</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Start Date</span>
+              <span class="startup-stat-value">${dateFormatted}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Registrations</span>
+              <span class="startup-stat-value">${regsCount}</span>
+            </div>
+          </div>
+          
+          <div class="startup-card-actions">
+            <button class="btn-outline-gray" style="flex:1; padding:8px 12px; font-size:12px;" onclick="window.dashboardApp.viewHackathonDetails(${hack.id})">View Details</button>
+            <button class="btn-action-check" onclick="window.dashboardApp.openEditHackathonModal(${hack.id})"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button class="btn-action-cross" onclick="window.dashboardApp.deleteHackathon(${hack.id})"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        </div>
+      `;
+    });
+    grid.innerHTML = html;
+
+    const end = Math.min(start + pagHackathons.limit, total);
+    document.getElementById('hackathons-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} hackathons`;
+    renderPaginationControls('hackathons-pagination-controls', pages, pagHackathons, (p) => {
+      pagHackathons.page = p;
+      renderHackathonsGrid();
+    });
   }
 
-  // 4. Students View Renderer (Global Student Sign-up Data)
-  function renderGlobalStudents() {
-    const tbody = document.getElementById('global-students-tbody');
+  // ==========================================
+  // HACKATHON DETAILS VIEW
+  // ==========================================
+  function viewHackathonDetails(id) {
+    window.location.hash = "/admin/hackathons/" + id;
+  }
+
+  function renderHackathonDetailsPane() {
+    const pane = document.getElementById('hackathon-details-view');
+    const hack = state.hackathons.find(h => h.id === selectedHackathonId);
+    
+    if (!hack) {
+      pane.innerHTML = `<div class="table-empty-state"><i class="fa-solid fa-inbox"></i><p>Hackathon details not found.</p></div>`;
+      return;
+    }
+
+    const regCount = state.registrations.filter(r => r.eventId === hack.id).length;
+    const posterHTML = hack.posterBanner 
+      ? `<img src="${hack.posterBanner}" style="width:100%; height:100%; object-fit:cover;" alt="hackathon banner">`
+      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #ff2e4b 0%, #0b0f19 100%); font-size:24px; font-weight:700;">${escapeHTML(hack.name)}</div>`;
+
+    pane.innerHTML = `
+      <header class="view-header">
+        <div class="header-title-block">
+          <a href="#" class="back-to-events-btn" onclick="window.dashboardApp.switchTab('hackathons-list'); return false;" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Hackathons List
+          </a>
+          <h1 style="font-size:24px; font-weight:800;">${escapeHTML(hack.name)}</h1>
+          <p>Conducted by: <strong>${escapeHTML(hack.conductedBy)}</strong></p>
+        </div>
+        <div class="header-actions" style="display:flex; gap:10px;">
+          <button class="btn-outline-gray" onclick="window.dashboardApp.openEditHackathonModal(${hack.id})"><i class="fa-regular fa-pen-to-square"></i> Edit Details</button>
+          <button class="btn-solid-red" style="background-color:var(--accent-red-hover);" onclick="window.dashboardApp.deleteHackathon(${hack.id})"><i class="fa-regular fa-trash-can"></i> Delete</button>
+        </div>
+      </header>
+      
+      <!-- Specs details Grid -->
+      <div class="dashboard-panel-box" style="margin-bottom:24px; padding:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="width:220px; height:140px; border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; background:var(--bg-primary);">
+            ${posterHTML}
+          </div>
+          
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:12px; min-width:300px;">
+            <div class="details-specs-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+              <div class="spec-item">
+                <span class="spec-label">Timeline Duration</span>
+                <span class="spec-value"><i class="fa-regular fa-calendar" style="color:var(--accent-red); margin-right:6px;"></i>${formatDate(hack.startDate)} to ${formatDate(hack.endDate)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Daily Hours</span>
+                <span class="spec-value"><i class="fa-regular fa-clock" style="color:var(--accent-red); margin-right:6px;"></i>${formatTime12h(hack.startTime)} - ${formatTime12h(hack.endTime)} (${hack.timezone})</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Platform / Mode</span>
+                <span class="spec-value"><span class="event-row-badge badge-hackathon" style="margin-right:6px;">${hack.mode}</span>${escapeHTML(hack.venue)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Eligibility / Certificates</span>
+                <span class="spec-value"><i class="fa-solid fa-award" style="color:var(--accent-red); margin-right:6px;"></i>Certificates: ${hack.certificateAvailable}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Format size</span>
+                <span class="spec-value"><i class="fa-solid fa-users" style="color:var(--accent-red); margin-right:6px;"></i>${hack.participation} (Min: ${hack.minTeamSize}, Max: ${hack.maxTeamSize})</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Registrations Count</span>
+                <span class="spec-value" style="font-weight:700; color:#fff;"><i class="fa-solid fa-users" style="color:var(--accent-red); margin-right:6px;"></i>${regCount} Enrolled</span>
+              </div>
+            </div>
+            
+            <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:8px;">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Hackathon Description & Rules</h4>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">${escapeHTML(hack.description)}</p>
+            </div>
+            
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:12px; border-radius:var(--radius-sm);">
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Coordinator:</span> <strong style="color:#fff;">${escapeHTML(hack.contactName)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Mobile:</span> <strong style="color:#fff;">${escapeHTML(hack.contactPhone)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Email:</span> <strong style="color:#fff;">${escapeHTML(hack.contactEmail)}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Nested Registrations List -->
+      <div class="table-section">
+        <div class="table-header-flex">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="table-section-title">Registered Students</span>
+            <button class="btn-solid-red" style="padding:6px 12px; font-size:11px;" onclick="window.dashboardApp.openAddStudentToEventModal('hackathon', ${hack.id})">
+              <i class="fa-solid fa-user-plus"></i> Register Student
+            </button>
+          </div>
+          
+          <div class="table-search-box">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="details-students-search" placeholder="Search student name or email...">
+            </div>
+            
+            <div class="dropdown-action-container" id="details-students-export-container">
+              <button class="btn-export" id="details-students-export-btn">
+                <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+              </button>
+              <div class="export-popover-menu" id="details-students-export-menu">
+                <div class="export-popover-item" onclick="window.dashboardApp.exportHackathonDetailsCSV('Registrations')"><i class="fa-solid fa-users"></i> Export Registrations</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportHackathonDetailsCSV('Teams')"><i class="fa-solid fa-user-group"></i> Export Team Details</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportHackathonDetailsCSV('Complete')"><i class="fa-solid fa-database"></i> Export Complete Hackathon Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Registration ID</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>College</th>
+                <th>Branch</th>
+                <th>Year</th>
+                <th>Registration Date</th>
+              </tr>
+            </thead>
+            <tbody id="details-students-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-pagination-footer">
+          <span class="pagination-info" id="details-students-pagination-info">Showing 0 to 0 of 0 students</span>
+          <div class="pagination-controls">
+            <div class="page-selector-wrapper">
+              <select class="page-size-select" id="details-students-page-size">
+                <option value="5">5 / page</option>
+                <option value="10" selected>10 / page</option>
+                <option value="25">25 / page</option>
+              </select>
+            </div>
+            <div class="events-pagination" id="details-students-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindPopoverToggle('details-students-export-btn', 'details-students-export-menu');
+
+    const detSearch = document.getElementById('details-students-search');
+    detSearch.value = detailsStudentsSearch;
+    detSearch.addEventListener('input', (e) => {
+      detailsStudentsSearch = e.target.value.toLowerCase();
+      pagDetailsStudents.page = 1;
+      renderHackathonDetailsStudents();
+    });
+
+    const detSize = document.getElementById('details-students-page-size');
+    detSize.value = pagDetailsStudents.limit;
+    detSize.addEventListener('change', (e) => {
+      pagDetailsStudents.limit = parseInt(e.target.value);
+      pagDetailsStudents.page = 1;
+      renderHackathonDetailsStudents();
+    });
+
+    renderHackathonDetailsStudents();
+  }
+
+  function renderHackathonDetailsStudents() {
+    const tbody = document.getElementById('details-students-tbody');
+    const hack = state.hackathons.find(h => h.id === selectedHackathonId);
+    if (!hack) return;
+
+    let regs = state.registrations.filter(r => r.eventId === hack.id);
+    let rows = [];
+    
+    regs.forEach(reg => {
+      const stud = state.students.find(s => s.id === reg.studentId);
+      if (stud) {
+        rows.push({ reg, stud });
+      }
+    });
+
+    if (detailsStudentsSearch) {
+      rows = rows.filter(item => 
+        item.stud.name.toLowerCase().includes(detailsStudentsSearch) ||
+        item.stud.email.toLowerCase().includes(detailsStudentsSearch)
+      );
+    }
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center">
+            <div class="table-empty-state">
+              <i class="fa-solid fa-users-slash"></i>
+              <p>No registered students found.</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      document.getElementById('details-students-pagination-info').innerText = 'Showing 0 to 0 of 0 students';
+      document.getElementById('details-students-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    rows.sort((a, b) => new Date(b.reg.registrationDate) - new Date(a.reg.registrationDate));
+
+    const total = rows.length;
+    const pages = Math.ceil(total / pagDetailsStudents.limit);
+    if (pagDetailsStudents.page > pages) pagDetailsStudents.page = pages || 1;
+
+    const start = (pagDetailsStudents.page - 1) * pagDetailsStudents.limit;
+    const pagRows = rows.slice(start, start + pagDetailsStudents.limit);
+
+    let html = '';
+    pagRows.forEach(item => {
+      const rDate = formatDate(item.reg.registrationDate);
+      html += `
+        <tr>
+          <td class="row-id">${escapeHTML(item.reg.id)}</td>
+          <td>${escapeHTML(item.stud.id)}</td>
+          <td style="font-weight:700;">${escapeHTML(item.stud.name)}</td>
+          <td>${escapeHTML(item.stud.email)}</td>
+          <td>${escapeHTML(item.stud.phone)}</td>
+          <td>${escapeHTML(item.stud.college)}</td>
+          <td>${escapeHTML(item.stud.branch)}</td>
+          <td>${item.stud.year} Year</td>
+          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i>${rDate}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagDetailsStudents.limit, total);
+    document.getElementById('details-students-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} students`;
+    renderPaginationControls('details-students-pagination-controls', pages, pagDetailsStudents, (p) => {
+      pagDetailsStudents.page = p;
+      renderHackathonDetailsStudents();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: PITCH EVENTS MANAGEMENT
+  // ==========================================
+  function renderPitchEventsGrid() {
+    const grid = document.getElementById('pitch-events-cards-grid');
+    let list = [...state.pitchEvents];
+
+    if (pitchEventsFilter.search) {
+      list = list.filter(p => p.name.toLowerCase().includes(pitchEventsFilter.search));
+    }
+
+    list.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; display:flex; justify-content:center; padding: 40px 0;">
+          <div class="table-empty-state">
+            <i class="fa-solid fa-microphone-slash" style="font-size:36px; color:var(--text-muted); margin-bottom:12px;"></i>
+            <h3>No pitch events scheduled</h3>
+            <p>Click "+ Create Pitch Event" to create one.</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('pitch-events-pagination-info').innerText = 'Showing 0 to 0 of 0 events';
+      document.getElementById('pitch-events-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagPitchEvents.limit);
+    if (pagPitchEvents.page > pages) pagPitchEvents.page = pages || 1;
+
+    const start = (pagPitchEvents.page - 1) * pagPitchEvents.limit;
+    const pagList = list.slice(start, start + pagPitchEvents.limit);
+
+    let html = '';
+    pagList.forEach(pe => {
+      const dateFormatted = formatDate(pe.startDate);
+      const regsCount = state.pitchRegistrations.filter(r => r.eventId === pe.id).length;
+      
+      const posterHTML = pe.posterBanner
+        ? `<img src="${pe.posterBanner}" alt="pitch event banner">`
+        : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(255,46,75,0.2) 100%); font-size:18px; font-weight:700;">${escapeHTML(pe.name)}</div>`;
+
+      html += `
+        <div class="startup-card" style="gap:10px;">
+          <div style="height:120px; border-radius:var(--radius-md); overflow:hidden; background:var(--bg-primary);">
+            ${posterHTML}
+          </div>
+          <div style="margin-top: 4px;">
+            <div class="startup-card-title">${escapeHTML(pe.name)}</div>
+            <div class="startup-card-subtitle" style="font-weight:600; color:var(--accent-red); margin-top:2px;">Ticket Name: ${escapeHTML(pe.ticketName)} &bull; Price: ₹${pe.ticketPrice || 'Free'}</div>
+          </div>
+          
+          <div class="startup-one-liner" style="font-size:12px; margin-top:4px; max-height:40px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
+            ${escapeHTML(pe.description)}
+          </div>
+          
+          <div class="startup-stats-row" style="margin-top:10px;">
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Conducted Date</span>
+              <span class="startup-stat-value">${dateFormatted}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Venue / Platform</span>
+              <span class="startup-stat-value">${escapeHTML(pe.venue)}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Participants</span>
+              <span class="startup-stat-value">${regsCount}</span>
+            </div>
+          </div>
+          
+          <div class="startup-card-actions">
+            <button class="btn-outline-gray" style="flex:1; padding:8px 12px; font-size:12px;" onclick="window.dashboardApp.viewPitchEventDetails(${pe.id})">View Details</button>
+            <button class="btn-action-check" onclick="window.dashboardApp.openEditPitchEventModal(${pe.id})"><i class="fa-regular fa-pen-to-square"></i></button>
+            <button class="btn-action-cross" onclick="window.dashboardApp.deletePitchEvent(${pe.id})"><i class="fa-regular fa-trash-can"></i></button>
+          </div>
+        </div>
+      `;
+    });
+    grid.innerHTML = html;
+
+    const end = Math.min(start + pagPitchEvents.limit, total);
+    document.getElementById('pitch-events-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} events`;
+    renderPaginationControls('pitch-events-pagination-controls', pages, pagPitchEvents, (p) => {
+      pagPitchEvents.page = p;
+      renderPitchEventsGrid();
+    });
+  }
+
+  // ==========================================
+  // PITCH EVENT DETAILS VIEW
+  // ==========================================
+  function viewPitchEventDetails(id) {
+    selectedPitchEventId = id;
+    switchTab('pitch-event-details');
+    renderPitchEventDetailsPane();
+  }
+
+  function renderPitchEventDetailsPane() {
+    const pane = document.getElementById('pitch-event-details-view');
+    const pe = state.pitchEvents.find(p => p.id === selectedPitchEventId);
+    
+    if (!pe) {
+      pane.innerHTML = `<div class="table-empty-state"><i class="fa-solid fa-inbox"></i><p>Event details not found.</p></div>`;
+      return;
+    }
+
+    const regCount = state.pitchRegistrations.filter(r => r.eventId === pe.id).length;
+    const posterHTML = pe.posterBanner 
+      ? `<img src="${pe.posterBanner}" style="width:100%; height:100%; object-fit:cover;" alt="event poster">`
+      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, #ff2e4b 0%, #0b0f19 100%); font-size:24px; font-weight:700;">${escapeHTML(pe.name)}</div>`;
+
+    pane.innerHTML = `
+      <header class="view-header">
+        <div class="header-title-block">
+          <a href="#" class="back-to-events-btn" onclick="window.dashboardApp.switchTab('pitch-events-list'); return false;" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Pitch Events List
+          </a>
+          <h1 style="font-size:24px; font-weight:800;">${escapeHTML(pe.name)}</h1>
+          <p>Venue: <strong>${escapeHTML(pe.venue)}</strong></p>
+        </div>
+        <div class="header-actions" style="display:flex; gap:10px;">
+          <button class="btn-outline-gray" onclick="window.dashboardApp.openEditPitchEventModal(${pe.id})"><i class="fa-regular fa-pen-to-square"></i> Edit Event</button>
+          <button class="btn-solid-red" style="background-color:var(--accent-red-hover);" onclick="window.dashboardApp.deletePitchEvent(${pe.id})"><i class="fa-regular fa-trash-can"></i> Delete</button>
+        </div>
+      </header>
+      
+      <!-- Specs details Grid -->
+      <div class="dashboard-panel-box" style="margin-bottom:24px; padding:20px;">
+        <div style="display:flex; gap:20px; flex-wrap:wrap;">
+          <div style="width:220px; height:140px; border-radius:var(--radius-md); overflow:hidden; flex-shrink:0; background:var(--bg-primary);">
+            ${posterHTML}
+          </div>
+          
+          <div style="flex-grow:1; display:flex; flex-direction:column; gap:12px; min-width:300px;">
+            <div class="details-specs-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+              <div class="spec-item">
+                <span class="spec-label">Timeline Date</span>
+                <span class="spec-value"><i class="fa-regular fa-calendar" style="color:var(--accent-red); margin-right:6px;"></i>${formatDate(pe.startDate)} to ${formatDate(pe.endDate)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Session Hours</span>
+                <span class="spec-value"><i class="fa-regular fa-clock" style="color:var(--accent-red); margin-right:6px;"></i>${formatTime12h(pe.startTime)} - ${formatTime12h(pe.endTime)} (${pe.timezone})</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Platform Details</span>
+                <span class="spec-value"><span class="event-row-badge badge-webinar" style="margin-right:6px;">${pe.mode}</span>${escapeHTML(pe.venue)}</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Participants Count</span>
+                <span class="spec-value" style="font-weight:700; color:#fff;"><i class="fa-solid fa-users" style="color:var(--accent-red); margin-right:6px;"></i>${regCount} registered</span>
+              </div>
+            </div>
+            
+            <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:8px;">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Event Description</h4>
+              <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">${escapeHTML(pe.description)}</p>
+            </div>
+            
+            <!-- Ticket Info Panel -->
+            <div class="ticket-list-wrapper">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Accompanying Ticket Tier</h4>
+              <div class="ticket-item-row">
+                <div class="ticket-item-left">
+                  <span class="ticket-item-title">${escapeHTML(pe.ticketName)}</span>
+                  <span class="ticket-item-desc">${escapeHTML(pe.ticketDescription || 'Platform standard entry voucher')}</span>
+                  <span class="ticket-item-dates">Sale Period: ${formatDate(pe.saleStartDate || pe.startDate)} to ${formatDate(pe.saleEndDate || pe.endDate)}</span>
+                </div>
+                <div class="ticket-item-price">₹${pe.ticketPrice || 'Free'}</div>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding:12px; border-radius:var(--radius-sm); margin-top:10px;">
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Coordinator:</span> <strong style="color:#fff;">${escapeHTML(pe.contactName)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Mobile:</span> <strong style="color:#fff;">${escapeHTML(pe.contactPhone)}</strong></div>
+              <div style="font-size:12px;"><span style="color:var(--text-muted);">Email:</span> <strong style="color:#fff;">${escapeHTML(pe.contactEmail)}</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Nested Registrations List -->
+      <div class="table-section">
+        <div class="table-header-flex">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="table-section-title">Registered Participants</span>
+            <button class="btn-solid-red" style="padding:6px 12px; font-size:11px;" onclick="window.dashboardApp.openAddStudentToEventModal('pitch', ${pe.id})">
+              <i class="fa-solid fa-user-plus"></i> Register Participant
+            </button>
+          </div>
+          
+          <div class="table-search-box">
+            <div class="search-input-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="details-students-search" placeholder="Search participant name...">
+            </div>
+            
+            <div class="dropdown-action-container" id="details-students-export-container">
+              <button class="btn-export" id="details-students-export-btn">
+                <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+              </button>
+              <div class="export-popover-menu" id="details-students-export-menu">
+                <div class="export-popover-item" onclick="window.dashboardApp.exportPitchDetailsCSV('Participants')"><i class="fa-solid fa-users"></i> Export Participants</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportPitchDetailsCSV('Sales')"><i class="fa-solid fa-circle-dollar-to-slot"></i> Export Ticket Sales</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportPitchDetailsCSV('Complete')"><i class="fa-solid fa-database"></i> Export Complete Event Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Participant ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Startup Name</th>
+                <th>Ticket Type</th>
+                <th>Registration Date</th>
+              </tr>
+            </thead>
+            <tbody id="details-students-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="table-pagination-footer">
+          <span class="pagination-info" id="details-students-pagination-info">Showing 0 to 0 of 0 participants</span>
+          <div class="pagination-controls">
+            <div class="page-selector-wrapper">
+              <select class="page-size-select" id="details-students-page-size">
+                <option value="5">5 / page</option>
+                <option value="10" selected>10 / page</option>
+                <option value="25">25 / page</option>
+              </select>
+            </div>
+            <div class="events-pagination" id="details-students-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    bindPopoverToggle('details-students-export-btn', 'details-students-export-menu');
+
+    const detSearch = document.getElementById('details-students-search');
+    detSearch.value = detailsStudentsSearch;
+    detSearch.addEventListener('input', (e) => {
+      detailsStudentsSearch = e.target.value.toLowerCase();
+      pagDetailsStudents.page = 1;
+      renderPitchDetailsParticipants();
+    });
+
+    const detSize = document.getElementById('details-students-page-size');
+    detSize.value = pagDetailsStudents.limit;
+    detSize.addEventListener('change', (e) => {
+      pagDetailsStudents.limit = parseInt(e.target.value);
+      pagDetailsStudents.page = 1;
+      renderPitchDetailsParticipants();
+    });
+
+    renderPitchDetailsParticipants();
+  }
+
+  function renderPitchDetailsParticipants() {
+    const tbody = document.getElementById('details-students-tbody');
+    const pe = state.pitchEvents.find(p => p.id === selectedPitchEventId);
+    if (!pe) return;
+
+    let regs = state.pitchRegistrations.filter(r => r.eventId === pe.id);
+    let rows = [];
+    
+    regs.forEach(reg => {
+      const stud = state.students.find(s => s.id === reg.studentId);
+      if (stud) {
+        rows.push({ reg, stud });
+      }
+    });
+
+    if (detailsStudentsSearch) {
+      rows = rows.filter(item => 
+        item.stud.name.toLowerCase().includes(detailsStudentsSearch) ||
+        item.stud.email.toLowerCase().includes(detailsStudentsSearch)
+      );
+    }
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center">
+            <div class="table-empty-state">
+              <i class="fa-solid fa-users-slash"></i>
+              <p>No registered participants found.</p>
+            </div>
+          </td>
+        </tr>
+      `;
+      document.getElementById('details-students-pagination-info').innerText = 'Showing 0 to 0 of 0 participants';
+      document.getElementById('details-students-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    rows.sort((a, b) => new Date(b.reg.registrationDate) - new Date(a.reg.registrationDate));
+
+    const total = rows.length;
+    const pages = Math.ceil(total / pagDetailsStudents.limit);
+    if (pagDetailsStudents.page > pages) pagDetailsStudents.page = pages || 1;
+
+    const start = (pagDetailsStudents.page - 1) * pagDetailsStudents.limit;
+    const pagRows = rows.slice(start, start + pagDetailsStudents.limit);
+
+    let html = '';
+    pagRows.forEach(item => {
+      const rDate = formatDate(item.reg.registrationDate);
+      
+      // Pitch participant fields: Participant ID (e.g. PR-STU001), startup name, ticket name, registrationDate
+      html += `
+        <tr>
+          <td class="row-id">${escapeHTML(item.reg.id)}</td>
+          <td style="font-weight:700;">${escapeHTML(item.stud.name)}</td>
+          <td>${escapeHTML(item.stud.email)}</td>
+          <td>${escapeHTML(item.stud.phone)}</td>
+          <td>${escapeHTML(item.stud.college)} Corp</td>
+          <td><span class="badge-investor" style="font-size:10px;">${escapeHTML(pe.ticketName)}</span></td>
+          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i>${rDate}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagDetailsStudents.limit, total);
+    document.getElementById('details-students-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} participants`;
+    renderPaginationControls('details-students-pagination-controls', pages, pagDetailsStudents, (p) => {
+      pagDetailsStudents.page = p;
+      renderPitchDetailsParticipants();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: STARTUP APPLICATIONS
+  // ==========================================
+  function renderStartupsGrid() {
+    const grid = document.getElementById('startup-applications-grid');
+    let list = [...state.startupApplications];
+
+    // Filters
+    if (startupsFilter.search) {
+      const keyword = startupsFilter.search;
+      list = list.filter(app => 
+        app.startupName.toLowerCase().includes(keyword) || 
+        app.founderName.toLowerCase().includes(keyword)
+      );
+    }
+    if (startupsFilter.stage) {
+      list = list.filter(app => app.stage === startupsFilter.stage);
+    }
+    if (startupsFilter.status) {
+      list = list.filter(app => app.status === startupsFilter.status);
+    }
+
+    // Sort descending by appliedDate
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; display:flex; justify-content:center; padding:40px 0;">
+          <div class="table-empty-state">
+            <i class="fa-solid fa-inbox" style="font-size:36px; color:var(--text-muted); margin-bottom:12px;"></i>
+            <h3>No applications found</h3>
+            <p>No startup applications match the selected criteria.</p>
+          </div>
+        </div>
+      `;
+      document.getElementById('startup-pagination-info').innerText = 'Showing 0 to 0 of 0 applications';
+      document.getElementById('startup-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagStartups.limit);
+    if (pagStartups.page > pages) pagStartups.page = pages || 1;
+
+    const start = (pagStartups.page - 1) * pagStartups.limit;
+    const pagList = list.slice(start, start + pagStartups.limit);
+
+    let html = '';
+    pagList.forEach(app => {
+      const badgeClass = app.status === 'Approved' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+      html += `
+        <div class="startup-card">
+          <div class="startup-card-header">
+            <div>
+              <div class="startup-card-title">${escapeHTML(app.startupName)}</div>
+              <div class="startup-card-subtitle">${escapeHTML(app.industry)} &bull; ${escapeHTML(app.stage)}</div>
+            </div>
+            <span class="${badgeClass}">${app.status}</span>
+          </div>
+          
+          <div class="startup-one-liner">
+            "${escapeHTML(app.oneLiner)}"
+          </div>
+          
+          <div class="startup-stats-row">
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Funding Ask</span>
+              <span class="startup-stat-value" style="color:var(--accent-red); font-weight:800;">${escapeHTML(app.fundingRequired)}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Founder</span>
+              <span class="startup-stat-value">${escapeHTML(app.founderName)}</span>
+            </div>
+            <div class="startup-stat-item">
+              <span class="startup-stat-label">Team Members</span>
+              <span class="startup-stat-value">${app.teamMembers} members</span>
+            </div>
+          </div>
+          
+          <div class="startup-card-actions">
+            <button class="btn-outline-gray" style="flex:1; padding:8px 12px; font-size:12px;" onclick="window.dashboardApp.viewStartupApplication(${app.id})">Review Profile</button>
+            
+            <button class="btn-outline-gray" style="padding:8px 12px; border-color:var(--border-color);" onclick="window.dashboardApp.downloadPitchDeck(${app.id})" title="Download Deck">
+              <i class="fa-solid fa-file-pdf"></i> Deck
+            </button>
+            
+            <button class="btn-action-check" onclick="window.dashboardApp.updateStartupStatus(${app.id}, 'Approved')" title="Approve Startup"><i class="fa-solid fa-check"></i></button>
+            <button class="btn-action-cross" onclick="window.dashboardApp.updateStartupStatus(${app.id}, 'Rejected')" title="Reject Startup"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+      `;
+    });
+    grid.innerHTML = html;
+
+    const end = Math.min(start + pagStartups.limit, total);
+    document.getElementById('startup-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} applications`;
+    renderPaginationControls('startup-pagination-controls', pages, pagStartups, (p) => {
+      pagStartups.page = p;
+      renderStartupsGrid();
+    });
+  }
+
+  function viewStartupApplication(id) {
+    const app = state.startupApplications.find(a => a.id === id);
+    if (!app) return;
+
+    const modalBody = document.getElementById('view-startup-modal-body');
+    const modalFooter = document.getElementById('view-startup-modal-footer');
+
+    // Build fields summary
+    modalBody.innerHTML = `
+      <div style="border-bottom: 1px solid var(--border-color); padding-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="font-size:20px; font-weight:800; color:#fff;">${escapeHTML(app.startupName)}</h2>
+          <span style="font-size:12px; color:var(--text-secondary);">${escapeHTML(app.industry)} &bull; ${escapeHTML(app.stage)}</span>
+        </div>
+        <span class="${app.status === 'Approved' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending'}" style="font-size:12px; padding:4px 10px;">${app.status}</span>
+      </div>
+      
+      <div class="details-specs-grid" style="grid-template-columns: 1fr 1fr; gap:12px;">
+        <div class="spec-item">
+          <span class="spec-label">Founder Name</span>
+          <span class="spec-value">${escapeHTML(app.founderName)}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Contact Details</span>
+          <span class="spec-value">${escapeHTML(app.phone)} &bull; ${escapeHTML(app.email)}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Funding Required</span>
+          <span class="spec-value" style="color:var(--accent-red); font-weight:800;">${escapeHTML(app.fundingRequired)}</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Team Members</span>
+          <span class="spec-value">${escapeHTML(app.teamMembers)}</span>
+        </div>
+      </div>
+      
+      <div>
+        <h4 style="font-size:11px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">One-Liner pitch</h4>
+        <p style="font-style:italic; font-size:13px; color:var(--text-secondary);">"${escapeHTML(app.oneLiner)}"</p>
+      </div>
+
+      <div>
+        <h4 style="font-size:11px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Problem Statement</h4>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">${escapeHTML(app.problemStatement)}</p>
+      </div>
+      
+      <div>
+        <h4 style="font-size:11px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Solution Proposal</h4>
+        <p style="font-size:13px; color:var(--text-secondary); line-height:1.5;">${escapeHTML(app.solution)}</p>
+      </div>
+      
+      <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-file-pdf" style="font-size:24px; color:var(--accent-red);"></i>
+          <div>
+            <div style="font-size:13px; font-weight:700;">Pitch_Deck_Executive_Summary.pdf</div>
+            <div style="font-size:11px; color:var(--text-muted);">Size: 3.4 MB &bull; Uploaded: ${formatDate(app.appliedDate)}</div>
+          </div>
+        </div>
+        <button class="btn-outline-gray" style="padding:6px 12px; font-size:12px;" onclick="window.dashboardApp.downloadPitchDeck(${app.id})"><i class="fa-solid fa-download"></i> Download</button>
+      </div>
+    `;
+
+    modalFooter.innerHTML = `
+      <div style="display:flex; width:100%; gap:10px;">
+        <button class="btn-outline-gray" style="margin-right:auto;" onclick="document.getElementById('view-startup-modal').classList.remove('active');">Close Review</button>
+        <button class="btn-outline-gray" style="border-color:rgba(255,46,75,0.3); color:var(--accent-red);" onclick="window.dashboardApp.contactFounder(${app.id})"><i class="fa-regular fa-envelope"></i> Contact Founder</button>
+        <button class="btn-action-cross" style="width:120px; font-size:12px; font-weight:700; height:38px; border-radius:var(--radius-md); gap:6px;" onclick="window.dashboardApp.updateStartupStatus(${app.id}, 'Rejected'); document.getElementById('view-startup-modal').classList.remove('active');"><i class="fa-solid fa-xmark"></i> Reject</button>
+        <button class="btn-action-check" style="width:120px; font-size:12px; font-weight:700; height:38px; border-radius:var(--radius-md); gap:6px;" onclick="window.dashboardApp.updateStartupStatus(${app.id}, 'Approved'); document.getElementById('view-startup-modal').classList.remove('active');"><i class="fa-solid fa-check"></i> Approve</button>
+      </div>
+    `;
+
+    document.getElementById('view-startup-modal').classList.add('active');
+  }
+
+  function updateStartupStatus(id, status) {
+    const index = state.startupApplications.findIndex(a => a.id === id);
+    if (index !== -1) {
+      state.startupApplications[index].status = status;
+      saveDatabase();
+      renderStartupsGrid();
+      renderDashboard();
+    }
+  }
+
+  function downloadPitchDeck(id) {
+    const app = state.startupApplications.find(a => a.id === id);
+    if (!app) return;
+    alert(`Downloading Pitch Deck PDF for: "${app.startupName}"...`);
+    
+    // Trigger mock download
+    const link = document.createElement('a');
+    link.href = '#';
+    link.download = `${app.startupName.toLowerCase().replace(/\s+/g, '_')}_pitch_deck.pdf`;
+    link.click();
+  }
+
+  function contactFounder(id) {
+    const app = state.startupApplications.find(a => a.id === id);
+    if (!app) return;
+    window.location.href = `mailto:${app.email}?subject=StepUp%20for%20AI%20-%20Startup%20Incubator%20Application%20Review&body=Dear%20${encodeURIComponent(app.founderName)},%0D%0A%0D%0AWe%20have%20reviewed%20your%20startup%20pitch%20application%20for%20${encodeURIComponent(app.startupName)}...`;
+  }
+
+  // ==========================================
+  // RENDERER: STUDENTS MASTER DIRECTORY
+  // ==========================================
+  function renderStudentsTable() {
+    const tbody = document.getElementById('students-table-body');
     let list = [...state.students];
 
-    // Apply branch and year filters
-    if (globalStudentsFilter.branch) {
-      list = list.filter(s => s.branch === globalStudentsFilter.branch);
-    }
-    if (globalStudentsFilter.year) {
-      list = list.filter(s => s.year === globalStudentsFilter.year);
-    }
-
-    // Apply search keyword filter
-    if (globalStudentsFilter.search) {
-      const keyword = globalStudentsFilter.search;
+    // Filters
+    if (studentsFilter.search) {
+      const keyword = studentsFilter.search;
       list = list.filter(s => 
         s.id.toLowerCase().includes(keyword) || 
-        s.name.toLowerCase().includes(keyword) || 
+        s.name.toLowerCase().includes(keyword) ||
         s.email.toLowerCase().includes(keyword) ||
         s.college.toLowerCase().includes(keyword)
       );
     }
+    if (studentsFilter.branch) {
+      list = list.filter(s => s.branch === studentsFilter.branch);
+    }
+    if (studentsFilter.year) {
+      list = list.filter(s => s.year === studentsFilter.year);
+    }
 
-    // Calculate & render global students page metrics
-    const totalStudents = state.students.length;
-    document.getElementById('stud-total-students').innerText = totalStudents;
+    list.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
 
-    // Month registered
-    const currentYear = new Date().getFullYear();
-    const currentMonth = new Date().getMonth();
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    document.getElementById('stud-month-label').innerText = `${monthNames[currentMonth]} ${currentYear}`;
-    
-    const registeredThisMonth = state.students.filter(s => {
-      const createdDate = new Date(s.createdDate);
-      return createdDate.getMonth() === currentMonth && createdDate.getFullYear() === currentYear;
-    }).length;
-    document.getElementById('stud-month-students').innerText = registeredThisMonth;
-
-    // Week registered (7 days)
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const registeredThisWeek = state.students.filter(s => new Date(s.createdDate) >= sevenDaysAgo).length;
-    document.getElementById('stud-week-students').innerText = registeredThisWeek;
-
-    // Today registered
-    const today = new Date();
-    document.getElementById('stud-today-label').innerText = formatDate(today.toISOString());
-    const registeredToday = state.students.filter(s => new Date(s.createdDate).toDateString() === today.toDateString()).length;
-    document.getElementById('stud-today-students').innerText = registeredToday;
-
-    // Check empty state
     if (list.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="9" class="text-center">
             <div class="table-empty-state">
               <i class="fa-solid fa-users-slash"></i>
-              <p>No student accounts match the search or filter criteria</p>
+              <p>No student portfolios recorded.</p>
             </div>
           </td>
         </tr>
       `;
-      document.getElementById('global-students-pagination-info').innerText = 'Showing 0 to 0 of 0 students';
-      document.getElementById('global-students-pagination-controls').innerHTML = '';
+      document.getElementById('students-table-pagination-info').innerText = 'Showing 0 to 0 of 0 students';
+      document.getElementById('students-table-pagination-controls').innerHTML = '';
       return;
     }
 
-    // Sort by account created date descending
-    list.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    const total = list.length;
+    const pages = Math.ceil(total / pagStudents.limit);
+    if (pagStudents.page > pages) pagStudents.page = pages || 1;
 
-    // Pagination
-    const filteredCount = list.length;
-    const totalPages = Math.ceil(filteredCount / globalStudentsPagination.limit);
-    if (globalStudentsPagination.page > totalPages) globalStudentsPagination.page = totalPages || 1;
-
-    const startIdx = (globalStudentsPagination.page - 1) * globalStudentsPagination.limit;
-    const paginatedList = list.slice(startIdx, startIdx + globalStudentsPagination.limit);
+    const start = (pagStudents.page - 1) * pagStudents.limit;
+    const pagList = list.slice(start, start + pagStudents.limit);
 
     let html = '';
-    paginatedList.forEach(student => {
+    pagList.forEach(s => {
       html += `
         <tr>
-          <td class="row-id">${student.id}</td>
-          <td style="font-weight:700;">${escapeHTML(student.name)}</td>
-          <td>${escapeHTML(student.email)}</td>
-          <td>${escapeHTML(student.phone)}</td>
-          <td>${escapeHTML(student.college)}</td>
-          <td>${escapeHTML(student.branch)}</td>
-          <td>${student.year} Year</td>
-          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i> ${formatDate(student.createdDate)}</td>
+          <td class="row-id">${s.id}</td>
+          <td style="font-weight:700;">${escapeHTML(s.name)}</td>
+          <td>${escapeHTML(s.email)}</td>
+          <td>${escapeHTML(s.phone)}</td>
+          <td>${escapeHTML(s.college)}</td>
+          <td>${escapeHTML(s.branch)}</td>
+          <td>${s.year} Year</td>
+          <td><i class="fa-regular fa-calendar-days" style="color:var(--accent-red); margin-right:6px;"></i>${formatDate(s.createdDate)}</td>
           <td>
-            <button class="row-action-btn view" onclick="window.dashboardApp.viewStudentProfile('${student.id}')" title="View Profile">
-              <i class="fa-regular fa-eye"></i>
-            </button>
-            <button class="row-action-btn delete" onclick="window.dashboardApp.deleteStudentAccount('${student.id}')" title="Delete Student">
-              <i class="fa-regular fa-trash-can"></i>
-            </button>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-action-eye" onclick="window.dashboardApp.viewStudentProfile('${s.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-cross" onclick="window.dashboardApp.deleteStudentAccount('${s.id}')"><i class="fa-regular fa-trash-can"></i></button>
+            </div>
           </td>
         </tr>
       `;
     });
-
     tbody.innerHTML = html;
 
-    // Update pagination footer text
-    const endIdx = Math.min(startIdx + globalStudentsPagination.limit, filteredCount);
-    document.getElementById('global-students-pagination-info').innerText = `Showing ${startIdx + 1} to ${endIdx} of ${filteredCount} students`;
-
-    // Render pagination controls
-    renderPaginationControls('global-students-pagination-controls', totalPages, globalStudentsPagination, (newPage) => {
-      globalStudentsPagination.page = newPage;
-      renderGlobalStudents();
+    const end = Math.min(start + pagStudents.limit, total);
+    document.getElementById('students-table-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} students`;
+    renderPaginationControls('students-table-pagination-controls', pages, pagStudents, (p) => {
+      pagStudents.page = p;
+      renderStudentsTable();
     });
   }
 
-  // 5. Shared Pagination Controller Builder
-  function renderPaginationControls(elementId, totalPages, pagState, onPageChange) {
-    const parent = document.getElementById(elementId);
-    if (!parent) return;
-
-    if (totalPages <= 1) {
-      parent.innerHTML = '';
-      return;
-    }
-
-    let html = '';
-    // Previous Button
-    html += `<button class="pagination-btn" ${pagState.page === 1 ? 'disabled' : ''} data-page="${pagState.page - 1}"><i class="fa-solid fa-angle-left"></i></button>`;
-
-    // Page Numbers
-    const delta = 1;
-    const left = pagState.page - delta;
-    const right = pagState.page + delta + 1;
-    const range = [];
-    const rangeWithDots = [];
-    let l;
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= left && i < right)) {
-        range.push(i);
-      }
-    }
-
-    for (let i of range) {
-      if (l) {
-        if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l > 2) {
-          rangeWithDots.push('...');
-        }
-      }
-      rangeWithDots.push(i);
-      l = i;
-    }
-
-    rangeWithDots.forEach(p => {
-      if (p === '...') {
-        html += `<span style="color:var(--text-muted); padding:0 4px;">...</span>`;
-      } else {
-        html += `<button class="pagination-btn ${pagState.page === p ? 'active' : ''}" data-page="${p}">${p}</button>`;
-      }
-    });
-
-    // Next Button
-    html += `<button class="pagination-btn" ${pagState.page === totalPages ? 'disabled' : ''} data-page="${pagState.page + 1}"><i class="fa-solid fa-angle-right"></i></button>`;
-
-    parent.innerHTML = html;
-
-    // Attach click listeners to pagination buttons
-    parent.querySelectorAll('.pagination-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const pageNum = btn.getAttribute('data-page');
-        if (pageNum) {
-          onPageChange(parseInt(pageNum));
-        }
-      });
-    });
-  }
-
-  // ==========================================
-  // MODALS OPEN/CLOSE CONTROL
-  // ==========================================
-  function openCreateEventModal() {
-    formLogoBase64 = null;
-    formBannerBase64 = null;
-    document.getElementById('event-modal-title').innerText = "Create New Event";
-    document.getElementById('event-form-submit-btn').innerText = "Create Event";
-    document.getElementById('create-event-form').reset();
-    document.getElementById('form-event-id').value = '';
-    
-    // Clear preview boxes
-    document.getElementById('company-logo-preview-box').innerHTML = '';
-    document.getElementById('banner-preview-box').innerHTML = '';
-
-    document.getElementById('create-event-modal').classList.add('active');
-  }
-
-  function closeCreateEventModal() {
-    document.getElementById('create-event-modal').classList.remove('active');
-  }
-
-  function openEditEventModal(eventId) {
-    const event = state.events.find(e => e.id === eventId);
-    if (!event) return;
-
-    formLogoBase64 = event.companyLogo;
-    formBannerBase64 = event.bannerImage;
-
-    document.getElementById('event-modal-title').innerText = "Edit Event Details";
-    document.getElementById('event-form-submit-btn').innerText = "Save Changes";
-    
-    // Populate form fields
-    document.getElementById('form-event-id').value = event.id;
-    document.getElementById('form-event-type').value = event.type;
-    document.getElementById('form-event-name').value = event.name;
-    document.getElementById('form-conducted-by').value = event.conductedBy;
-    document.getElementById('form-description').value = event.description;
-    document.getElementById('form-event-date').value = event.date;
-    document.getElementById('form-start-time').value = event.startTime;
-    document.getElementById('form-end-time').value = event.endTime;
-    document.getElementById('form-reg-start').value = event.regStartDate;
-    document.getElementById('form-reg-end').value = event.regEndDate;
-    document.getElementById('form-eligible-years').value = event.eligibleYears;
-    document.getElementById('form-branches').value = event.branchesAllowed;
-    document.getElementById('form-min-cgpa').value = event.minCgpa || '';
-    document.getElementById('form-participation').value = event.participation;
-    document.getElementById('form-min-team').value = event.minTeamSize || '';
-    document.getElementById('form-max-team').value = event.maxTeamSize || '';
-    document.getElementById('form-mode').value = event.mode;
-    document.getElementById('form-venue').value = event.venue;
-    document.getElementById('form-prize').value = event.prizeDetails || '';
-    document.getElementById('form-certificate').value = event.certificateAvailable;
-    document.getElementById('form-contact-name').value = event.contactPerson;
-    document.getElementById('form-contact-email').value = event.contactEmail;
-    document.getElementById('form-contact-phone').value = event.contactPhone;
-
-    // Setup file previews if existing
-    if (event.companyLogo) showLogoPreview("company_logo.png");
-    if (event.bannerImage) showBannerPreview("banner_image.png");
-
-    document.getElementById('create-event-modal').classList.add('active');
-  }
-
-  function openAddStudentModal(forEventId = null) {
-    document.getElementById('add-student-form').reset();
-    document.getElementById('form-student-event-id').value = forEventId || '';
-    
-    const subtitleText = forEventId 
-      ? `Register a student directly for this specific event.`
-      : `Register a student globally in the platform directory.`;
-    
-    document.getElementById('student-modal-title').innerText = forEventId ? "Register Event Student" : "Add Student Account";
-    document.getElementById('student-modal-title').nextElementSibling.innerText = subtitleText;
-
-    document.getElementById('add-student-modal').classList.add('active');
-  }
-
-  function closeAddStudentModal() {
-    document.getElementById('add-student-modal').classList.remove('active');
-  }
-
-  // File Upload Previews helpers
-  function showLogoPreview(filename) {
-    const box = document.getElementById('company-logo-preview-box');
-    box.innerHTML = `
-      <div class="upload-preview-container">
-        <img src="${formLogoBase64}" class="upload-preview-thumb" alt="Logo preview">
-        <div class="upload-preview-details">
-          <div class="upload-preview-name">${escapeHTML(filename)}</div>
-          <span class="upload-preview-reset" id="reset-logo-upload-btn">Remove logo</span>
-        </div>
-      </div>
-    `;
-    document.getElementById('reset-logo-upload-btn').addEventListener('click', () => {
-      formLogoBase64 = null;
-      document.getElementById('form-company-logo').value = '';
-      box.innerHTML = '';
-    });
-  }
-
-  function showBannerPreview(filename) {
-    const box = document.getElementById('banner-preview-box');
-    box.innerHTML = `
-      <div class="upload-preview-container">
-        <img src="${formBannerBase64}" class="upload-preview-thumb" alt="Banner preview">
-        <div class="upload-preview-details">
-          <div class="upload-preview-name">${escapeHTML(filename)}</div>
-          <span class="upload-preview-reset" id="reset-banner-upload-btn">Remove banner</span>
-        </div>
-      </div>
-    `;
-    document.getElementById('reset-banner-upload-btn').addEventListener('click', () => {
-      formBannerBase64 = null;
-      document.getElementById('form-banner-image').value = '';
-      box.innerHTML = '';
-    });
-  }
-
-  // ==========================================
-  // DATA OPERATIONS (CREATE, UPDATE, DELETE)
-  // ==========================================
-  
-  // Submit Event creation/update
-  function saveEventForm() {
-    const idFieldVal = document.getElementById('form-event-id').value;
-    const isEdit = idFieldVal !== '';
-    
-    const eventData = {
-      type: document.getElementById('form-event-type').value,
-      name: document.getElementById('form-event-name').value,
-      conductedBy: document.getElementById('form-conducted-by').value,
-      companyLogo: formLogoBase64,
-      bannerImage: formBannerBase64,
-      description: document.getElementById('form-description').value,
-      date: document.getElementById('form-event-date').value,
-      startTime: document.getElementById('form-start-time').value,
-      endTime: document.getElementById('form-end-time').value,
-      regStartDate: document.getElementById('form-reg-start').value,
-      regEndDate: document.getElementById('form-reg-end').value,
-      eligibleYears: document.getElementById('form-eligible-years').value,
-      branchesAllowed: document.getElementById('form-branches').value,
-      minCgpa: document.getElementById('form-min-cgpa').value ? parseFloat(document.getElementById('form-min-cgpa').value) : null,
-      participation: document.getElementById('form-participation').value,
-      minTeamSize: document.getElementById('form-min-team').value ? parseInt(document.getElementById('form-min-team').value) : null,
-      maxTeamSize: document.getElementById('form-max-team').value ? parseInt(document.getElementById('form-max-team').value) : null,
-      mode: document.getElementById('form-mode').value,
-      venue: document.getElementById('form-venue').value,
-      prizeDetails: document.getElementById('form-prize').value || null,
-      certificateAvailable: document.getElementById('form-certificate').value,
-      contactPerson: document.getElementById('form-contact-name').value,
-      contactEmail: document.getElementById('form-contact-email').value,
-      contactPhone: document.getElementById('form-contact-phone').value,
-    };
-
-    // Date range sanity checks
-    if (new Date(eventData.regStartDate) > new Date(eventData.regEndDate)) {
-      alert("Registration start date cannot be later than registration end date.");
-      return;
-    }
-    if (new Date(eventData.regEndDate) > new Date(eventData.date)) {
-      alert("Registration end date cannot be later than the event date.");
-      return;
-    }
-    if (eventData.startTime >= eventData.endTime) {
-      alert("Start time must be earlier than the end time.");
-      return;
-    }
-
-    if (isEdit) {
-      const eventId = parseInt(idFieldVal);
-      const index = state.events.findIndex(e => e.id === eventId);
-      if (index !== -1) {
-        eventData.id = eventId;
-        state.events[index] = eventData;
-        alert("Event updated successfully!");
-      }
-    } else {
-      // Auto-generate numeric ID
-      eventData.id = state.events.length > 0 ? Math.max(...state.events.map(e => e.id)) + 1 : 1001;
-      state.events.push(eventData);
-      selectedEventId = eventData.id; // Automatically select the newly created event
-      alert("Event created successfully!");
-    }
-
-    saveDatabase();
-    closeCreateEventModal();
-    renderAll();
-    switchTab('events');
-  }
-
-  // Delete event
-  function deleteEvent(eventId) {
-    const event = state.events.find(e => e.id === eventId);
-    if (!event) return;
-
-    if (confirm(`Are you sure you want to delete the event: "${event.name}"? This will also remove all registrations associated with this event.`)) {
-      // Delete registrations
-      state.registrations = state.registrations.filter(r => r.eventId !== eventId);
-      // Delete event
-      state.events = state.events.filter(e => e.id !== eventId);
-      
-      selectedEventId = state.events.length > 0 ? state.events[0].id : null;
-      
-      saveDatabase();
-      renderAll();
-    }
-  }
-
-  // Submit Student registration
-  function saveStudentForm() {
-    const email = document.getElementById('form-student-email').value.trim();
-    const eventIdVal = document.getElementById('form-student-event-id').value;
-    const targetEventId = eventIdVal !== '' ? parseInt(eventIdVal) : null;
-
-    // Check if student exists globally by email
-    let student = state.students.find(s => s.email.toLowerCase() === email.toLowerCase());
-
-    if (!student) {
-      // Create new student profile
-      student = {
-        id: generateStudentID(),
-        name: document.getElementById('form-student-name').value.trim(),
-        email: email,
-        phone: document.getElementById('form-student-phone').value.trim(),
-        college: document.getElementById('form-student-college').value.trim(),
-        branch: document.getElementById('form-student-branch').value,
-        year: document.getElementById('form-student-year').value,
-        createdDate: new Date().toISOString()
-      };
-      state.students.push(student);
-    } else {
-      // Update details of existing student
-      student.name = document.getElementById('form-student-name').value.trim();
-      student.phone = document.getElementById('form-student-phone').value.trim();
-      student.college = document.getElementById('form-student-college').value.trim();
-      student.branch = document.getElementById('form-student-branch').value;
-      student.year = document.getElementById('form-student-year').value;
-    }
-
-    // Handle event specific registration
-    let successTitle = "Registration Successful";
-    let successSubtitle = "The student account has been created and verified successfully.";
-    let displayCodeLabel = "Student Unique ID";
-    let displayCodeValue = student.id;
-
-    if (targetEventId) {
-      // Check duplicate registration
-      const isRegistered = state.registrations.some(r => r.studentId === student.id && r.eventId === targetEventId);
-      if (isRegistered) {
-        alert(`${student.name} is already registered for this event.`);
-        return;
-      } else {
-        const registrationId = `REG${String(state.registrations.length + 1).padStart(3, '0')}`;
-        state.registrations.push({
-          id: registrationId,
-          studentId: student.id,
-          eventId: targetEventId,
-          registrationDate: new Date().toISOString()
-        });
-        
-        successTitle = "Enrollment Successful";
-        successSubtitle = "The student has been enrolled in the event successfully.";
-        displayCodeLabel = "Event Registration ID";
-        displayCodeValue = registrationId;
-      }
-    }
-
-    // Populate and open success modal
-    document.getElementById('student-success-modal').querySelector('h3').innerText = successTitle;
-    document.getElementById('student-success-modal').querySelector('p').innerText = successSubtitle;
-    document.getElementById('student-success-modal').querySelector('span').innerText = displayCodeLabel;
-    document.getElementById('success-student-id').innerText = displayCodeValue;
-    document.getElementById('success-student-name').innerText = student.name;
-    document.getElementById('success-student-branch').innerText = student.branch;
-    document.getElementById('success-student-year').innerText = `${student.year} Year`;
-    document.getElementById('student-success-modal').classList.add('active');
-
-    saveDatabase();
-    closeAddStudentModal();
-    renderAll();
-  }
-
-  // Auto generate Student unique ID
-  function generateStudentID() {
-    const num = state.students.length + 1;
-    return `STU${String(num).padStart(3, '0')}`;
-  }
-
-  // View Student details popup modal
+  // View student full profile details popup modal
   function viewStudentProfile(studentId) {
     const student = state.students.find(s => s.id === studentId);
     if (!student) return;
@@ -1256,20 +2325,34 @@
 
     // Get events registered for
     const regs = state.registrations.filter(r => r.studentId === student.id);
+    const pitchRegs = state.pitchRegistrations.filter(pr => pr.studentId === student.id);
     const eventList = document.getElementById('view-student-events-list');
     
-    if (regs.length === 0) {
+    if (regs.length === 0 && pitchRegs.length === 0) {
       eventList.innerHTML = `<li style="font-size:13px; color:var(--text-muted);">This student has not registered for any events yet.</li>`;
     } else {
       let html = '';
       regs.forEach(reg => {
-        const ev = state.events.find(e => e.id === reg.eventId);
+        const ev = state.webinars.find(w => w.id === reg.eventId) || state.hackathons.find(h => h.id === reg.eventId);
         if (ev) {
-          const typeTag = ev.type === 'webinar' ? 'badge-webinar' : 'badge-hackathon';
+          const typeTag = ev.timezone ? 'badge-webinar' : 'badge-hackathon';
+          const typeName = ev.timezone ? 'Webinar' : 'Hackathon';
           html += `
             <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
               <span style="font-size:13px; font-weight:600;">${escapeHTML(ev.name)}</span>
-              <span class="event-row-badge ${typeTag}" style="font-size:9px; padding:2px 6px;">${ev.type}</span>
+              <span class="event-row-badge ${typeTag}" style="font-size:9px; padding:2px 6px;">${typeName}</span>
+            </li>
+          `;
+        }
+      });
+
+      pitchRegs.forEach(reg => {
+        const ev = state.pitchEvents.find(p => p.id === reg.eventId);
+        if (ev) {
+          html += `
+            <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+              <span style="font-size:13px; font-weight:600;">${escapeHTML(ev.name)}</span>
+              <span class="event-row-badge badge-hackathon" style="font-size:9px; padding:2px 6px; background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.2); color:#f59e0b;">Pitch Event</span>
             </li>
           `;
         }
@@ -1280,326 +2363,1698 @@
     document.getElementById('view-student-modal').classList.add('active');
   }
 
-  // Delete student account completely
   function deleteStudentAccount(studentId) {
-    const student = state.students.find(s => s.id === studentId);
-    if (!student) return;
-
-    if (confirm(`Are you sure you want to delete the account for student: "${student.name}" (${student.id})? This will delete their profile and remove all event registration logs.`)) {
-      // Remove registration logs
-      state.registrations = state.registrations.filter(r => r.studentId !== studentId);
-      // Remove student profile
+    if (confirm(`Are you sure you want to delete the student portfolio: ${studentId}? All event registrations will be removed.`)) {
       state.students = state.students.filter(s => s.id !== studentId);
-      
+      state.registrations = state.registrations.filter(r => r.studentId !== studentId);
+      state.pitchRegistrations = state.pitchRegistrations.filter(pr => pr.studentId !== studentId);
       saveDatabase();
-      renderAll();
+      renderStudentsTable();
+      renderDashboard();
     }
   }
 
-  // Session Logout Handler
-  function performLogout() {
-    document.getElementById('logout-modal').classList.remove('active');
-    alert("Administrative session closed. Redirecting to home portal...");
-    window.location.href = 'index.html';
-  }
-
   // ==========================================
-  // CSV EXPORTER ENGINE
+  // RENDERER: APPROVAL MANAGEMENT DASHBOARD
   // ==========================================
-  
-  // Export event registered students list
-  function exportEventRegistrationsCSV(eventId) {
-    const event = state.events.find(e => e.id === eventId);
-    if (!event) return;
+  function renderApprovalDashboard() {
+    // Counts
+    const recPending = state.recruiters.filter(r => r.status === 'Pending').length;
+    const recApproved = state.recruiters.filter(r => r.status === 'Approved').length;
+    const recRejected = state.recruiters.filter(r => r.status === 'Rejected').length;
+    
+    const invPending = state.investors.filter(i => i.status === 'Pending').length;
+    const invApproved = state.investors.filter(i => i.status === 'Approved').length;
+    const invRejected = state.investors.filter(i => i.status === 'Rejected').length;
 
-    const list = getRegisteredStudentsForEvent(eventId);
-    if (list.length === 0) {
-      alert("No students registered for this event yet.");
-      return;
-    }
+    document.getElementById('approve-stat-rec-pending').innerText = recPending;
+    document.getElementById('approve-stat-rec-approved').innerText = recApproved;
+    document.getElementById('approve-stat-rec-rejected').innerText = recRejected;
+    document.getElementById('approve-stat-inv-pending').innerText = invPending;
+    document.getElementById('approve-stat-inv-approved').innerText = invApproved;
+    document.getElementById('approve-stat-inv-rejected').innerText = invRejected;
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Registration ID,Student Name,Email,Phone,College,Branch,Year,Registered Date\n";
+    // Mini sparklines (Dynamic cumulative trends for last 7 days)
+    drawSparkline('sparkline-rec-pending', getCumulativeTrend(state.recruiters.filter(r => r.status === 'Pending'), 'appliedDate'), '#ff2e4b');
+    drawSparkline('sparkline-rec-approved', getCumulativeTrend(state.recruiters.filter(r => r.status === 'Approved'), 'appliedDate'), '#10b981');
+    drawSparkline('sparkline-rec-rejected', getCumulativeTrend(state.recruiters.filter(r => r.status === 'Rejected'), 'appliedDate'), '#ff2e4b');
+    drawSparkline('sparkline-inv-pending', getCumulativeTrend(state.investors.filter(i => i.status === 'Pending'), 'appliedDate'), '#8b5cf6');
+    drawSparkline('sparkline-inv-approved', getCumulativeTrend(state.investors.filter(i => i.status === 'Approved'), 'appliedDate'), '#3b82f6');
+    drawSparkline('sparkline-inv-rejected', getCumulativeTrend(state.investors.filter(i => i.status === 'Rejected'), 'appliedDate'), '#ff2e4b');
 
-    list.forEach(student => {
-      const reg = state.registrations.find(r => r.studentId === student.id && r.eventId === eventId);
-      const regId = reg ? reg.id : '';
-      const regDate = reg ? new Date(reg.registrationDate).toLocaleDateString() : '';
-      
-      const row = [
-        regId,
-        `"${student.name.replace(/"/g, '""')}"`,
-        student.email,
-        student.phone,
-        `"${student.college.replace(/"/g, '""')}"`,
-        `"${student.branch}"`,
-        `${student.year} Year`,
-        regDate
-      ].join(",");
-      csvContent += row + "\n";
-    });
+    // Render Pending requests list
+    renderApproveDashPendingTable();
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `registered_students_${event.name.toLowerCase().replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
+    // Donut Chart: Approval Summary
+    const totalApprovals = recPending + recApproved + recRejected + invPending + invApproved + invRejected;
+    const donutCardBody = document.getElementById('card-approvals-donut-body');
+    const approveSegments = [
+      { label: 'Pending Recruiters', value: recPending, color: '#ff2e4b' },
+      { label: 'Approved Recruiters', value: recApproved, color: '#10b981' },
+      { label: 'Rejected Recruiters', value: recRejected, color: '#f59e0b' },
+      { label: 'Pending Investors', value: invPending, color: '#8b5cf6' },
+      { label: 'Approved Investors', value: invApproved, color: '#3b82f6' },
+      { label: 'Rejected Investors', value: invRejected, color: '#ff2e4b' }
+    ];
 
-  // Export global master students database
-  function exportGlobalStudentsCSV() {
-    if (state.students.length === 0) {
-      alert("The master student database is empty.");
-      return;
-    }
+    renderDonutOrEmptyState(
+      donutCardBody, 
+      'chart-approvals-donut', 
+      'donut-approvals-total', 
+      totalApprovals, 
+      approveSegments, 
+      'donut-approvals-legend', 
+      "No approval data available."
+    );
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Student ID,Full Name,Email,Phone Number,College Name,Branch,Year,Account Created Date\n";
-
-    state.students.forEach(student => {
-      const row = [
-        student.id,
-        `"${student.name.replace(/"/g, '""')}"`,
-        student.email,
-        student.phone,
-        `"${student.college.replace(/"/g, '""')}"`,
-        `"${student.branch}"`,
-        `${student.year} Year`,
-        new Date(student.createdDate).toLocaleDateString()
-      ].join(",");
-      csvContent += row + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "stepup_students_master_db.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  // ==========================================
-  // PREMIUM DEMO SEED DATA GENERATOR
-  // ==========================================
-  function loadDemoData() {
-    // Premium events demo
-    const demoEvents = [
-      {
-        id: 1001,
-        type: "webinar",
-        name: "AI Startup Funding Webinar",
-        conductedBy: "Microsoft",
-        companyLogo: "",
-        bannerImage: "",
-        description: "Learn how startups can secure funding, pitch to venture capitalists, and scale their AI ideas globally. Featuring expert panel discussions and interactive Q&A.",
-        date: "2025-05-25",
-        startTime: "10:00",
-        endTime: "12:00",
-        regStartDate: "2025-05-10",
-        regEndDate: "2025-05-24",
-        eligibleYears: "2nd Year and Above",
-        branchesAllowed: "All Branches",
-        minCgpa: 7.0,
-        participation: "Solo",
-        minTeamSize: null,
-        maxTeamSize: null,
-        mode: "Online",
-        venue: "Zoom Meeting",
-        prizeDetails: "Free Azure Credits worth $5,000",
-        certificateAvailable: "Yes",
-        contactPerson: "John Doe",
-        contactEmail: "john.doe@microsoft.com",
-        contactPhone: "9876543201"
-      },
-      {
-        id: 1002,
-        type: "hackathon",
-        name: "Build with AI Hackathon 2025",
-        conductedBy: "Google",
-        companyLogo: "",
-        bannerImage: "",
-        description: "An intensive 36-hour hackathon where students build innovative prototypes leveraging Google Gemini API and Firebase models. Exciting prizes and mentorship opportunities.",
-        date: "2025-05-30",
-        startTime: "09:00",
-        endTime: "20:00",
-        regStartDate: "2025-05-15",
-        regEndDate: "2025-05-28",
-        eligibleYears: "3rd Year and Above",
-        branchesAllowed: "CSE, IT, ECE",
-        minCgpa: 7.5,
-        participation: "Team",
-        minTeamSize: 2,
-        maxTeamSize: 4,
-        mode: "Offline",
-        venue: "Google Bangalore Campus, Hall C",
-        prizeDetails: "Cash Prizes worth ₹1,50,000 + Internship Interview passes",
-        certificateAvailable: "Yes",
-        contactPerson: "Alice Smith",
-        contactEmail: "alice.smith@google.com",
-        contactPhone: "9876543202"
-      },
-      {
-        id: 1003,
-        type: "webinar",
-        name: "Investor Pitching Strategies",
-        conductedBy: "TCS",
-        companyLogo: "",
-        bannerImage: "",
-        description: "Master the art of creating pitch decks that capture institutional attention. Explore structural modeling, valuations, and validation frameworks.",
-        date: "2025-06-10",
-        startTime: "11:00",
-        endTime: "13:00",
-        regStartDate: "2025-05-20",
-        regEndDate: "2025-06-08",
-        eligibleYears: "All Years",
-        branchesAllowed: "All Branches",
-        minCgpa: null,
-        participation: "Solo",
-        minTeamSize: null,
-        maxTeamSize: null,
-        mode: "Online",
-        venue: "Microsoft Teams",
-        prizeDetails: "TCS Innovation Hub Goodies Pack",
-        certificateAvailable: "Yes",
-        contactPerson: "Rohan Das",
-        contactEmail: "rohan.das@tcs.com",
-        contactPhone: "9876543203"
-      },
-      {
-        id: 1004,
-        type: "webinar",
-        name: "Web Development Workshop",
-        conductedBy: "StepUp AI",
-        companyLogo: "",
-        bannerImage: "",
-        description: "A comprehensive developer boot camp on modern JavaScript architectures, UI state synchronization, and deploying premium responsive admin designs.",
-        date: "2025-06-15",
-        startTime: "14:00",
-        endTime: "17:00",
-        regStartDate: "2025-05-25",
-        regEndDate: "2025-06-14",
-        eligibleYears: "All Years",
-        branchesAllowed: "CSE, IT, ECE, EEE",
-        minCgpa: null,
-        participation: "Solo",
-        minTeamSize: null,
-        maxTeamSize: null,
-        mode: "Online",
-        venue: "Zoom Video Webinar",
-        prizeDetails: "Free StepUp Premium subscription for 6 months",
-        certificateAvailable: "Yes",
-        contactPerson: "Admin Coordinator",
-        contactEmail: "admin@stepupforai.com",
-        contactPhone: "9876543204"
-      },
-      {
-        id: 1005,
-        type: "webinar",
-        name: "Cybersecurity Awareness Webinar",
-        conductedBy: "CyberSafe",
-        companyLogo: "",
-        bannerImage: "",
-        description: "Introduction to ethical hacking, threat landscapes, penetration testing methodology, and career paths in cybersecurity systems.",
-        date: "2025-06-20",
-        startTime: "16:00",
-        endTime: "17:30",
-        regStartDate: "2025-06-01",
-        regEndDate: "2025-06-19",
-        eligibleYears: "All Years",
-        branchesAllowed: "All Branches",
-        minCgpa: null,
-        participation: "Solo",
-        minTeamSize: null,
-        maxTeamSize: null,
-        mode: "Online",
-        venue: "Zoom Webinar Link",
-        prizeDetails: "Cybersecurity course vouchers worth $200",
-        certificateAvailable: "Yes",
-        contactPerson: "Sarah Connor",
-        contactEmail: "sconnor@cybersafe.org",
-        contactPhone: "9876543205"
+    // Draw Line Chart: Approval Trend Graph
+    const trendCardBody = document.getElementById('card-approvals-line-body');
+    const trendSelect = document.getElementById('approve-trend-range');
+    const trendRange = trendSelect ? trendSelect.value : 'month';
+    
+    const dates = [];
+    const recruiterPoints = [];
+    const investorPoints = [];
+    const now = new Date();
+    
+    const intervals = 7;
+    
+    for (let i = intervals - 1; i >= 0; i--) {
+      const d = new Date();
+      if (trendRange === 'day') {
+        d.setHours(now.getHours() - Math.round((i / (intervals - 1)) * 24));
+        const hour = d.getHours();
+        dates.push(`${hour}:00`);
+      } else {
+        const totalDaysBack = trendRange === 'week' ? 7 : 30;
+        d.setDate(now.getDate() - Math.round((i / (intervals - 1)) * totalDaysBack));
+        d.setHours(23, 59, 59, 999);
+        const day = d.getDate();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        dates.push(`${day} ${months[d.getMonth()]}`);
       }
+      
+      const recApprovedCount = state.recruiters.filter(r => {
+        return r.status === 'Approved' && new Date(r.appliedDate) <= d;
+      }).length;
+      recruiterPoints.push(recApprovedCount);
+      
+      const invApprovedCount = state.investors.filter(i => {
+        return i.status === 'Approved' && new Date(i.appliedDate) <= d;
+      }).length;
+      investorPoints.push(invApprovedCount);
+    }
+
+    renderLineChartOrEmptyState(trendCardBody, 'chart-approvals-trend-line', dates, [
+      { label: 'Recruiters', points: recruiterPoints, color: '#ff2e4b' },
+      { label: 'Investors', points: investorPoints, color: '#8b5cf6' }
+    ], "No approval data available.");
+
+    // Populate Activity Logs (Recent Approved/Rejected/Applied)
+    const logsContainer = document.getElementById('approve-dash-activity-logs');
+    const logs = [];
+    
+    state.recruiters.forEach(r => {
+      logs.push({
+        name: r.name,
+        company: r.company,
+        designation: r.designation,
+        action: 'Recruiter Applied',
+        date: r.appliedDate,
+        status: 'Pending'
+      });
+      if (r.status === 'Approved') {
+        logs.push({
+          name: r.name,
+          company: r.company,
+          designation: r.designation,
+          action: 'Recruiter Approved',
+          date: r.appliedDate,
+          status: 'Approved'
+        });
+      } else if (r.status === 'Rejected') {
+        logs.push({
+          name: r.name,
+          company: r.company,
+          designation: r.designation,
+          action: 'Recruiter Rejected',
+          date: r.appliedDate,
+          status: 'Rejected'
+        });
+      }
+    });
+
+    state.investors.forEach(i => {
+      logs.push({
+        name: i.name,
+        company: i.organization,
+        designation: i.designation,
+        action: 'Investor Applied',
+        date: i.appliedDate,
+        status: 'Pending'
+      });
+      if (i.status === 'Approved') {
+        logs.push({
+          name: i.name,
+          company: i.organization,
+          designation: i.designation,
+          action: 'Investor Approved',
+          date: i.appliedDate,
+          status: 'Approved'
+        });
+      } else if (i.status === 'Rejected') {
+        logs.push({
+          name: i.name,
+          company: i.organization,
+          designation: i.designation,
+          action: 'Investor Rejected',
+          date: i.appliedDate,
+          status: 'Rejected'
+        });
+      }
+    });
+
+    logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const recentLogs = logs.slice(0, 8);
+
+    if (recentLogs.length === 0) {
+      logsContainer.innerHTML = createEmptyStateHTML("No approval data available.", "Load Demo Data", "window.dashboardApp.loadDemoData()");
+    } else {
+      let logsHTML = '';
+      recentLogs.forEach(log => {
+        let badgeClass = 'badge-pending';
+        if (log.status === 'Approved') badgeClass = 'badge-approved';
+        if (log.status === 'Rejected') badgeClass = 'badge-rejected';
+        logsHTML += `
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:8px;">
+            <div>
+              <div style="font-size:13px; font-weight:700; color:#fff;">${escapeHTML(log.name)}</div>
+              <div style="font-size:11px; color:var(--text-secondary);">${escapeHTML(log.action)} &bull; ${escapeHTML(log.designation)} &bull; ${escapeHTML(log.company)}</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+              <span class="${badgeClass}" style="font-size:9px; padding:1px 5px;">${log.status}</span>
+              <span style="font-size:10px; color:var(--text-muted);">${formatDate(log.date)}</span>
+            </div>
+          </div>
+        `;
+      });
+      logsContainer.innerHTML = logsHTML;
+    }
+  }
+
+  function renderApproveDashPendingTable() {
+    const tbody = document.getElementById('approve-dash-pending-table-body');
+    const badgeCount = document.getElementById('approve-pending-count-badge');
+    
+    let pendingList = [
+      ...state.recruiters.filter(r => r.status === 'Pending').map(r => ({ ...r, type: 'Recruiter' })),
+      ...state.investors.filter(i => i.status === 'Pending').map(i => ({ ...i, type: 'Investor' }))
     ];
 
-    // Premium students demo
-    const demoStudents = [
-      { id: "STU001", name: "Rahul Sharma", email: "rahul@gmail.com", phone: "9876543210", college: "ABC College", branch: "Computer Science", year: "3", createdDate: "2025-05-12T10:00:00Z" },
-      { id: "STU002", name: "Priya Patel", email: "priya123@gmail.com", phone: "9876543211", college: "XYZ College", branch: "Information Technology", year: "2", createdDate: "2025-05-13T11:30:00Z" },
-      { id: "STU003", name: "Arjun Mehta", email: "arjunmehta@gmail.com", phone: "9876543212", college: "PQR College", branch: "Computer Science", year: "4", createdDate: "2025-05-14T09:15:00Z" },
-      { id: "STU004", name: "Sneha Reddy", email: "sneha.reddy@gmail.com", phone: "9876543213", college: "LMN College", branch: "Electronics & Communication", year: "3", createdDate: "2025-05-15T14:40:00Z" },
-      { id: "STU005", name: "Vikas Kumar", email: "vikas.kumar@gmail.com", phone: "9876543214", college: "ABC College", branch: "Mechanical Engineering", year: "4", createdDate: "2025-05-16T16:20:00Z" },
-      { id: "STU006", name: "Ananya Gupta", email: "ananya.gupta@gmail.com", phone: "9876543215", college: "XYZ College", branch: "Computer Science", year: "2", createdDate: "2025-05-17T10:05:00Z" },
-      { id: "STU007", name: "Manish Verma", email: "manish.verma@gmail.com", phone: "9876543216", college: "PQR College", branch: "Information Technology", year: "3", createdDate: "2025-05-18T13:50:00Z" },
-      { id: "STU008", name: "Neha Singh", email: "neha.singh@gmail.com", phone: "9876543217", college: "LMN College", branch: "Computer Science", year: "1", createdDate: "2025-05-19T11:10:00Z" }
+    badgeCount.innerText = pendingList.length;
+
+    // Filters
+    if (approveDashPendingSearch) {
+      pendingList = pendingList.filter(p => 
+        p.name.toLowerCase().includes(approveDashPendingSearch) ||
+        (p.company || p.organization).toLowerCase().includes(approveDashPendingSearch)
+      );
+    }
+
+    pendingList.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (pendingList.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center" style="padding:40px 0;">
+            <div class="table-empty-state" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+              <i class="fa-solid fa-folder-open" style="font-size:36px; color:var(--accent-red); opacity:0.8;"></i>
+              <h3 style="margin:8px 0 4px 0; color:#fff; font-size:14px;">No pending requests available.</h3>
+              <p style="margin:0 0 12px 0; color:var(--text-muted); font-size:11px;">There are no recruiter or investor verification requests pending.</p>
+              <button class="btn-solid-red" style="padding: 6px 12px; font-size: 11px; width:auto;" onclick="window.dashboardApp.loadDemoData()">Load Demo Data</button>
+            </div>
+          </td>
+        </tr>
+      `;
+      document.getElementById('approve-dash-pending-pagination-info').innerText = 'Showing 0 to 0 of 0 entries';
+      document.getElementById('approve-dash-pending-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = pendingList.length;
+    const pages = Math.ceil(total / pagApprovePending.limit);
+    if (pagApprovePending.page > pages) pagApprovePending.page = pages || 1;
+
+    const start = (pagApprovePending.page - 1) * pagApprovePending.limit;
+    const pagList = pendingList.slice(start, start + pagApprovePending.limit);
+
+    let html = '';
+    pagList.forEach(p => {
+      const typeBadge = p.type === 'Recruiter' ? 'badge-recruiter' : 'badge-investor';
+      const appliedFormatted = formatDate(p.appliedDate);
+      html += `
+        <tr>
+          <td><span class="${typeBadge}" style="font-size:10px; padding:1px 5px;">${p.type}</span></td>
+          <td style="font-weight:700;">${escapeHTML(p.name)}</td>
+          <td>${escapeHTML(p.company || p.organization)}</td>
+          <td>${escapeHTML(p.email)}</td>
+          <td>${appliedFormatted}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" onclick="window.dashboardApp.viewApprovalRosterProfile('${p.type}', '${p.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-check" onclick="window.dashboardApp.actionApprovalStatus('${p.type}', '${p.id}', 'Approved')"><i class="fa-solid fa-check"></i></button>
+              <button class="btn-action-cross" onclick="window.dashboardApp.actionApprovalStatus('${p.type}', '${p.id}', 'Rejected')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagApprovePending.limit, total);
+    document.getElementById('approve-dash-pending-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} entries`;
+    
+    renderPaginationControls('approve-dash-pending-pagination-controls', pages, pagApprovePending, (p) => {
+      pagApprovePending.page = p;
+      renderApproveDashPendingTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: RECRUITERS TABLE
+  // ==========================================
+  function renderRecruitersTable() {
+    const tbody = document.getElementById('recruiters-table-body');
+    let list = [...state.recruiters];
+
+    // Filters
+    if (recruitersFilter.search) {
+      const kw = recruitersFilter.search;
+      list = list.filter(r => r.name.toLowerCase().includes(kw) || r.company.toLowerCase().includes(kw));
+    }
+    if (recruitersFilter.status) {
+      list = list.filter(r => r.status === recruitersFilter.status);
+    }
+
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No recruiters match filter criteria.</p></div></td></tr>`;
+      document.getElementById('recruiters-pagination-info').innerText = 'Showing 0 to 0 of 0 recruiters';
+      document.getElementById('recruiters-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagRecruiters.limit);
+    if (pagRecruiters.page > pages) pagRecruiters.page = pages || 1;
+
+    const start = (pagRecruiters.page - 1) * pagRecruiters.limit;
+    const pagList = list.slice(start, start + pagRecruiters.limit);
+
+    let html = '';
+    pagList.forEach(r => {
+      const statusBadge = r.status === 'Approved' ? 'badge-approved' : r.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+      const appliedFormatted = formatDate(r.appliedDate);
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td style="font-weight:700;">${escapeHTML(r.name)}</td>
+          <td>${escapeHTML(r.company)}</td>
+          <td>${escapeHTML(r.designation)}</td>
+          <td>${escapeHTML(r.email)}</td>
+          <td>${escapeHTML(r.phone)}</td>
+          <td>${appliedFormatted}</td>
+          <td><span class="${statusBadge}">${r.status}</span></td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" onclick="window.dashboardApp.viewApprovalRosterProfile('Recruiter', '${r.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-check" onclick="window.dashboardApp.actionApprovalStatus('Recruiter', '${r.id}', 'Approved')"><i class="fa-solid fa-check"></i></button>
+              <button class="btn-action-cross" onclick="window.dashboardApp.actionApprovalStatus('Recruiter', '${r.id}', 'Rejected')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagRecruiters.limit, total);
+    document.getElementById('recruiters-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} recruiters`;
+    renderPaginationControls('recruiters-pagination-controls', pages, pagRecruiters, (p) => {
+      pagRecruiters.page = p;
+      renderRecruitersTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: INVESTORS TABLE
+  // ==========================================
+  function renderInvestorsTable() {
+    const tbody = document.getElementById('investors-table-body');
+    let list = [...state.investors];
+
+    if (investorsFilter.search) {
+      const kw = investorsFilter.search;
+      list = list.filter(i => i.name.toLowerCase().includes(kw) || i.organization.toLowerCase().includes(kw));
+    }
+    if (investorsFilter.status) {
+      list = list.filter(i => i.status === investorsFilter.status);
+    }
+
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No investors match filter criteria.</p></div></td></tr>`;
+      document.getElementById('investors-pagination-info').innerText = 'Showing 0 to 0 of 0 investors';
+      document.getElementById('investors-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagInvestors.limit);
+    if (pagInvestors.page > pages) pagInvestors.page = pages || 1;
+
+    const start = (pagInvestors.page - 1) * pagInvestors.limit;
+    const pagList = list.slice(start, start + pagInvestors.limit);
+
+    let html = '';
+    pagList.forEach(inv => {
+      const statusBadge = inv.status === 'Approved' ? 'badge-approved' : inv.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+      const appliedFormatted = formatDate(inv.appliedDate);
+      html += `
+        <tr>
+          <td class="row-id">${inv.id}</td>
+          <td style="font-weight:700;">${escapeHTML(inv.name)}</td>
+          <td>${escapeHTML(inv.organization)}</td>
+          <td>${escapeHTML(inv.designation)}</td>
+          <td>${escapeHTML(inv.email)}</td>
+          <td>${escapeHTML(inv.phone)}</td>
+          <td>${appliedFormatted}</td>
+          <td><span class="${statusBadge}">${inv.status}</span></td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" onclick="window.dashboardApp.viewApprovalRosterProfile('Investor', '${inv.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-check" onclick="window.dashboardApp.actionApprovalStatus('Investor', '${inv.id}', 'Approved')"><i class="fa-solid fa-check"></i></button>
+              <button class="btn-action-cross" onclick="window.dashboardApp.actionApprovalStatus('Investor', '${inv.id}', 'Rejected')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagInvestors.limit, total);
+    document.getElementById('investors-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} investors`;
+    renderPaginationControls('investors-pagination-controls', pages, pagInvestors, (p) => {
+      pagInvestors.page = p;
+      renderInvestorsTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: PENDING REQUESTS (WITH BULK CONTROLS)
+  // ==========================================
+  function renderPendingTable() {
+    const tbody = document.getElementById('pending-table-body');
+    let list = [
+      ...state.recruiters.filter(r => r.status === 'Pending').map(r => ({ ...r, type: 'Recruiter' })),
+      ...state.investors.filter(i => i.status === 'Pending').map(i => ({ ...i, type: 'Investor' }))
     ];
 
-    // Premium registration log links
-    const demoRegs = [
-      // All 8 registered for Microsoft Webinar
-      { id: "REG001", studentId: "STU001", eventId: 1001, registrationDate: "2025-05-12T12:00:00Z" },
-      { id: "REG002", studentId: "STU002", eventId: 1001, registrationDate: "2025-05-13T13:40:00Z" },
-      { id: "REG003", studentId: "STU003", eventId: 1001, registrationDate: "2025-05-14T14:00:00Z" },
-      { id: "REG004", studentId: "STU004", eventId: 1001, registrationDate: "2025-05-15T15:30:00Z" },
-      { id: "REG005", studentId: "STU005", eventId: 1001, registrationDate: "2025-05-16T16:45:00Z" },
-      { id: "REG006", studentId: "STU006", eventId: 1001, registrationDate: "2025-05-17T17:15:00Z" },
-      { id: "REG007", studentId: "STU007", eventId: 1001, registrationDate: "2025-05-18T18:00:00Z" },
-      { id: "REG008", studentId: "STU008", eventId: 1001, registrationDate: "2025-05-19T19:00:00Z" },
+    if (pendingFilter.search) {
+      const kw = pendingFilter.search;
+      list = list.filter(p => p.name.toLowerCase().includes(kw) || (p.company || p.organization).toLowerCase().includes(kw));
+    }
+    if (pendingFilter.type) {
+      list = list.filter(p => p.type === pendingFilter.type);
+    }
 
-      // Some registered for Google Hackathon
-      { id: "REG009", studentId: "STU001", eventId: 1002, registrationDate: "2025-05-16T10:00:00Z" },
-      { id: "REG010", studentId: "STU003", eventId: 1002, registrationDate: "2025-05-17T11:00:00Z" },
-      { id: "REG011", studentId: "STU004", eventId: 1002, registrationDate: "2025-05-18T12:00:00Z" },
-      { id: "REG012", studentId: "STU006", eventId: 1002, registrationDate: "2025-05-19T13:00:00Z" },
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
 
-      // Some registered for TCS Webinar
-      { id: "REG013", studentId: "STU002", eventId: 1003, registrationDate: "2025-05-21T10:00:00Z" },
-      { id: "REG014", studentId: "STU007", eventId: 1003, registrationDate: "2025-05-22T11:00:00Z" },
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No pending approvals request records.</p></div></td></tr>`;
+      document.getElementById('pending-pagination-info').innerText = 'Showing 0 to 0 of 0 requests';
+      document.getElementById('pending-pagination-controls').innerHTML = '';
+      updateBulkPendingSelectionUI();
+      return;
+    }
 
-      // Some registered for StepUp WebDev Workshop
-      { id: "REG015", studentId: "STU004", eventId: 1004, registrationDate: "2025-05-26T10:00:00Z" },
-      { id: "REG016", studentId: "STU008", eventId: 1004, registrationDate: "2025-05-26T11:00:00Z" }
+    const total = list.length;
+    const pages = Math.ceil(total / pagPendingTable.limit);
+    if (pagPendingTable.page > pages) pagPendingTable.page = pages || 1;
+
+    const start = (pagPendingTable.page - 1) * pagPendingTable.limit;
+    const pagList = list.slice(start, start + pagPendingTable.limit);
+
+    let html = '';
+    pagList.forEach(p => {
+      const checked = selectedPendingIds.has(`${p.type}-${p.id}`) ? 'checked' : '';
+      const typeBadge = p.type === 'Recruiter' ? 'badge-recruiter' : 'badge-investor';
+      const appliedFormatted = formatDate(p.appliedDate);
+      
+      html += `
+        <tr>
+          <td><input type="checkbox" class="pending-row-checkbox" value="${p.type}-${p.id}" ${checked} onclick="window.dashboardApp.toggleSelectPending(this)"></td>
+          <td><span class="${typeBadge}" style="font-size:10px; padding:1px 5px;">${p.type}</span></td>
+          <td class="row-id">${p.id}</td>
+          <td style="font-weight:700;">${escapeHTML(p.name)}</td>
+          <td>${escapeHTML(p.company || p.organization)}</td>
+          <td>${escapeHTML(p.designation)}</td>
+          <td>${escapeHTML(p.email)}</td>
+          <td>${appliedFormatted}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" onclick="window.dashboardApp.viewApprovalRosterProfile('${p.type}', '${p.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-check" onclick="window.dashboardApp.actionApprovalStatus('${p.type}', '${p.id}', 'Approved')"><i class="fa-solid fa-check"></i></button>
+              <button class="btn-action-cross" onclick="window.dashboardApp.actionApprovalStatus('${p.type}', '${p.id}', 'Rejected')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagPendingTable.limit, total);
+    document.getElementById('pending-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} requests`;
+    
+    renderPaginationControls('pending-pagination-controls', pages, pagPendingTable, (p) => {
+      pagPendingTable.page = p;
+      renderPendingTable();
+    });
+
+    updateBulkPendingSelectionUI();
+  }
+
+  function toggleSelectPending(chk) {
+    const val = chk.value;
+    if (chk.checked) {
+      selectedPendingIds.add(val);
+    } else {
+      selectedPendingIds.delete(val);
+    }
+    updateBulkPendingSelectionUI();
+  }
+
+  function toggleSelectAllPending(chk) {
+    const checkBoxes = document.querySelectorAll('.pending-row-checkbox');
+    checkBoxes.forEach(c => {
+      c.checked = chk.checked;
+      const val = c.value;
+      if (chk.checked) {
+        selectedPendingIds.add(val);
+      } else {
+        selectedPendingIds.delete(val);
+      }
+    });
+    updateBulkPendingSelectionUI();
+  }
+
+  function updateBulkPendingSelectionUI() {
+    const counter = document.getElementById('pending-selected-count');
+    if (counter) {
+      counter.innerText = `${selectedPendingIds.size} items selected`;
+    }
+    
+    // Check main select all box status
+    const allBox = document.getElementById('pending-select-all');
+    if (allBox) {
+      const chks = document.querySelectorAll('.pending-row-checkbox');
+      if (chks.length > 0 && Array.from(chks).every(c => c.checked)) {
+        allBox.checked = true;
+      } else {
+        allBox.checked = false;
+      }
+    }
+  }
+
+  function bulkApprovePending() {
+    if (selectedPendingIds.size === 0) {
+      alert("No requests selected for bulk approval.");
+      return;
+    }
+    if (confirm(`Are you sure you want to approve all ${selectedPendingIds.size} selected accounts?`)) {
+      selectedPendingIds.forEach(compositeId => {
+        const parts = compositeId.split('-');
+        const type = parts[0];
+        const id = parts[1];
+        setApprovalRosterStatus(type, id, 'Approved');
+      });
+      selectedPendingIds.clear();
+      saveDatabase();
+      renderPendingTable();
+      renderDashboard();
+      alert("Selected accounts successfully approved!");
+    }
+  }
+
+  function bulkRejectPending() {
+    if (selectedPendingIds.size === 0) {
+      alert("No requests selected for bulk rejection.");
+      return;
+    }
+    if (confirm(`Are you sure you want to reject all ${selectedPendingIds.size} selected accounts?`)) {
+      selectedPendingIds.forEach(compositeId => {
+        const parts = compositeId.split('-');
+        const type = parts[0];
+        const id = parts[1];
+        setApprovalRosterStatus(type, id, 'Rejected');
+      });
+      selectedPendingIds.clear();
+      saveDatabase();
+      renderPendingTable();
+      renderDashboard();
+      alert("Selected accounts successfully rejected.");
+    }
+  }
+
+  // ==========================================
+  // RENDERER: APPROVED ACCOUNTS MASTER
+  // ==========================================
+  function renderApprovedTable() {
+    const tbody = document.getElementById('approved-table-body');
+    let list = [
+      ...state.recruiters.filter(r => r.status === 'Approved').map(r => ({ ...r, type: 'Recruiter' })),
+      ...state.investors.filter(i => i.status === 'Approved').map(i => ({ ...i, type: 'Investor' }))
     ];
 
-    state.events = demoEvents;
-    state.students = demoStudents;
-    state.registrations = demoRegs;
+    if (approvedFilter.search) {
+      const kw = approvedFilter.search;
+      list = list.filter(p => p.name.toLowerCase().includes(kw) || (p.company || p.organization).toLowerCase().includes(kw));
+    }
+    if (approvedFilter.type) {
+      list = list.filter(p => p.type === approvedFilter.type);
+    }
 
-    selectedEventId = 1001; // Default select first event
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center"><div class="table-empty-state"><p>No approved accounts match filters.</p></div></td></tr>`;
+      document.getElementById('approved-pagination-info').innerText = 'Showing 0 to 0 of 0 accounts';
+      document.getElementById('approved-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagApprovedTable.limit);
+    if (pagApprovedTable.page > pages) pagApprovedTable.page = pages || 1;
+
+    const start = (pagApprovedTable.page - 1) * pagApprovedTable.limit;
+    const pagList = list.slice(start, start + pagApprovedTable.limit);
+
+    let html = '';
+    pagList.forEach(p => {
+      const typeBadge = p.type === 'Recruiter' ? 'badge-recruiter' : 'badge-investor';
+      const actionedDate = formatDate(p.appliedDate);
+      html += `
+        <tr>
+          <td><span class="${typeBadge}" style="font-size:10px; padding:1px 5px;">${p.type}</span></td>
+          <td class="row-id">${p.id}</td>
+          <td style="font-weight:700;">${escapeHTML(p.name)}</td>
+          <td>${escapeHTML(p.company || p.organization)}</td>
+          <td>${escapeHTML(p.designation)}</td>
+          <td>${escapeHTML(p.email)}</td>
+          <td>${escapeHTML(p.phone)}</td>
+          <td><i class="fa-regular fa-calendar-check" style="color:var(--accent-green); margin-right:6px;"></i>${actionedDate}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagApprovedTable.limit, total);
+    document.getElementById('approved-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} accounts`;
+    renderPaginationControls('approved-pagination-controls', pages, pagApprovedTable, (p) => {
+      pagApprovedTable.page = p;
+      renderApprovedTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: REJECTED ACCOUNTS MASTER
+  // ==========================================
+  function renderRejectedTable() {
+    const tbody = document.getElementById('rejected-table-body');
+    let list = [
+      ...state.recruiters.filter(r => r.status === 'Rejected').map(r => ({ ...r, type: 'Recruiter' })),
+      ...state.investors.filter(i => i.status === 'Rejected').map(i => ({ ...i, type: 'Investor' }))
+    ];
+
+    if (rejectedFilter.search) {
+      const kw = rejectedFilter.search;
+      list = list.filter(p => p.name.toLowerCase().includes(kw) || (p.company || p.organization).toLowerCase().includes(kw));
+    }
+    if (rejectedFilter.type) {
+      list = list.filter(p => p.type === rejectedFilter.type);
+    }
+
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center"><div class="table-empty-state"><p>No rejected accounts registered.</p></div></td></tr>`;
+      document.getElementById('rejected-pagination-info').innerText = 'Showing 0 to 0 of 0 accounts';
+      document.getElementById('rejected-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagRejectedTable.limit);
+    if (pagRejectedTable.page > pages) pagRejectedTable.page = pages || 1;
+
+    const start = (pagRejectedTable.page - 1) * pagRejectedTable.limit;
+    const pagList = list.slice(start, start + pagRejectedTable.limit);
+
+    let html = '';
+    pagList.forEach(p => {
+      const typeBadge = p.type === 'Recruiter' ? 'badge-recruiter' : 'badge-investor';
+      const actionedDate = formatDate(p.appliedDate);
+      html += `
+        <tr>
+          <td><span class="${typeBadge}" style="font-size:10px; padding:1px 5px;">${p.type}</span></td>
+          <td class="row-id">${p.id}</td>
+          <td style="font-weight:700;">${escapeHTML(p.name)}</td>
+          <td>${escapeHTML(p.company || p.organization)}</td>
+          <td>${escapeHTML(p.designation)}</td>
+          <td>${escapeHTML(p.email)}</td>
+          <td><i class="fa-regular fa-calendar-xmark" style="color:var(--accent-red); margin-right:6px;"></i>${actionedDate}</td>
+          <td>
+            <button class="btn-action-check" onclick="window.dashboardApp.actionApprovalStatus('${p.type}', '${p.id}', 'Approved')" title="Re-approve Account"><i class="fa-solid fa-check"></i> Re-verify</button>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagRejectedTable.limit, total);
+    document.getElementById('rejected-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} accounts`;
+    renderPaginationControls('rejected-pagination-controls', pages, pagRejectedTable, (p) => {
+      pagRejectedTable.page = p;
+      renderRejectedTable();
+    });
+  }
+
+  // ==========================================
+  // SHARED ACTIONS: APPROVAL SYSTEM WORKFLOWS
+  // ==========================================
+  function actionApprovalStatus(type, id, status) {
+    if (confirm(`Are you sure you want to mark this ${type} request as ${status}?`)) {
+      setApprovalRosterStatus(type, id, status);
+      saveDatabase();
+      triggerTabRenders(currentActiveTab);
+      renderDashboard();
+      
+      // Update pending requester count badge dynamically if on dashboard
+      const badge = document.getElementById('approve-pending-count-badge');
+      if (badge) {
+        const count = state.recruiters.filter(r => r.status === 'Pending').length + state.investors.filter(i => i.status === 'Pending').length;
+        badge.innerText = count;
+      }
+    }
+  }
+
+  function setApprovalRosterStatus(type, id, status) {
+    if (type === 'Recruiter') {
+      const idx = state.recruiters.findIndex(r => r.id === id);
+      if (idx !== -1) state.recruiters[idx].status = status;
+    } else {
+      const idx = state.investors.findIndex(i => i.id === id);
+      if (idx !== -1) state.investors[idx].status = status;
+    }
+  }
+
+  function viewApprovalRosterProfile(type, id) {
+    const item = type === 'Recruiter' 
+      ? state.recruiters.find(r => r.id === id)
+      : state.investors.find(i => i.id === id);
+
+    if (!item) return;
+
+    // We can show detailed profile alert or popup dialog
+    alert(`
+      Profile Verification Details (${type.toUpperCase()})
+      -----------------------------------------------
+      ID: ${item.id}
+      Status: ${item.status}
+      Full Name: ${item.name}
+      Company/VC: ${item.company || item.organization}
+      Designation: ${item.designation}
+      Email Address: ${item.email}
+      Phone Number: ${item.phone}
+      Applied Date: ${formatDate(item.appliedDate)}
+    `);
+  }
+
+  // ==========================================
+  // VIEW EVENTS REDIRECT FOR DASHBOARD CLICKS
+  // ==========================================
+  function viewEventDetails(type, id) {
+    if (type === 'Webinar') {
+      viewWebinarDetails(id);
+    } else if (type === 'Hackathon') {
+      viewHackathonDetails(id);
+    } else {
+      viewPitchEventDetails(id);
+    }
+  }
+
+  // ==========================================
+  // MODALS CONTROL: WEBINARS CRUD
+  // ==========================================
+  function openCreateWebinarModal() {
+    cachedWebinarPoster = null;
+    document.getElementById('webinar-modal-title').innerText = "Create Webinar";
+    document.getElementById('webinar-submit-btn').innerText = "Create Webinar";
+    document.getElementById('create-webinar-form').reset();
+    document.getElementById('webinar-form-id').value = '';
+    document.getElementById('webinar-poster-preview').innerHTML = '';
+    document.getElementById('create-webinar-modal').classList.add('active');
+  }
+
+  function openEditWebinarModal(id) {
+    const web = state.webinars.find(w => w.id === id);
+    if (!web) return;
+
+    cachedWebinarPoster = web.posterBanner;
+    document.getElementById('webinar-modal-title').innerText = "Edit Webinar Details";
+    document.getElementById('webinar-submit-btn').innerText = "Save Changes";
+    document.getElementById('create-webinar-form').reset();
+
+    document.getElementById('webinar-form-id').value = web.id;
+    document.getElementById('webinar-form-name').value = web.name;
+    document.getElementById('webinar-form-overview').value = web.overview;
+    document.getElementById('webinar-form-description').value = web.description;
+    document.getElementById('webinar-form-start-date').value = web.startDate;
+    document.getElementById('webinar-form-end-date').value = web.endDate;
+    document.getElementById('webinar-form-timezone').value = web.timezone;
+    document.getElementById('webinar-form-start-time').value = web.startTime;
+    document.getElementById('webinar-form-end-time').value = web.endTime;
+    document.getElementById('webinar-form-mode').value = web.mode;
+    document.getElementById('webinar-form-venue').value = web.venue;
+    document.getElementById('webinar-form-contact-name').value = web.contactName;
+    document.getElementById('webinar-form-contact-phone').value = web.contactPhone;
+    document.getElementById('webinar-form-contact-email').value = web.contactEmail;
+
+    if (web.posterBanner) {
+      showPosterPreview('webinar-poster-preview', web.posterBanner, 'webinar_banner.png', () => {
+        cachedWebinarPoster = null;
+      });
+    } else {
+      document.getElementById('webinar-poster-preview').innerHTML = '';
+    }
+
+    document.getElementById('create-webinar-modal').classList.add('active');
+  }
+
+  function closeCreateWebinarModal() {
+    document.getElementById('create-webinar-modal').classList.remove('active');
+  }
+
+  function submitWebinarForm() {
+    const idVal = document.getElementById('webinar-form-id').value;
+    const isEdit = idVal !== '';
+
+    const webData = {
+      name: document.getElementById('webinar-form-name').value.trim(),
+      posterBanner: cachedWebinarPoster,
+      overview: document.getElementById('webinar-form-overview').value.trim(),
+      description: document.getElementById('webinar-form-description').value.trim(),
+      startDate: document.getElementById('webinar-form-start-date').value,
+      endDate: document.getElementById('webinar-form-end-date').value,
+      timezone: document.getElementById('webinar-form-timezone').value.trim(),
+      startTime: document.getElementById('webinar-form-start-time').value,
+      endTime: document.getElementById('webinar-form-end-time').value,
+      mode: document.getElementById('webinar-form-mode').value,
+      venue: document.getElementById('webinar-form-venue').value.trim(),
+      contactName: document.getElementById('webinar-form-contact-name').value.trim(),
+      contactPhone: document.getElementById('webinar-form-contact-phone').value.trim(),
+      contactEmail: document.getElementById('webinar-form-contact-email').value.trim()
+    };
+
+    if (new Date(webData.startDate) > new Date(webData.endDate)) {
+      alert("Start Date cannot be later than End Date.");
+      return;
+    }
+
+    if (isEdit) {
+      const webId = parseInt(idVal);
+      const idx = state.webinars.findIndex(w => w.id === webId);
+      if (idx !== -1) {
+        webData.id = webId;
+        state.webinars[idx] = webData;
+        alert("Webinar details updated successfully!");
+      }
+    } else {
+      webData.id = state.webinars.length > 0 ? Math.max(...state.webinars.map(w => w.id)) + 1 : 2001;
+      state.webinars.push(webData);
+      alert("Webinar created successfully!");
+    }
 
     saveDatabase();
-    renderAll();
-    switchTab('events');
-    alert("Premium evaluation demo data loaded successfully!");
+    closeCreateWebinarModal();
+    renderWebinarsGrid();
+    renderDashboard();
+    
+    if (isEdit && selectedWebinarId === parseInt(idVal)) {
+      renderWebinarDetailsPane();
+    }
+  }
+
+  function deleteWebinar(id) {
+    if (confirm("Are you sure you want to delete this webinar? All registrations logs linked to it will be erased.")) {
+      state.webinars = state.webinars.filter(w => w.id !== id);
+      state.registrations = state.registrations.filter(r => r.eventId !== id);
+      saveDatabase();
+      renderWebinarsGrid();
+      renderDashboard();
+      
+      if (selectedWebinarId === id) {
+        switchTab('webinars-list');
+      }
+    }
   }
 
   // ==========================================
-  // CORE UTILITY FORMATTERS
+  // MODALS CONTROL: HACKATHONS CRUD
+  // ==========================================
+  function openCreateHackathonModal() {
+    cachedHackathonLogo = null;
+    cachedHackathonPoster = null;
+    document.getElementById('hackathon-modal-title').innerText = "Create Hackathon";
+    document.getElementById('hackathon-submit-btn').innerText = "Create Hackathon";
+    document.getElementById('create-hackathon-form').reset();
+    document.getElementById('hackathon-form-id').value = '';
+    document.getElementById('hackathon-logo-preview').innerHTML = '';
+    document.getElementById('hackathon-poster-preview').innerHTML = '';
+    document.getElementById('create-hackathon-modal').classList.add('active');
+  }
+
+  function openEditHackathonModal(id) {
+    const hack = state.hackathons.find(h => h.id === id);
+    if (!hack) return;
+
+    cachedHackathonLogo = hack.orgLogo;
+    cachedHackathonPoster = hack.posterBanner;
+
+    document.getElementById('hackathon-modal-title').innerText = "Edit Hackathon Details";
+    document.getElementById('hackathon-submit-btn').innerText = "Save Changes";
+    document.getElementById('create-hackathon-form').reset();
+
+    document.getElementById('hackathon-form-id').value = hack.id;
+    document.getElementById('hackathon-form-name').value = hack.name;
+    document.getElementById('hackathon-form-conducted').value = hack.conductedBy;
+    document.getElementById('hackathon-form-description').value = hack.description;
+    document.getElementById('hackathon-form-participation').value = hack.participation;
+    document.getElementById('hackathon-form-min-team').value = hack.minTeamSize || '';
+    document.getElementById('hackathon-form-max-team').value = hack.maxTeamSize || '';
+    document.getElementById('hackathon-form-start-date').value = hack.startDate;
+    document.getElementById('hackathon-form-end-date').value = hack.endDate;
+    document.getElementById('hackathon-form-timezone').value = hack.timezone;
+    document.getElementById('hackathon-form-start-time').value = hack.startTime;
+    document.getElementById('hackathon-form-end-time').value = hack.endTime;
+    document.getElementById('hackathon-form-mode').value = hack.mode;
+    document.getElementById('hackathon-form-venue').value = hack.venue;
+    document.getElementById('hackathon-form-certificate').value = hack.certificateAvailable;
+    document.getElementById('hackathon-form-contact-name').value = hack.contactName;
+    document.getElementById('hackathon-form-contact-phone').value = hack.contactPhone;
+    document.getElementById('hackathon-form-contact-email').value = hack.contactEmail;
+
+    if (hack.orgLogo) {
+      showPosterPreview('hackathon-logo-preview', hack.orgLogo, 'org_logo.png', () => { cachedHackathonLogo = null; });
+    } else {
+      document.getElementById('hackathon-logo-preview').innerHTML = '';
+    }
+
+    if (hack.posterBanner) {
+      showPosterPreview('hackathon-poster-preview', hack.posterBanner, 'hack_banner.png', () => { cachedHackathonPoster = null; });
+    } else {
+      document.getElementById('hackathon-poster-preview').innerHTML = '';
+    }
+
+    document.getElementById('create-hackathon-modal').classList.add('active');
+  }
+
+  function closeCreateHackathonModal() {
+    document.getElementById('create-hackathon-modal').classList.remove('active');
+  }
+
+  function submitHackathonForm() {
+    const idVal = document.getElementById('hackathon-form-id').value;
+    const isEdit = idVal !== '';
+
+    const hackData = {
+      name: document.getElementById('hackathon-form-name').value.trim(),
+      conductedBy: document.getElementById('hackathon-form-conducted').value.trim(),
+      orgLogo: cachedHackathonLogo,
+      posterBanner: cachedHackathonPoster,
+      description: document.getElementById('hackathon-form-description').value.trim(),
+      participation: document.getElementById('hackathon-form-participation').value,
+      minTeamSize: document.getElementById('hackathon-form-min-team').value ? parseInt(document.getElementById('hackathon-form-min-team').value) : null,
+      maxTeamSize: document.getElementById('hackathon-form-max-team').value ? parseInt(document.getElementById('hackathon-form-max-team').value) : null,
+      startDate: document.getElementById('hackathon-form-start-date').value,
+      endDate: document.getElementById('hackathon-form-end-date').value,
+      timezone: document.getElementById('hackathon-form-timezone').value.trim(),
+      startTime: document.getElementById('hackathon-form-start-time').value,
+      endTime: document.getElementById('hackathon-form-end-time').value,
+      mode: document.getElementById('hackathon-form-mode').value,
+      venue: document.getElementById('hackathon-form-venue').value.trim(),
+      certificateAvailable: document.getElementById('hackathon-form-certificate').value,
+      contactName: document.getElementById('hackathon-form-contact-name').value.trim(),
+      contactPhone: document.getElementById('hackathon-form-contact-phone').value.trim(),
+      contactEmail: document.getElementById('hackathon-form-contact-email').value.trim()
+    };
+
+    if (isEdit) {
+      const hackId = parseInt(idVal);
+      const idx = state.hackathons.findIndex(h => h.id === hackId);
+      if (idx !== -1) {
+        hackData.id = hackId;
+        state.hackathons[idx] = hackData;
+        alert("Hackathon details updated successfully!");
+      }
+    } else {
+      hackData.id = state.hackathons.length > 0 ? Math.max(...state.hackathons.map(h => h.id)) + 1 : 3001;
+      state.hackathons.push(hackData);
+      alert("Hackathon created successfully!");
+    }
+
+    saveDatabase();
+    closeCreateHackathonModal();
+    renderHackathonsGrid();
+    renderDashboard();
+
+    if (isEdit && selectedHackathonId === parseInt(idVal)) {
+      renderHackathonDetailsPane();
+    }
+  }
+
+  function deleteHackathon(id) {
+    if (confirm("Are you sure you want to delete this hackathon? All team registration records will be wiped out.")) {
+      state.hackathons = state.hackathons.filter(h => h.id !== id);
+      state.registrations = state.registrations.filter(r => r.eventId !== id);
+      saveDatabase();
+      renderHackathonsGrid();
+      renderDashboard();
+
+      if (selectedHackathonId === id) {
+        switchTab('hackathons-list');
+      }
+    }
+  }
+
+  // ==========================================
+  // MODALS CONTROL: PITCH EVENTS CRUD
+  // ==========================================
+  function openCreatePitchEventModal() {
+    cachedPitchEventPoster = null;
+    document.getElementById('pitch-event-modal-title').innerText = "Create Pitch Event";
+    document.getElementById('pitch-event-submit-btn').innerText = "Create Pitch Event";
+    document.getElementById('create-pitch-event-form').reset();
+    document.getElementById('pitch-event-form-id').value = '';
+    document.getElementById('pitch-event-poster-preview').innerHTML = '';
+    document.getElementById('create-pitch-event-modal').classList.add('active');
+  }
+
+  function openEditPitchEventModal(id) {
+    const pe = state.pitchEvents.find(p => p.id === id);
+    if (!pe) return;
+
+    cachedPitchEventPoster = pe.posterBanner;
+    document.getElementById('pitch-event-modal-title').innerText = "Edit Pitch Event";
+    document.getElementById('pitch-event-submit-btn').innerText = "Save Changes";
+    document.getElementById('create-pitch-event-form').reset();
+
+    document.getElementById('pitch-event-form-id').value = pe.id;
+    document.getElementById('pitch-event-form-name').value = pe.name;
+    document.getElementById('pitch-event-form-description').value = pe.description;
+    document.getElementById('pitch-event-form-start-date').value = pe.startDate;
+    document.getElementById('pitch-event-form-end-date').value = pe.endDate;
+    document.getElementById('pitch-event-form-timezone').value = pe.timezone;
+    document.getElementById('pitch-event-form-start-time').value = pe.startTime;
+    document.getElementById('pitch-event-form-end-time').value = pe.endTime;
+    document.getElementById('pitch-event-form-mode').value = pe.mode;
+    document.getElementById('pitch-event-form-venue').value = pe.venue;
+
+    // Ticket management
+    document.getElementById('pitch-event-form-ticket-name').value = pe.ticketName;
+    document.getElementById('pitch-event-form-ticket-price').value = pe.ticketPrice;
+    document.getElementById('pitch-event-form-ticket-desc').value = pe.ticketDescription || '';
+    document.getElementById('pitch-event-form-sale-start').value = pe.saleStartDate || '';
+    document.getElementById('pitch-event-form-sale-end').value = pe.saleEndDate || '';
+    document.getElementById('pitch-event-form-sale-start-time').value = pe.saleStartTime || '';
+    document.getElementById('pitch-event-form-sale-end-time').value = pe.saleEndTime || '';
+
+    // Contact person
+    document.getElementById('pitch-event-form-contact-name').value = pe.contactName;
+    document.getElementById('pitch-event-form-contact-phone').value = pe.contactPhone;
+    document.getElementById('pitch-event-form-contact-email').value = pe.contactEmail;
+
+    if (pe.posterBanner) {
+      showPosterPreview('pitch-event-poster-preview', pe.posterBanner, 'pitch_banner.png', () => { cachedPitchEventPoster = null; });
+    } else {
+      document.getElementById('pitch-event-poster-preview').innerHTML = '';
+    }
+
+    document.getElementById('create-pitch-event-modal').classList.add('active');
+  }
+
+  function closeCreatePitchEventModal() {
+    document.getElementById('create-pitch-event-modal').classList.remove('active');
+  }
+
+  function submitPitchEventForm() {
+    const idVal = document.getElementById('pitch-event-form-id').value;
+    const isEdit = idVal !== '';
+
+    const peData = {
+      name: document.getElementById('pitch-event-form-name').value.trim(),
+      posterBanner: cachedPitchEventPoster,
+      description: document.getElementById('pitch-event-form-description').value.trim(),
+      startDate: document.getElementById('pitch-event-form-start-date').value,
+      endDate: document.getElementById('pitch-event-form-end-date').value,
+      timezone: document.getElementById('pitch-event-form-timezone').value.trim(),
+      startTime: document.getElementById('pitch-event-form-start-time').value,
+      endTime: document.getElementById('pitch-event-form-end-time').value,
+      mode: document.getElementById('pitch-event-form-mode').value,
+      venue: document.getElementById('pitch-event-form-venue').value.trim(),
+
+      ticketName: document.getElementById('pitch-event-form-ticket-name').value.trim(),
+      ticketPrice: parseFloat(document.getElementById('pitch-event-form-ticket-price').value || 0),
+      ticketDescription: document.getElementById('pitch-event-form-ticket-desc').value.trim(),
+      saleStartDate: document.getElementById('pitch-event-form-sale-start').value,
+      saleEndDate: document.getElementById('pitch-event-form-sale-end').value,
+      saleStartTime: document.getElementById('pitch-event-form-sale-start-time').value,
+      saleEndTime: document.getElementById('pitch-event-form-sale-end-time').value,
+
+      contactName: document.getElementById('pitch-event-form-contact-name').value.trim(),
+      contactPhone: document.getElementById('pitch-event-form-contact-phone').value.trim(),
+      contactEmail: document.getElementById('pitch-event-form-contact-email').value.trim()
+    };
+
+    if (isEdit) {
+      const peId = parseInt(idVal);
+      const idx = state.pitchEvents.findIndex(p => p.id === peId);
+      if (idx !== -1) {
+        peData.id = peId;
+        state.pitchEvents[idx] = peData;
+        alert("Pitch Event details updated successfully!");
+      }
+    } else {
+      peData.id = state.pitchEvents.length > 0 ? Math.max(...state.pitchEvents.map(p => p.id)) + 1 : 4001;
+      state.pitchEvents.push(peData);
+      alert("Pitch Event created successfully!");
+    }
+
+    saveDatabase();
+    closeCreatePitchEventModal();
+    renderPitchEventsGrid();
+    renderDashboard();
+
+    if (isEdit && selectedPitchEventId === parseInt(idVal)) {
+      renderPitchEventDetailsPane();
+    }
+  }
+
+  function deletePitchEvent(id) {
+    if (confirm("Are you sure you want to delete this Pitch Event? All ticket sales history will be lost.")) {
+      state.pitchEvents = state.pitchEvents.filter(p => p.id !== id);
+      state.pitchRegistrations = state.pitchRegistrations.filter(pr => pr.eventId !== id);
+      saveDatabase();
+      renderPitchEventsGrid();
+      renderDashboard();
+
+      if (selectedPitchEventId === id) {
+        switchTab('pitch-events-list');
+      }
+    }
+  }
+
+  // ==========================================
+  // MODALS CONTROL: ADD & ASSIGN STUDENT
+  // ==========================================
+  function openAddStudentModal() {
+    document.getElementById('add-student-form').reset();
+    document.getElementById('form-student-event-id').value = '';
+    document.getElementById('form-student-event-type').value = '';
+    document.getElementById('student-modal-title').innerText = "Register Student Portfolio";
+    document.getElementById('student-modal-title').nextElementSibling.innerText = "Register student globally in incubator directory.";
+    document.getElementById('add-student-modal').classList.add('active');
+  }
+
+  function openAddStudentToEventModal(type, eventId) {
+    document.getElementById('add-student-form').reset();
+    document.getElementById('form-student-event-id').value = eventId;
+    document.getElementById('form-student-event-type').value = type;
+    document.getElementById('student-modal-title').innerText = `Register Event ${type === 'pitch' ? 'Participant' : 'Student'}`;
+    document.getElementById('student-modal-title').nextElementSibling.innerText = `Enroll student into this selected ${type} program.`;
+    document.getElementById('add-student-modal').classList.add('active');
+  }
+
+  function closeAddStudentModal() {
+    document.getElementById('add-student-modal').classList.remove('active');
+  }
+
+  function submitStudentForm() {
+    const email = document.getElementById('form-student-email').value.trim();
+    const eventIdVal = document.getElementById('form-student-event-id').value;
+    const evType = document.getElementById('form-student-event-type').value;
+
+    let student = state.students.find(s => s.email.toLowerCase() === email.toLowerCase());
+
+    if (!student) {
+      // Create new student
+      const count = state.students.length + 1;
+      const studentId = `STU${String(count).padStart(3, '0')}`;
+      student = {
+        id: studentId,
+        name: document.getElementById('form-student-name').value.trim(),
+        email: email,
+        phone: document.getElementById('form-student-phone').value.trim(),
+        college: document.getElementById('form-student-college').value.trim(),
+        branch: document.getElementById('form-student-branch').value,
+        year: document.getElementById('form-student-year').value,
+        createdDate: new Date().toISOString()
+      };
+      state.students.push(student);
+    } else {
+      // Update details
+      student.name = document.getElementById('form-student-name').value.trim();
+      student.phone = document.getElementById('form-student-phone').value.trim();
+      student.college = document.getElementById('form-student-college').value.trim();
+      student.branch = document.getElementById('form-student-branch').value;
+      student.year = document.getElementById('form-student-year').value;
+    }
+
+    let dialogTitle = "Registration Successful";
+    let dialogSubtitle = "The student account has been created and verified successfully.";
+    let outputLabel = "Student Unique ID";
+    let outputValue = student.id;
+
+    // Assignment logic if eventId is set
+    if (eventIdVal) {
+      const eventId = parseInt(eventIdVal);
+      if (evType === 'pitch') {
+        const isReg = state.pitchRegistrations.some(r => r.studentId === student.id && r.eventId === eventId);
+        if (isReg) {
+          alert(`${student.name} is already registered for this pitch event.`);
+          return;
+        }
+        const regId = `PR${String(state.pitchRegistrations.length + 1).padStart(3, '0')}`;
+        state.pitchRegistrations.push({
+          id: regId,
+          studentId: student.id,
+          eventId: eventId,
+          registrationDate: new Date().toISOString()
+        });
+
+        dialogTitle = "Voucher Booking Done";
+        dialogSubtitle = "Student has booked tickets for the pitch event successfully.";
+        outputLabel = "Ticket Booking ID";
+        outputValue = regId;
+      } else {
+        const isReg = state.registrations.some(r => r.studentId === student.id && r.eventId === eventId);
+        if (isReg) {
+          alert(`${student.name} is already registered for this event program.`);
+          return;
+        }
+        const regId = `REG${String(state.registrations.length + 1).padStart(3, '0')}`;
+        state.registrations.push({
+          id: regId,
+          studentId: student.id,
+          eventId: eventId,
+          registrationDate: new Date().toISOString()
+        });
+
+        dialogTitle = "Enrollment Successful";
+        dialogSubtitle = "Student has been registered for the selected event.";
+        outputLabel = "Enrollment ID";
+        outputValue = regId;
+      }
+    }
+
+    // Trigger success confirmation modal
+    document.getElementById('student-success-modal').querySelector('h3').innerText = dialogTitle;
+    document.getElementById('student-success-modal').querySelector('p').innerText = dialogSubtitle;
+    document.getElementById('student-success-modal').querySelector('span').innerText = outputLabel;
+    document.getElementById('success-student-id').innerText = outputValue;
+    document.getElementById('success-student-name').innerText = student.name;
+    document.getElementById('success-student-branch').innerText = student.branch;
+    document.getElementById('success-student-year').innerText = `${student.year} Year`;
+    document.getElementById('student-success-modal').classList.add('active');
+
+    saveDatabase();
+    closeAddStudentModal();
+    renderStudentsTable();
+    renderDashboard();
+
+    // Reload active details pane if relevant
+    if (eventIdVal) {
+      if (evType === 'pitch') {
+        renderPitchEventDetailsPane();
+      } else if (evType === 'webinar') {
+        renderWebinarDetailsPane();
+      } else {
+        renderHackathonDetailsPane();
+      }
+    }
+  }
+
+  // ==========================================
+  // SHARED ACTIONS: LOGOUT SESSION
+  // ==========================================
+  function performLogout() {
+    document.getElementById('logout-modal').classList.remove('active');
+    alert("Super Admin session securely closed. Redirecting back to index.html...");
+    window.location.hash = '';
+    window.location.reload();
+  }
+
+  // ==========================================
+  // WEB SEARCH FILTER UTILITY FUNCTIONS
+  // ==========================================
+  function triggerGlobalSearch(query) {
+    if (!query) return;
+    
+    // Redirect search queries to search bar values of active pages
+    if (currentActiveTab === 'webinars-list') {
+      const searchBox = document.getElementById('webinars-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'hackathons-list') {
+      const searchBox = document.getElementById('hackathons-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'pitch-events-list') {
+      const searchBox = document.getElementById('pitch-events-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'startup-applications') {
+      const searchBox = document.getElementById('startup-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'students') {
+      const searchBox = document.getElementById('students-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-dashboard') {
+      const searchBox = document.getElementById('approve-dash-pending-search');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-recruiters') {
+      const searchBox = document.getElementById('recruiters-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-investors') {
+      const searchBox = document.getElementById('investors-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-pending') {
+      const searchBox = document.getElementById('pending-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-approved') {
+      const searchBox = document.getElementById('approved-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    } else if (currentActiveTab === 'approval-rejected') {
+      const searchBox = document.getElementById('rejected-search-input');
+      searchBox.value = query;
+      searchBox.dispatchEvent(new Event('input'));
+    }
+  }
+
+  function setupGlobalShortcuts() {
+    // Focus search on Ctrl + K shortcut
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        document.getElementById('global-nav-search').focus();
+      }
+    });
+  }
+
+  // ==========================================
+  // DYNAMIC HTML CANVAS DRAWINGS
+  // ==========================================
+  
+  // 1. Mini Line Sparklines Drawing
+  function drawSparkline(canvasId, points, color) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    
+    // Clear & Resize
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // Safeguard for hidden canvases
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    
+    const w = rect.width;
+    const h = rect.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Setup coordinates
+    const minVal = Math.min(...points);
+    const maxVal = Math.max(...points);
+    const range = maxVal - minVal || 1;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    points.forEach((val, i) => {
+      const x = (i / (points.length - 1)) * w;
+      const y = h - ((val - minVal) / range) * (h - 8) - 4;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Fill area below sparkline
+    ctx.lineTo(w, h);
+    ctx.lineTo(0, h);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, color.replace(')', ', 0.15)').replace('#', 'rgba(' + hexToRgb(color) + ', 0.15)'));
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+
+  // 2. Large Line Chart Drawing with grids
+  function drawLineChart(canvasId, labels, datasets) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // Safeguard for hidden canvases
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+
+    const w = rect.width;
+    const h = rect.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Padding bounds for labels
+    const padLeft = 40;
+    const padRight = 20;
+    const padTop = 15;
+    const padBottom = 25;
+    const chartW = w - padLeft - padRight;
+    const chartH = h - padTop - padBottom;
+
+    // Get max value across all datasets
+    let allPoints = [];
+    datasets.forEach(d => allPoints.push(...d.points));
+    const maxVal = Math.max(...allPoints, 100);
+
+    // Draw Grids (horizontal lines)
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = '#56647a';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+
+    const gridLinesCount = 5;
+    for (let i = 0; i <= gridLinesCount; i++) {
+      const gridY = padTop + chartH - (i / gridLinesCount) * chartH;
+      const gridVal = Math.round((i / gridLinesCount) * maxVal);
+      
+      // Line
+      ctx.beginPath();
+      ctx.moveTo(padLeft, gridY);
+      ctx.lineTo(w - padRight, gridY);
+      ctx.stroke();
+
+      // Label
+      ctx.fillText(gridVal, padLeft - 8, gridY);
+    }
+
+    // Draw Datasets Lines
+    datasets.forEach(set => {
+      ctx.strokeStyle = set.color;
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      ctx.beginPath();
+      set.points.forEach((val, i) => {
+        const x = padLeft + (i / (set.points.length - 1)) * chartW;
+        const y = padTop + chartH - (val / maxVal) * chartH;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Draw points circle dots
+      ctx.fillStyle = set.color;
+      set.points.forEach((val, i) => {
+        const x = padLeft + (i / (set.points.length - 1)) * chartW;
+        const y = padTop + chartH - (val / maxVal) * chartH;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#0b0f19'; // Inner dot cutout
+        ctx.beginPath();
+        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = set.color; // reset
+      });
+    });
+
+    // Draw X-axis label list
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#56647a';
+    labels.forEach((lbl, i) => {
+      const x = padLeft + (i / (labels.length - 1)) * chartW;
+      const y = h - padBottom + 14;
+      ctx.fillText(lbl, x, y);
+    });
+  }
+
+  // 3. Circle Donut Charts
+  function drawDonutChart(canvasId, segments) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // Safeguard for hidden canvases
+
+    const total = segments.reduce((sum, s) => sum + s.value, 0) || 1;
+    let startAngle = -Math.PI / 2; // Start drawing from 12 o'clock
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const radius = Math.min(cx, cy) - 10;
+
+    segments.forEach(seg => {
+      const angle = (seg.value / total) * Math.PI * 2;
+      
+      // Draw slice
+      ctx.fillStyle = seg.color;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, radius, startAngle, startAngle + angle);
+      ctx.closePath();
+      ctx.fill();
+
+      startAngle += angle;
+    });
+
+    // Outer edge border details
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Center cutout circle
+    ctx.fillStyle = '#0b0f19'; // Card background
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius - 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Utility hex parser
+  function hexToRgb(hex) {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `${r}, ${g}, ${b}`;
+  }
+
+  // ==========================================
+  // SHARED UTILITIES & EXPORTERS
+  // ==========================================
+  
+  // Custom Popover toggle class
+  function bindPopoverToggle(btnId, menuId) {
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      menu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+      menu.classList.remove('active');
+    });
+  }
+
+  function bindSearchFilter(id, callback) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', (e) => {
+        callback(e.target.value.trim());
+      });
+    }
+  }
+
+  function bindSelectFilter(id, callback) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', (e) => {
+        callback(e.target.value);
+      });
+    }
+  }
+
+  function bindLimitSelect(id, pagState, renderCallback) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', (e) => {
+        pagState.limit = parseInt(e.target.value);
+        pagState.page = 1;
+        renderCallback();
+      });
+    }
+  }
+
+  function bindImageUpload(id, callback) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 3 * 1024 * 1024) {
+            alert("File upload size limit is 3MB.");
+            el.value = '';
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            callback(event.target.result, file.name);
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  }
+
+  function showPosterPreview(containerId, base64, filename, onRemove) {
+    const box = document.getElementById(containerId);
+    box.innerHTML = `
+      <div class="upload-preview-container" style="margin-top:10px;">
+        <img src="${base64}" class="upload-preview-thumb" style="width:80px; height:50px; object-fit:cover; border-radius:4px;">
+        <div class="upload-preview-details">
+          <div class="upload-preview-name" style="font-size:11px;">${escapeHTML(filename)}</div>
+          <span class="upload-preview-reset" style="font-size:10px; color:var(--accent-red); cursor:pointer;">Remove</span>
+        </div>
+      </div>
+    `;
+    box.querySelector('.upload-preview-reset').addEventListener('click', () => {
+      onRemove();
+      box.innerHTML = '';
+    });
+  }
+
+  function renderPaginationControls(elementId, totalPages, pagState, onPageChange) {
+    const parent = document.getElementById(elementId);
+    if (!parent) return;
+
+    if (totalPages <= 1) {
+      parent.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    html += `<button class="pagination-btn" ${pagState.page === 1 ? 'disabled' : ''} data-page="${pagState.page - 1}"><i class="fa-solid fa-angle-left"></i></button>`;
+
+    // Simple page boundaries dots
+    const delta = 1;
+    const left = pagState.page - delta;
+    const right = pagState.page + delta + 1;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= left && i < right)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) rangeWithDots.push(l + 1);
+        else if (i - l > 2) rangeWithDots.push('...');
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    rangeWithDots.forEach(p => {
+      if (p === '...') {
+        html += `<span style="color:var(--text-muted); padding:0 4px;">...</span>`;
+      } else {
+        html += `<button class="pagination-btn ${pagState.page === p ? 'active' : ''}" data-page="${p}">${p}</button>`;
+      }
+    });
+
+    html += `<button class="pagination-btn" ${pagState.page === totalPages ? 'disabled' : ''} data-page="${pagState.page + 1}"><i class="fa-solid fa-angle-right"></i></button>`;
+    parent.innerHTML = html;
+
+    parent.querySelectorAll('.pagination-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pVal = btn.getAttribute('data-page');
+        if (pVal) onPageChange(parseInt(pVal));
+      });
+    });
+  }
+
+  // ==========================================
+  // FORMATTERS ENGINE
   // ==========================================
   function formatDate(dateString) {
-    if (!dateString) return '';
+    if (!dateString) return '-';
     const date = new Date(dateString);
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const day = date.getDate();
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
   function formatTime12h(timeString) {
-    if (!timeString) return '';
+    if (!timeString) return '-';
     const parts = timeString.split(':');
-    let hours = parseInt(parts[0]);
-    const minutes = parts[1] || '00';
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+    let h = parseInt(parts[0]);
+    const m = parts[1] || '00';
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
   }
 
   function escapeHTML(str) {
+    if (!str) return '';
     return str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -1608,18 +4063,642 @@
       .replace(/'/g, "&#039;");
   }
 
-  // Global namespace exports for interactive HTML tags
+  // ==========================================
+  // MULTI-FORMAT EXPORT DOWNLOAD ENGINE
+  // ==========================================
+  function downloadCSV(csvContent, filename) {
+    const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // 1. Dashboard export dropdown
+  function exportDashboard(format) {
+    if (format === 'AllData') {
+      alert("Preparing full platform database export...");
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "stepup_all_platform_data.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      return;
+    }
+    
+    alert(`Generating dashboard report as ${format}...`);
+    const totalStudents = state.students.length;
+    const totalWebinars = state.webinars.length;
+    const totalHackathons = state.hackathons.length;
+    const totalPitches = state.pitchEvents.length;
+    const totalApps = state.startupApplications.length;
+    const totalRegs = state.registrations.length + state.pitchRegistrations.length;
+
+    const csv = `Dashboard Metric,Value,Variance
+Total Students,${totalStudents},+18%
+Total Webinars,${totalWebinars},+12%
+Total Hackathons,${totalHackathons},+8%
+Total Pitch Events,${totalPitches},+15%
+Total Applications,${totalApps},+20%
+Total Registrations,${totalRegs},+18%
+`;
+    
+    downloadCSV(csv, `stepup_dashboard_summary.${format === 'Excel' ? 'xlsx' : format === 'PDF' ? 'pdf' : 'csv'}`);
+  }
+
+  // 2. Webinars tab exports
+  function exportWebinars(option) {
+    if (state.webinars.length === 0) {
+      alert("No webinars to export.");
+      return;
+    }
+    let csv = "";
+    if (option === 'All') {
+      csv = "Webinar ID,Name,Overview,Date,Mode,Venue,Contact\n";
+      state.webinars.forEach(w => {
+        csv += `${w.id},"${w.name}","${w.overview}",${w.startDate},${w.mode},"${w.venue}","${w.contactName}"\n`;
+      });
+      downloadCSV(csv, "stepup_webinars_master.csv");
+    } else if (option === 'Registrations') {
+      csv = "Registration ID,Student Name,Email,Webinar ID,Webinar Name,Date\n";
+      state.registrations.forEach(r => {
+        const st = state.students.find(s => s.id === r.studentId);
+        const wb = state.webinars.find(w => w.id === r.eventId);
+        if (st && wb) {
+          csv += `${r.id},"${st.name}",${st.email},${wb.id},"${wb.name}",${r.registrationDate}\n`;
+        }
+      });
+      downloadCSV(csv, "stepup_webinar_registrations.csv");
+    } else {
+      csv = "Registration ID,Student Name,Email,Webinar Name,Attendance Status\n";
+      state.registrations.forEach(r => {
+        const st = state.students.find(s => s.id === r.studentId);
+        const wb = state.webinars.find(w => w.id === r.eventId);
+        if (st && wb) {
+          csv += `${r.id},"${st.name}",${st.email},"${wb.name}",Present\n`;
+        }
+      });
+      downloadCSV(csv, "stepup_webinar_attendance.csv");
+    }
+  }
+
+  // 3. Webinar Details exports
+  function exportWebinarDetailsCSV(option) {
+    const web = state.webinars.find(w => w.id === selectedWebinarId);
+    if (!web) return;
+
+    const regs = state.registrations.filter(r => r.eventId === web.id);
+    let csv = "";
+
+    if (option === 'Registrations') {
+      csv = "Registration ID,Student ID,Student Name,Registration Date\n";
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `webinar_${web.id}_regs.csv`);
+    } else if (option === 'Details') {
+      csv = "Student ID,Name,Email,Phone,College,Branch,Year\n";
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${s.id},"${s.name}",${s.email},${s.phone},"${s.college}","${s.branch}",${s.year}\n`;
+      });
+      downloadCSV(csv, `webinar_${web.id}_student_details.csv`);
+    } else {
+      csv = `Webinar: ${web.name}\nDate: ${web.startDate}\nVenue: ${web.venue}\n\nRegistration ID,Student ID,Student Name,Email,Phone,College,Branch,Year,Registration Date\n`;
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${s.email},${s.phone},"${s.college}","${s.branch}",${s.year},${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `webinar_${web.id}_complete_data.csv`);
+    }
+  }
+
+  // 4. Hackathons exports
+  function exportHackathonsList() {
+    let csv = "Hackathon ID,Name,Conducted By,Format,StartDate,Venue,Registrations\n";
+    state.hackathons.forEach(h => {
+      const regCount = state.registrations.filter(r => r.eventId === h.id).length;
+      csv += `${h.id},"${h.name}","${h.conductedBy}",${h.participation},${h.startDate},"${h.venue}",${regCount}\n`;
+    });
+    downloadCSV(csv, "stepup_hackathons.csv");
+  }
+
+  function exportHackathonDetailsCSV(option) {
+    const hack = state.hackathons.find(h => h.id === selectedHackathonId);
+    if (!hack) return;
+
+    const regs = state.registrations.filter(r => r.eventId === hack.id);
+    let csv = "";
+
+    if (option === 'Registrations') {
+      csv = "Registration ID,Student ID,Student Name,Registration Date\n";
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `hackathon_${hack.id}_regs.csv`);
+    } else if (option === 'Teams') {
+      csv = "Registration ID,Team ID,Student Name,College,Branch,Role\n";
+      regs.forEach((r, idx) => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) {
+          const teamId = `TEAM-${Math.floor(idx / 3) + 1}`;
+          csv += `${r.id},${teamId},"${s.name}","${s.college}","${s.branch}",Developer\n`;
+        }
+      });
+      downloadCSV(csv, `hackathon_${hack.id}_teams.csv`);
+    } else {
+      csv = `Hackathon: ${hack.name}\nConducted By: ${hack.conductedBy}\nFormat: ${hack.participation}\n\nRegistration ID,Student ID,Student Name,Email,Phone,College,Branch,Year,Registration Date\n`;
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${s.email},${s.phone},"${s.college}","${s.branch}",${s.year},${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `hackathon_${hack.id}_complete_data.csv`);
+    }
+  }
+
+  // 5. Pitch Events exports
+  function exportPitchEventsList() {
+    let csv = "Pitch Event ID,Name,StartDate,Venue,Ticket Tier,Ticket Price,Participants\n";
+    state.pitchEvents.forEach(p => {
+      const regCount = state.pitchRegistrations.filter(r => r.eventId === p.id).length;
+      csv += `${p.id},"${p.name}",${p.startDate},"${p.venue}",${p.ticketName},₹${p.ticketPrice || 0},${regCount}\n`;
+    });
+    downloadCSV(csv, "stepup_pitch_events.csv");
+  }
+
+  function exportPitchDetailsCSV(option) {
+    const pe = state.pitchEvents.find(p => p.id === selectedPitchEventId);
+    if (!pe) return;
+
+    const regs = state.pitchRegistrations.filter(r => r.eventId === pe.id);
+    let csv = "";
+
+    if (option === 'Participants') {
+      csv = "Participant ID,Student ID,Student Name,Email,Phone,Registration Date\n";
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${s.email},${s.phone},${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `pitch_${pe.id}_participants.csv`);
+    } else if (option === 'Sales') {
+      csv = "Registration ID,Buyer Name,Email,Ticket Type,Amount Paid,Sale Date\n";
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},"${s.name}",${s.email},${pe.ticketName},₹${pe.ticketPrice || 0},${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `pitch_${pe.id}_sales.csv`);
+    } else {
+      csv = `Pitch Event: ${pe.name}\nTicket Tier: ${pe.ticketName}\nTicket Price: ${pe.ticketPrice}\n\nParticipant ID,Student ID,Student Name,Email,Phone,Startup Name,Registration Date\n`;
+      regs.forEach(r => {
+        const s = state.students.find(x => x.id === r.studentId);
+        if (s) csv += `${r.id},${s.id},"${s.name}",${s.email},${s.phone},"${s.college} Corp",${r.registrationDate}\n`;
+      });
+      downloadCSV(csv, `pitch_${pe.id}_complete_data.csv`);
+    }
+  }
+
+  // 6. Startup applications exports
+  function exportApplications(option) {
+    if (state.startupApplications.length === 0) {
+      alert("No applications found.");
+      return;
+    }
+    let list = [...state.startupApplications];
+    if (option === 'Approved') list = list.filter(a => a.status === 'Approved');
+    else if (option === 'Rejected') list = list.filter(a => a.status === 'Rejected');
+
+    let csv = "Application ID,Startup Name,Stage,Industry,Funding Required,Founder Name,Email,Status\n";
+    list.forEach(a => {
+      csv += `${a.id},"${a.startupName}","${a.stage}","${a.industry}","${a.fundingRequired}","${a.founderName}",${a.email},${a.status}\n`;
+    });
+    downloadCSV(csv, `startup_applications_${option.toLowerCase()}.csv`);
+  }
+
+  // 7. Students exports
+  function exportStudentsMaster(option) {
+    if (state.students.length === 0) {
+      alert("Students directory is empty.");
+      return;
+    }
+    let csv = "Student ID,Full Name,Email,Phone,College,Branch,Year,Created Date\n";
+    let list = [...state.students];
+
+    if (option === 'College') {
+      list.sort((a, b) => a.college.localeCompare(b.college));
+    } else if (option === 'Branch') {
+      list.sort((a, b) => a.branch.localeCompare(b.branch));
+    }
+
+    list.forEach(s => {
+      csv += `${s.id},"${s.name}",${s.email},${s.phone},"${s.college}","${s.branch}",${s.year} Year,${s.createdDate}\n`;
+    });
+    downloadCSV(csv, `stepup_students_directory_${option.toLowerCase()}.csv`);
+  }
+
+  // 8. Approvals dashboard exports
+  function exportApprovals(option) {
+    let recs = [...state.recruiters];
+    let invs = [...state.investors];
+
+    if (option === 'Pending') {
+      recs = recs.filter(r => r.status === 'Pending');
+      invs = invs.filter(i => i.status === 'Pending');
+    } else if (option === 'Approved') {
+      recs = recs.filter(r => r.status === 'Approved');
+      invs = invs.filter(i => i.status === 'Approved');
+    } else if (option === 'Rejected') {
+      recs = recs.filter(r => r.status === 'Rejected');
+      invs = invs.filter(i => i.status === 'Rejected');
+    }
+
+    let csv = "Type,ID,Name,Organization,Designation,Email,Phone,Applied Date,Status\n";
+
+    if (option !== 'Investors') {
+      recs.forEach(r => {
+        csv += `Recruiter,${r.id},"${r.name}","${r.company}","${r.designation}",${r.email},${r.phone},${r.appliedDate},${r.status}\n`;
+      });
+    }
+    if (option !== 'Recruiters') {
+      invs.forEach(i => {
+        csv += `Investor,${i.id},"${i.name}","${i.organization}","${i.designation}",${i.email},${i.phone},${i.appliedDate},${i.status}\n`;
+      });
+    }
+
+    downloadCSV(csv, `approvals_data_${option.toLowerCase()}.csv`);
+  }
+
+  // ==========================================
+  // SEED DEMO MOCK ECOSYSTEM DATA
+  // ==========================================
+  function seedDemoDataQuietly() {
+    const firstNames = ["Rahul", "Priya", "Amit", "Sneha", "Rohan", "Anjali", "Karan", "Neha", "Vijay", "Pooja", "Arjun", "Tanya", "Sanjay", "Kiran", "Aditya", "Ritu", "Vikram", "Divya", "Siddharth", "Shreya"];
+    const lastNames = ["Sharma", "Verma", "Singh", "Kapoor", "Mehta", "Sen", "Gupta", "Iyer", "Nair", "Rao", "Joshi", "Patel", "Reddy", "Choudhury", "Das", "Roy", "Saxena", "Bose", "Pillai", "Menon"];
+    const colleges = ["IIT Madras", "BITS Pilani", "PES University", "RV College of Eng", "IIT Bombay", "IIT Delhi", "NIT Trichy", "Delhi Technological University", "VIT Vellore", "SRM University"];
+    const branches = ["Computer Science", "Information Technology", "Electronics & Communication", "Electrical Engineering", "Mechanical Engineering", "Biotechnology", "Civil Engineering"];
+
+    // 1. Generate 1248 Students
+    const students = [];
+    for (let i = 1; i <= 1248; i++) {
+      const fn = firstNames[i % firstNames.length];
+      const ln = lastNames[(i + 3) % lastNames.length];
+      const name = `${fn} ${ln}`;
+      const email = `${fn.toLowerCase()}.${ln.toLowerCase()}.${i}@stepup.ai`;
+      const phone = `98765${String(10000 + i).substring(1)}`;
+      const college = colleges[i % colleges.length];
+      const branch = branches[(i + 2) % branches.length];
+      const year = String((i % 4) + 1);
+      
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 30));
+      date.setHours(9 + (i % 8), (i % 12) * 5, 0, 0);
+
+      students.push({
+        id: `STU${String(1000 + i).substring(1)}`,
+        name,
+        email,
+        phone,
+        college,
+        branch,
+        year,
+        createdDate: date.toISOString()
+      });
+    }
+
+    // 2. Generate 24 Webinars
+    const webinars = [];
+    const webinarNames = [
+      "AI Startup Funding Pathways", "NLP and LLM Architectures Bootcamp", "Generative Designs for Web Interfaces",
+      "Building Conversational Agents with Gemini", "Introduction to Prompt Engineering", "AI in Medical Diagnostics",
+      "Deploying PyTorch Models to Production", "Understanding Deep Learning Math", "Introduction to Transformer Networks",
+      "Reinforcement Learning Basics", "Scaling LLMs in Enterprise", "Explainable AI Frameworks",
+      "AI Safety and Ethics Workshop", "Computer Vision and Edge Devices", "Vector Databases for AI Search",
+      "Introduction to AutoGPT and Agents", "MLOps Lifecycle with Kubernetes", "Data Preprocessing pipelines",
+      "AI in Fintech Valuations", "Graph Neural Networks Introduction", "Speech Recognition Systems",
+      "Self-Supervised Learning Trends", "Low-code AI Platform Builders", "Neural Architecture Search"
+    ];
+    const webinarModes = ["Online", "Offline", "Hybrid"];
+    for (let i = 1; i <= 24; i++) {
+      const name = webinarNames[i - 1];
+      const date = new Date();
+      date.setDate(date.getDate() - 10 + i); 
+      webinars.push({
+        id: 2000 + i,
+        name,
+        posterBanner: "",
+        overview: `Master class on ${name.split(" ")[0]} details`,
+        description: `Join this expert session to master ${name}. We cover theoretical fundamentals, live code exercises, and implementation templates.`,
+        startDate: date.toISOString().split('T')[0],
+        endDate: date.toISOString().split('T')[0],
+        timezone: "UTC+5:30",
+        startTime: "10:00",
+        endTime: "12:00",
+        mode: webinarModes[i % 3],
+        venue: i % 3 === 0 ? "Zoom Video Link" : "StepUp Seminar Hall Room 302",
+        contactName: `Speaker ${i} Admin`,
+        contactPhone: `98765432${String(10 + i)}`,
+        contactEmail: `webinar${i}@stepup.ai`
+      });
+    }
+
+    // 3. Generate 18 Hackathons
+    const hackathons = [];
+    const hackNames = [
+      "IncubateX Global AI Hackathon", "Solo DevCraft: LLM Challenge", "Smart India AgriTech Hack",
+      "MediHack: Healthcare AI", "CodeWave FinTech AI Sprint", "VisionHack: Edge Computing",
+      "CyberShield AI Security", "EduSmart Learning Sprint", "EcoHack: Green Tech AI",
+      "Neural Networks Optimization", "SpeechToText AI Sprint", "DataStream Real-time Analytics",
+      "RoboCraft AI Challenge", "WebSaaS Generative Design", "Generative Art Hack",
+      "BioGen AI Diagnostics", "Smart City Logistics Sprint", "AI Assistant Hackathon"
+    ];
+    for (let i = 1; i <= 18; i++) {
+      const name = hackNames[i - 1];
+      const date = new Date();
+      date.setDate(date.getDate() - 15 + (i * 2));
+      const endD = new Date(date);
+      endD.setDate(date.getDate() + 2);
+      hackathons.push({
+        id: 3000 + i,
+        name,
+        conductedBy: i % 2 === 0 ? "StepUp Incubations" : "AI Dev Community",
+        orgLogo: "",
+        posterBanner: "",
+        description: `Assemble your teams and build state-of-the-art AI applications for ${name}. Win cash prizes, certificates, and VC incubation slots.`,
+        participation: i % 3 === 0 ? "Solo" : "Team",
+        minTeamSize: i % 3 === 0 ? null : 2,
+        maxTeamSize: i % 3 === 0 ? null : 4,
+        startDate: date.toISOString().split('T')[0],
+        endDate: endD.toISOString().split('T')[0],
+        timezone: "UTC+5:30",
+        startTime: "09:00",
+        endTime: "18:00",
+        mode: i % 2 === 0 ? "Online" : "Offline",
+        venue: i % 2 === 0 ? "Discord & GitHub Classroom" : "StepUp Tech Campus, Bangalore",
+        certificateAvailable: "Yes",
+        contactName: `Coordinator ${i}`,
+        contactPhone: `98765433${String(10 + i)}`,
+        contactEmail: `hackathon${i}@stepup.ai`
+      });
+    }
+
+    // 4. Generate 11 Pitch Events
+    const pitchEvents = [];
+    const pitchNames = [
+      "Venture Capital Pitch Night", "Angel Investors AI Showcase", "Incubator Cohort Demo Day",
+      "HealthTech Startup Pitch", "DeepTech Founder Summit", "Agritech AI Pitch Day",
+      "Fintech Innovation Pitch", "SaaS Startup Showcase", "Pre-seed AI Startup Night",
+      "Series A Pitch Forum", "Early Stage AI Founder Meet"
+    ];
+    for (let i = 1; i <= 11; i++) {
+      const name = pitchNames[i - 1];
+      const date = new Date();
+      date.setDate(date.getDate() - 5 + (i * 3));
+      pitchEvents.push({
+        id: 4000 + i,
+        name,
+        posterBanner: "",
+        description: `Present your startup pitch deck directly to institutional VCs and prominent angel syndicates at ${name}.`,
+        startDate: date.toISOString().split('T')[0],
+        endDate: date.toISOString().split('T')[0],
+        timezone: "UTC+5:30",
+        startTime: "18:00",
+        endTime: "21:00",
+        mode: i % 2 === 0 ? "Online" : "Offline",
+        venue: i % 2 === 0 ? "Zoom VC Webinar Room" : "ITC Gardenia Grand Ballroom, Bangalore",
+        ticketName: i % 2 === 0 ? "Founder Pass" : "VIP Pitch Pass",
+        ticketPrice: i % 2 === 0 ? 500 : 1500,
+        ticketDescription: "Access to presentations and networking database",
+        saleStartDate: new Date(date.getTime() - 20 * 86400000).toISOString().split('T')[0],
+        saleEndDate: new Date(date.getTime() - 1 * 86400000).toISOString().split('T')[0],
+        saleStartTime: "09:00",
+        saleEndTime: "18:00",
+        contactName: `Incubator Lead ${i}`,
+        contactPhone: `98765434${String(10 + i)}`,
+        contactEmail: `pitches${i}@stepup.ai`
+      });
+    }
+
+    // 5. Generate 47 Startup Applications
+    const startupApps = [];
+    const startupPrefixes = ["Vision", "Agri", "Medi", "Edu", "Fin", "Eco", "Robo", "Cloud", "Cyber", "Smart", "Neural", "Hyper", "Alpha", "Omni", "Quantum"];
+    const startupSuffixes = ["AI", "Sense", "Scan", "Smart", "Wave", "Shield", "Logistics", "Analytics", "Core", "Systems", "Net", "Bio", "Grid", "Labs", "Tech"];
+    const industries = ["Healthcare AI", "Agritech IoT", "Biotech Diagnostics", "EdTech AI", "Fintech Blockchain", "Cybersecurity AI", "Logistics MLOps", "GreenTech Smart Grid"];
+    const stages = ["Idea Phase", "Prototype/MVP", "Early Traction", "Scaling Phase"];
+    const statuses = ["Pending", "Approved", "Rejected"];
+    for (let i = 1; i <= 47; i++) {
+      const startupName = `${startupPrefixes[i % startupPrefixes.length]}${startupSuffixes[(i + 4) % startupSuffixes.length]}`;
+      const founderFn = firstNames[(i + 5) % firstNames.length];
+      const founderLn = lastNames[(i + 7) % lastNames.length];
+      const founderName = `${founderFn} ${founderLn}`;
+      const email = `${founderFn.toLowerCase()}@${startupName.toLowerCase()}.com`;
+      const fundingRequired = `₹${(20 + (i % 8) * 15)},00,000`;
+      
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 25));
+
+      startupApps.push({
+        id: 5000 + i,
+        startupName,
+        stage: stages[i % stages.length],
+        industry: industries[i % industries.length],
+        fundingRequired,
+        oneLiner: `AI-powered solution optimizing ${industries[i % industries.length].split(" ")[0]} workflows.`,
+        problemStatement: `Current ${industries[i % industries.length].split(" ")[0]} operations suffer from severe efficiency bottlenecks and high error rates.`,
+        solution: `Deploy automated deep neural networks to process data pipelines in real-time.`,
+        founderName,
+        email,
+        phone: `98765${String(20000 + i).substring(1)}`,
+        teamMembers: (i % 5) + 2,
+        status: i <= 20 ? "Pending" : i % 2 === 0 ? "Approved" : "Rejected",
+        appliedDate: date.toISOString().split('T')[0]
+      });
+    }
+
+    // 6. Generate 35 Recruiters
+    const recruiters = [];
+    const designations = ["HR Manager", "Senior Recruiter", "VP Talent", "Director of HR", "Technical Recruiter"];
+    const companies = ["TechNova Solutions", "CodeWave Technologies", "MindEdge Consulting", "Infosys Labs", "Wipro Digital", "TCS AI Hub", "Cognizant MLOps", "Accenture AI"];
+    for (let i = 1; i <= 35; i++) {
+      const fn = firstNames[(i + 8) % firstNames.length];
+      const ln = lastNames[(i + 9) % lastNames.length];
+      const name = `${fn} ${ln}`;
+      const email = `${fn.toLowerCase()}@${companies[i % companies.length].toLowerCase().replace(" ", "")}.com`;
+      const status = i <= 15 ? "Pending" : i % 2 === 0 ? "Approved" : "Rejected";
+      
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 20));
+
+      recruiters.push({
+        id: `REC${String(100 + i).substring(1)}`,
+        name,
+        company: companies[i % companies.length],
+        designation: designations[i % designations.length],
+        email,
+        phone: `98765${String(30000 + i).substring(1)}`,
+        appliedDate: date.toISOString().split('T')[0],
+        status
+      });
+    }
+
+    // 7. Generate 25 Investors
+    const investors = [];
+    const orgs = ["Alpha Capital Ventures", "Peak Fund Partners", "Sequoia India Hub", "Kalaari Angel Network", "Matrix AI Fund", "Nexus Venture Partners", "Blume Ventures"];
+    for (let i = 1; i <= 25; i++) {
+      const fn = firstNames[(i + 10) % firstNames.length];
+      const ln = lastNames[(i + 11) % lastNames.length];
+      const name = `${fn} ${ln}`;
+      const email = `${fn.toLowerCase()}@${orgs[i % orgs.length].toLowerCase().replace(" ", "")}.com`;
+      const status = i <= 10 ? "Pending" : i % 2 === 0 ? "Approved" : "Rejected";
+
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 20));
+
+      investors.push({
+        id: `INV${String(100 + i).substring(1)}`,
+        name,
+        organization: orgs[i % orgs.length],
+        designation: i % 3 === 0 ? "Managing Partner" : i % 3 === 1 ? "Investment Director" : "VC Associate",
+        email,
+        phone: `98765${String(40000 + i).substring(1)}`,
+        appliedDate: date.toISOString().split('T')[0],
+        status
+      });
+    }
+
+    // 8. Generate Event Registrations (Total: 950)
+    const registrations = [];
+    let regCounter = 1;
+    for (let i = 0; i < 950; i++) {
+      const student = students[i % students.length];
+      const isWebinar = i % 2 === 0;
+      const eventId = isWebinar 
+        ? webinars[i % webinars.length].id 
+        : hackathons[i % hackathons.length].id;
+      
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 25));
+
+      registrations.push({
+        id: `REG${String(10000 + regCounter).substring(1)}`,
+        studentId: student.id,
+        eventId,
+        registrationDate: date.toISOString()
+      });
+      regCounter++;
+    }
+
+    // 9. Generate Pitch Registrations (Total: 298)
+    const pitchRegistrations = [];
+    let pitchCounter = 1;
+    for (let i = 0; i < 298; i++) {
+      const student = students[(i + 50) % students.length];
+      const eventId = pitchEvents[i % pitchEvents.length].id;
+
+      const date = new Date();
+      date.setDate(date.getDate() - (i % 25));
+
+      pitchRegistrations.push({
+        id: `PR${String(10000 + pitchCounter).substring(1)}`,
+        studentId: student.id,
+        eventId,
+        registrationDate: date.toISOString()
+      });
+      pitchCounter++;
+    }
+
+    state.webinars = webinars;
+    state.hackathons = hackathons;
+    state.pitchEvents = pitchEvents;
+    state.startupApplications = startupApps;
+    state.recruiters = recruiters;
+    state.investors = investors;
+    state.students = students;
+    state.registrations = registrations;
+    state.pitchRegistrations = pitchRegistrations;
+
+    saveDatabase();
+  }
+
+  function loadDemoData() {
+    seedDemoDataQuietly();
+    selectedWebinarId = 2001;
+    selectedHackathonId = 3001;
+    selectedPitchEventId = 4001;
+    selectedPendingIds.clear();
+
+    renderAll();
+    window.location.hash = "/admin/dashboard";
+    alert("Demo startup incubator evaluation database loaded successfully!");
+  }
+
+  // ==========================================
+  // EXPORTS
+  // ==========================================
   window.dashboardApp = {
-    openCreateEventModal,
-    closeCreateEventModal,
-    openAddStudentModal,
-    closeAddStudentModal,
-    viewStudentProfile,
-    deleteStudentAccount,
     switchTab,
     loadDemoData,
     resetApp,
-    performLogout
+    performLogout,
+
+    // Webinar CRUD
+    openCreateWebinarModal,
+    openEditWebinarModal,
+    closeCreateWebinarModal,
+    deleteWebinar,
+    viewWebinarDetails,
+    exportWebinars,
+    exportWebinarDetailsCSV,
+
+    // Hackathon CRUD
+    openCreateHackathonModal,
+    openEditHackathonModal,
+    closeCreateHackathonModal,
+    deleteHackathon,
+    viewHackathonDetails,
+    exportHackathonsList,
+    exportHackathonDetailsCSV,
+
+    // Pitch Events CRUD
+    openCreatePitchEventModal,
+    openEditPitchEventModal,
+    closeCreatePitchEventModal,
+    deletePitchEvent,
+    viewPitchEventDetails,
+    exportPitchEventsList,
+    exportPitchDetailsCSV,
+
+    // Startups Applications
+    viewStartupApplication,
+    downloadPitchDeck,
+    contactFounder,
+    updateStartupStatus,
+    exportApplications,
+
+    // Students Directory
+    openAddStudentModal,
+    openAddStudentToEventModal,
+    closeAddStudentModal,
+    viewStudentProfile,
+    deleteStudentAccount,
+    exportStudentsMaster,
+
+    // Approval management dashboard sub-tabs
+    actionApprovalStatus,
+    viewApprovalRosterProfile,
+    exportApprovals,
+    toggleSelectPending,
+    toggleSelectAllPending,
+    bulkApprovePending,
+    bulkRejectPending,
+    
+    // Redirect clicks
+    viewEventDetails,
+    exportDashboard
   };
 
 })();

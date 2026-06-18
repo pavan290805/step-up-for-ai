@@ -13,76 +13,7 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
-  <link rel="stylesheet" href="admin.css">
-  
-  <style>
-    /* PROFILE DROPDOWN MENU STYLES */
-    .profile-dropdown-container {
-      position: relative;
-      width: 100%;
-    }
-
-    .profile-dropdown-menu {
-      position: absolute;
-      bottom: calc(100% + 12px);
-      left: 0;
-      right: 0;
-      background: #0b0f19 !important; /* Matches --bg-secondary */
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
-      border-radius: 12px !important;
-      padding: 8px !important;
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      z-index: 2000 !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
-      backdrop-filter: blur(12px) saturate(120%) !important;
-      animation: dropdownFadeUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    @keyframes dropdownFadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .profile-dropdown-menu.active {
-      display: flex !important;
-    }
-
-    .dropdown-item {
-      display: flex !important;
-      align-items: center !important;
-      gap: 12px !important;
-      padding: 10px 14px !important;
-      font-size: 13px !important;
-      font-weight: 600 !important;
-      color: #8e9bb2 !important; /* Matches --text-secondary */
-      border-radius: 8px !important;
-      transition: all 0.15s ease !important;
-      width: 100% !important;
-      text-align: left !important;
-      cursor: pointer !important;
-      background: none !important;
-      border: none !important;
-    }
-
-    .dropdown-item:hover {
-      background: rgba(255, 46, 75, 0.1) !important;
-      color: #ffffff !important;
-    }
-
-    .dropdown-item i {
-      font-size: 14px !important;
-      width: 16px !important;
-      text-align: center !important;
-    }
-
-    .dropdown-divider {
-      height: 1px !important;
-      background-color: rgba(255, 255, 255, 0.08) !important;
-      margin: 4px 0 !important;
-    }
-  </style>
+  <link rel="stylesheet" href="admin.css?v=202606190145">
 </head>
 <body>
 
@@ -104,25 +35,96 @@
       <!-- Navigation Menu -->
       <nav style="flex-grow: 1;">
         <ul class="nav-menu">
+          
+          <!-- Dashboard -->
           <li class="nav-item active" data-tab="dashboard">
-            <a href="#dashboard">
+            <a href="#/admin/dashboard">
               <i class="fa-solid fa-chart-pie"></i>
               <span>Dashboard</span>
             </a>
           </li>
-          <li class="nav-item" data-tab="events">
-            <a href="#events">
-              <i class="fa-solid fa-calendar-days"></i>
-              <span>Events</span>
+          
+          <!-- Webinars -->
+          <li class="nav-item has-submenu" id="menu-webinars">
+            <a href="#/admin/webinars" class="submenu-toggle">
+              <i class="fa-solid fa-video"></i>
+              <span>Webinars</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="webinars-list"><a href="#/admin/webinars">View Webinars</a></li>
+              <li class="submenu-item" data-tab="webinars-create"><a href="#/admin/webinars/create" onclick="window.dashboardApp.openCreateWebinarModal(); return false;">Create Webinar</a></li>
+            </ul>
+          </li>
+          
+          <!-- Hackathons -->
+          <li class="nav-item has-submenu" id="menu-hackathons">
+            <a href="#/admin/hackathons" class="submenu-toggle">
+              <i class="fa-solid fa-code"></i>
+              <span>Hackathons</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="hackathons-list"><a href="#/admin/hackathons">View Hackathons</a></li>
+              <li class="submenu-item" data-tab="hackathons-create"><a href="#/admin/hackathons/create" onclick="window.dashboardApp.openCreateHackathonModal(); return false;">Create Hackathon</a></li>
+            </ul>
+          </li>
+          
+          <!-- Pitch Events -->
+          <li class="nav-item has-submenu" id="menu-pitch-events">
+            <a href="#/admin/pitch-events" class="submenu-toggle">
+              <i class="fa-solid fa-microphone"></i>
+              <span>Pitch Events</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="pitch-events-list"><a href="#/admin/pitch-events">View Pitch Events</a></li>
+              <li class="submenu-item" data-tab="pitch-events-create"><a href="#/admin/pitch-events/create" onclick="window.dashboardApp.openCreatePitchEventModal(); return false;">Create Pitch Event</a></li>
+            </ul>
+          </li>
+          
+          <!-- Startup Applications -->
+          <li class="nav-item" data-tab="startup-applications">
+            <a href="#/admin/startup-applications">
+              <i class="fa-solid fa-rocket"></i>
+              <span>Startup Applications</span>
             </a>
           </li>
+          
+          <!-- Students -->
           <li class="nav-item" data-tab="students">
-            <a href="#students">
+            <a href="#/admin/students">
               <i class="fa-solid fa-graduation-cap"></i>
               <span>Students</span>
             </a>
           </li>
-
+          
+          <!-- Approval Management Accordion -->
+          <li class="nav-item has-submenu" id="menu-approval-management">
+            <a href="#/admin/approval-management" class="submenu-toggle">
+              <i class="fa-solid fa-user-check"></i>
+              <span>Approval Management</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="approval-dashboard"><a href="#/admin/approval-management">Dashboard</a></li>
+              <li class="submenu-item" data-tab="approval-recruiters"><a href="#/admin/approval-management/recruiters">Recruiter Approvals</a></li>
+              <li class="submenu-item" data-tab="approval-investors"><a href="#/admin/approval-management/investors">Investor Approvals</a></li>
+              <li class="submenu-item" data-tab="approval-pending"><a href="#/admin/approval-management/pending">Pending Requests</a></li>
+              <li class="submenu-item" data-tab="approval-approved"><a href="#/admin/approval-management/approved">Approved Accounts</a></li>
+              <li class="submenu-item" data-tab="approval-rejected"><a href="#/admin/approval-management/rejected">Rejected Accounts</a></li>
+            </ul>
+          </li>
+          
+          <!-- Settings -->
+          <li class="nav-item" data-tab="settings">
+            <a href="#/admin/settings">
+              <i class="fa-solid fa-gears"></i>
+              <span>Settings</span>
+            </a>
+          </li>
+          
+          <!-- Logout -->
           <li class="nav-item" id="sidebar-logout-btn">
             <a href="#logout">
               <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -131,28 +133,27 @@
           </li>
         </ul>
       </nav>
-
       
       <!-- User Profile Footer with Dropdown -->
       <div class="profile-dropdown-container" style="position: relative; width: 100%;">
         <!-- Profile Dropdown Menu -->
-        <div class="profile-dropdown-menu" id="profile-dropdown-menu" style="position: absolute; bottom: calc(100% + 12px); left: 0; right: 0; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 8px; display: none; flex-direction: column; gap: 4px; z-index: 2000; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); backdrop-filter: blur(12px) saturate(120%);">
-          <button class="dropdown-item" onclick="window.dashboardApp.loadDemoData()" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: #8e9bb2; border-radius: 8px; width: 100%; text-align: left; cursor: pointer; background: none; border: none; transition: all 0.15s ease;">
-            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-green); font-size: 14px; width: 16px; text-align: center;"></i>
+        <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+          <button class="dropdown-item" onclick="window.dashboardApp.loadDemoData()">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-red); font-size: 14px; width: 16px; text-align: center;"></i>
             <span>Load Demo Data</span>
           </button>
-          <button class="dropdown-item" onclick="window.dashboardApp.resetApp()" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: #8e9bb2; border-radius: 8px; width: 100%; text-align: left; cursor: pointer; background: none; border: none; transition: all 0.15s ease;">
+          <button class="dropdown-item" onclick="window.dashboardApp.resetApp()">
             <i class="fa-solid fa-trash-can" style="color: var(--accent-red); font-size: 14px; width: 16px; text-align: center;"></i>
             <span>Reset Database</span>
           </button>
-          <div class="dropdown-divider" style="height: 1px; background-color: rgba(255, 255, 255, 0.08); margin: 4px 0;"></div>
-          <button class="dropdown-item" onclick="document.getElementById('logout-modal').classList.add('active')" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: #8e9bb2; border-radius: 8px; width: 100%; text-align: left; cursor: pointer; background: none; border: none; transition: all 0.15s ease;">
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" onclick="document.getElementById('logout-modal').classList.add('active')">
             <i class="fa-solid fa-arrow-right-from-bracket" style="color: #8e9bb2; font-size: 14px; width: 16px; text-align: center;"></i>
             <span>Sign Out</span>
           </button>
         </div>
 
-        <div class="user-profile-footer" id="user-profile-footer" style="margin-top: 0; cursor: pointer;">
+        <div class="user-profile-footer" id="user-profile-footer" style="cursor: pointer;">
           <div class="user-avatar-wrapper">
             <div class="user-avatar">A</div>
             <div class="status-dot"></div>
@@ -170,512 +171,1248 @@
     </aside>
 
     <!-- ==========================================
-         MAIN CONTENT AREA
+         RIGHT LAYOUT CONTAINER (TOP NAV + MAIN CONTENT)
          ========================================== -->
-    <main class="main-content">
+    <div class="main-layout-container" style="display: flex; flex-direction: column; flex-grow: 1; height: 100vh; overflow: hidden;">
       
-      <!-- ==========================================
-           DASHBOARD VIEW PANEL
-           ========================================== -->
-      <section id="dashboard-view" class="content-panel active">
-        <header class="view-header">
-          <div class="header-title-block">
-            <h1>Dashboard Overview</h1>
-            <p>Welcome back, Admin! Here is a summary of activities.</p>
-          </div>
-          <div class="header-actions">
-            <button class="btn-solid-red" onclick="window.dashboardApp.openCreateEventModal()">
-              <i class="fa-solid fa-plus"></i> Create New Event
-            </button>
-          </div>
-        </header>
-
-        <!-- Metric Counter Grid -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-calendar-days"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="dash-total-events">0</span>
-              <span class="metric-label">Total Events</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon-box green">
-              <i class="fa-solid fa-graduation-cap"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="dash-total-students">0</span>
-              <span class="metric-label">Total Students</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon-box blue">
-              <i class="fa-solid fa-video"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="dash-total-webinars">0</span>
-              <span class="metric-label">Active Webinars</span>
-            </div>
-          </div>
-          <div class="metric-card animate-pulse">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-code"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="dash-total-hackathons">0</span>
-              <span class="metric-label">Active Hackathons</span>
-            </div>
-          </div>
+      <!-- Shared Header Bar -->
+      <header class="top-nav-bar">
+        <div class="top-search-wrapper">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="top-search-input" id="global-nav-search" placeholder="Search anything...">
+          <span class="top-search-kbd">Ctrl + K</span>
         </div>
-
-        <!-- Dashboard Panel Sections -->
-        <div class="dashboard-sections">
+        
+        <div class="top-actions-right">
+          <!-- Notification Bell -->
+          <div class="top-notification-bell">
+            <i class="fa-regular fa-bell"></i>
+            <span class="top-notification-badge">12</span>
+          </div>
           
-          <div class="dashboard-panel-box">
-            <div class="panel-box-header">
-              <h3>Recent Student Registrations</h3>
-              <a href="#" class="view-all-link" style="color: var(--accent-red); font-size: 13px; font-weight: 600;" onclick="window.dashboardApp.switchTab('students')">View All</a>
-            </div>
-            <div class="recent-list" id="dash-recent-registrations">
-              <!-- Dynamically populated -->
-              <div class="table-empty-state">
-                <i class="fa-solid fa-inbox"></i>
-                <p>No recent registrations recorded</p>
+          <!-- User Profile Brief with Dropdown -->
+          <div class="top-profile-dropdown-container" id="top-user-menu-trigger" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="top-user-avatar">A</div>
+              <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                <span style="font-size: 13px; font-weight: 700; color: #fff;">Admin</span>
+                <span style="font-size: 11px; color: var(--text-secondary);">Super Admin</span>
               </div>
-            </div>
-          </div>
-
-          <div class="dashboard-panel-box" style="gap: 16px;">
-            <div class="panel-box-header">
-              <h3>Quick Actions</h3>
-            </div>
-            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.openCreateEventModal()">
-              <i class="fa-solid fa-calendar-plus" style="color: var(--accent-red);"></i> Create New Webinar/Hackathon
-            </button>
-            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.openAddStudentModal()">
-              <i class="fa-solid fa-user-plus" style="color: var(--accent-blue);"></i> Add New Student Account
-            </button>
-            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.loadDemoData()">
-              <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-green);"></i> Load Premium Demo Data
-            </button>
-            <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px; border-color: rgba(255,46,75,0.15);" onclick="window.dashboardApp.resetApp()">
-              <i class="fa-solid fa-trash-can" style="color: var(--accent-red);"></i> Reset Dashboard Data
-            </button>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ==========================================
-           EVENTS VIEW PANEL (SPLIT SYSTEM)
-           ========================================== -->
-      <section id="events-view" class="content-panel">
-        <header class="view-header">
-          <div class="header-title-block">
-            <h1>Events Management</h1>
-            <p>Create, manage and monitor all webinars and hackathons.</p>
-          </div>
-          <div class="header-actions">
-            <button class="btn-solid-red" onclick="window.dashboardApp.openCreateEventModal()">
-              <i class="fa-solid fa-plus"></i> Create New Event
-            </button>
-          </div>
-        </header>
-
-        <!-- Split Layout Wrapper -->
-        <div class="events-split-layout">
-          
-          <!-- LEFT SIDE: Event Cards Column -->
-          <div class="events-list-panel">
-            
-            <!-- Category Tabs -->
-            <div class="filter-tabs-container">
-              <button class="filter-tab active" data-filter="all">All Events</button>
-              <button class="filter-tab" data-filter="webinar">Webinars</button>
-              <button class="filter-tab" data-filter="hackathon">Hackathons</button>
-              <button class="filter-tab" data-filter="upcoming">Upcoming</button>
-              <button class="filter-tab" data-filter="completed">Completed</button>
+              <i class="fa-solid fa-chevron-down" style="font-size: 10px; color: var(--text-muted);"></i>
             </div>
             
-            <!-- Scroll Grid -->
-            <div class="events-scroll-container" id="events-cards-list">
-              <!-- Dynamically populated with event cards -->
-              <div class="details-empty-state">
-                <i class="fa-solid fa-calendar-xmark"></i>
-                <h3>No Events Available</h3>
-                <p>Get started by clicking the "+ Create New Event" button to schedule a webinar or hackathon.</p>
-              </div>
-            </div>
-            
-            <!-- List Pagination -->
-            <div class="events-pagination" id="events-list-pagination">
-              <!-- Dynamically generated buttons -->
-            </div>
-            
-          </div>
-
-          <!-- RIGHT SIDE: Detailed View Panel -->
-          <div class="event-details-panel" id="event-details-pane">
-            
-            <!-- Default Empty State -->
-            <div class="details-empty-state" id="details-empty-view">
-              <i class="fa-solid fa-calendar-days"></i>
-              <h3>No Event Selected</h3>
-              <p>Click on any event card from the list on the left to view detailed metadata and registrations.</p>
-              <button class="btn-solid-red" style="margin-top: 10px;" onclick="window.dashboardApp.loadDemoData()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Load Demo Events
+            <!-- Top Profile Dropdown Menu -->
+            <div class="top-profile-dropdown-menu" id="top-profile-dropdown-menu">
+              <button class="dropdown-item" onclick="window.dashboardApp.loadDemoData(); event.stopPropagation();">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-red); font-size: 14px; width: 16px; text-align: center;"></i>
+                <span>Load Demo Data</span>
+              </button>
+              <button class="dropdown-item" onclick="window.dashboardApp.resetApp(); event.stopPropagation();">
+                <i class="fa-solid fa-trash-can" style="color: var(--accent-red); font-size: 14px; width: 16px; text-align: center;"></i>
+                <span>Reset Database</span>
+              </button>
+              <div class="dropdown-divider"></div>
+              <button class="dropdown-item" onclick="document.getElementById('logout-modal').classList.add('active'); event.stopPropagation();">
+                <i class="fa-solid fa-arrow-right-from-bracket" style="color: #8e9bb2; font-size: 14px; width: 16px; text-align: center;"></i>
+                <span>Sign Out</span>
               </button>
             </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Main Content Area -->
+      <main class="main-content" style="flex-grow: 1; overflow-y: auto; padding: 30px;">
+        
+        <!-- ==========================================
+             DASHBOARD OVERVIEW VIEW
+             ========================================== -->
+        <section id="dashboard-view" class="content-panel active">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Dashboard Overview</h1>
+              <p>Welcome back, Admin! Here's what's happening on StepUp for AI.</p>
+            </div>
             
-            <!-- Loaded Details Container (Hidden initially) -->
-            <div class="event-details-wrapper" id="details-content-view" style="display: none;">
-              
-              <!-- Action Button Bar -->
-              <div class="details-actions-bar">
-                <a href="#" class="back-to-events-btn" onclick="document.getElementById('event-details-pane').classList.remove('active-mobile')">
-                  <i class="fa-solid fa-arrow-left"></i> Back to Events
-                </a>
-                <div class="action-buttons">
-                  <button class="action-btn edit" id="details-edit-btn">
-                    <i class="fa-solid fa-pen-to-square"></i> Edit Event
-                  </button>
-                  <button class="action-btn delete" id="details-delete-btn">
-                    <i class="fa-solid fa-trash-can"></i> Delete Event
-                  </button>
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="dash-export-container">
+                <button class="btn-export-dropdown" id="dash-export-btn">
+                  <i class="fa-solid fa-download"></i> Export Dashboard <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="dash-export-menu">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportDashboard('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Dashboard (Excel)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportDashboard('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export Dashboard (CSV)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportDashboard('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export Dashboard (PDF)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportDashboard('AllData')"><i class="fa-solid fa-database" style="color:var(--accent-blue);"></i> Export All Platform Data</div>
                 </div>
               </div>
-              
-              <!-- Info Section -->
-              <div class="details-info-section">
-                <div class="details-banner-container" id="details-banner">
-                  <!-- Image or Canvas Text banner -->
+            </div>
+          </header>
+          
+          <!-- 6 Statistics Cards with Sparklines -->
+          <div class="metrics-grid-6">
+            <!-- Students -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 18%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Students</span>
+                <span class="metric-card-value" id="dash-stat-students">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-students"></canvas>
+            </div>
+            
+            <!-- Webinars -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon purple">
+                  <i class="fa-solid fa-video"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 12%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Webinars</span>
+                <span class="metric-card-value" id="dash-stat-webinars">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-webinars"></canvas>
+            </div>
+            
+            <!-- Hackathons -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon blue">
+                  <i class="fa-solid fa-code"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 8%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Hackathons</span>
+                <span class="metric-card-value" id="dash-stat-hackathons">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-hackathons"></canvas>
+            </div>
+            
+            <!-- Pitch Events -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon orange">
+                  <i class="fa-solid fa-microphone"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 15%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Pitch Events</span>
+                <span class="metric-card-value" id="dash-stat-pitches">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-pitches"></canvas>
+            </div>
+            
+            <!-- Startup Applications -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon green">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 20%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Applications</span>
+                <span class="metric-card-value" id="dash-stat-applications">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-applications"></canvas>
+            </div>
+            
+            <!-- Total Registrations -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-users"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> 18%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Registrations</span>
+                <span class="metric-card-value" id="dash-stat-registrations">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-registrations"></canvas>
+            </div>
+          </div>
+          
+          <!-- Charts Section -->
+          <div class="charts-grid-main">
+            <!-- Line Chart: Registrations Overview -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Registrations Overview</h3>
+                <select class="page-size-select" style="padding:4px 8px; font-size:11px;" id="dash-line-chart-range">
+                  <option value="month">This Month</option>
+                  <option value="week">This Week</option>
+                </select>
+              </div>
+              <div class="chart-card-body" id="card-registrations-line-body">
+                <canvas class="canvas-chart" id="chart-registrations-line"></canvas>
+              </div>
+            </div>
+            
+            <!-- Donut Chart: Registrations by Type -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Registrations by Type</h3>
+              </div>
+              <div class="chart-card-body" id="card-registrations-donut-body">
+                <div class="donut-container" style="width:100%;">
+                  <div style="position:relative; width:140px; height:140px; display:flex; align-items:center; justify-content:center;">
+                    <canvas id="chart-registrations-donut" width="140" height="140"></canvas>
+                    <div class="donut-inner-text">
+                      <span class="donut-inner-value" id="donut-total-count">0</span>
+                      <span class="donut-inner-label">Total</span>
+                    </div>
+                  </div>
+                  <!-- Donut Legends -->
+                  <div class="donut-legend" id="donut-registrations-legend">
+                    <!-- Loaded dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Row 3: Upcoming Events separated by type -->
+          <div class="dashboard-grid-3">
+            <!-- Upcoming Webinars -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Upcoming Webinars</h3>
+                <a href="#/admin/webinars" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-upcoming-webinars" style="max-height: 320px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            
+            <!-- Upcoming Hackathons -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Upcoming Hackathons</h3>
+                <a href="#/admin/hackathons" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-upcoming-hackathons" style="max-height: 320px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            
+            <!-- Upcoming Pitch Events -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Upcoming Pitch Events</h3>
+                <a href="#/admin/pitch-events" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-upcoming-pitch-events" style="max-height: 320px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 4: Recent Applications and Registrations -->
+          <div class="dashboard-grid-2">
+            <!-- Recent Startup Applications -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Startup Applications</h3>
+                <a href="#/admin/startup-applications" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-recent-applications" style="max-height: 320px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+            
+            <!-- Recent Student Registrations -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Student Registrations</h3>
+                <a href="#/admin/students" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-recent-registrations-list" style="max-height: 320px;">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+          
+        </section>
+
+        <!-- ==========================================
+             WEBINARS MANAGEMENT LIST VIEW
+             ========================================== -->
+        <section id="webinars-list-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Webinar Management</h1>
+              <p>Manage and monitor all StepUp webinars, registrations, and student attendance logs.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-solid-red" onclick="window.dashboardApp.openCreateWebinarModal()">
+                <i class="fa-solid fa-plus"></i> Create Webinar
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section" style="border:none; background:none; padding:0; margin-bottom: 24px;">
+            <div class="table-header-flex">
+              <div class="table-search-box">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="webinars-search-input" placeholder="Search webinar name...">
                 </div>
                 
-                <div class="details-specs">
-                  <div class="details-title-row">
-                    <h2 id="details-name">Event Name Placeholder</h2>
-                    <div id="details-type-tag"></div>
-                  </div>
-                  
-                  <div class="details-specs-grid">
-                    <div class="spec-item">
-                      <span class="spec-label">Conducted By</span>
-                      <span class="spec-value" id="details-conducted">Company</span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Date</span>
-                      <span class="spec-value"><i class="fa-regular fa-calendar"></i> <span id="details-date">Date</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Time</span>
-                      <span class="spec-value"><i class="fa-regular fa-clock"></i> <span id="details-time">Time</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Mode</span>
-                      <span class="spec-value"><i class="fa-solid fa-network-wired"></i> <span id="details-mode">Online</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Eligibility</span>
-                      <span class="spec-value"><i class="fa-solid fa-user-graduate"></i> <span id="details-eligibility">Eligibility</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Team / Solo</span>
-                      <span class="spec-value"><i class="fa-solid fa-users"></i> <span id="details-participation">Solo</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Registration Start</span>
-                      <span class="spec-value"><i class="fa-solid fa-circle-play"></i> <span id="details-reg-start">Reg Start</span></span>
-                    </div>
-                    <div class="spec-item">
-                      <span class="spec-label">Registration End</span>
-                      <span class="spec-value"><i class="fa-solid fa-circle-stop"></i> <span id="details-reg-end">Reg End</span></span>
-                    </div>
-                  </div>
+                <select class="form-control-input" id="webinars-filter-mode" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Modes</option>
+                  <option value="Online">Online</option>
+                  <option value="Offline">Offline</option>
+                  <option value="Hybrid">Hybrid</option>
+                </select>
+              </div>
+              
+              <div class="dropdown-action-container" id="webinars-export-container">
+                <button class="btn-export-dropdown" id="webinars-export-btn">
+                  <i class="fa-solid fa-download"></i> Export Data <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="webinars-export-menu">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportWebinars('All')"><i class="fa-solid fa-video"></i> Export All Webinars</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportWebinars('Registrations')"><i class="fa-solid fa-users"></i> Export Registrations</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportWebinars('Attendance')"><i class="fa-solid fa-user-check"></i> Export Attendance</div>
                 </div>
               </div>
-
-              <!-- Venue and Description Row -->
-              <div class="details-info-section" style="flex-direction: column; gap: 14px;">
-                <div>
-                  <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Platform or Venue Details</h4>
-                  <p id="details-venue" style="font-size: 14px; font-weight: 600;">Platform details...</p>
-                </div>
-                <div>
-                  <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">Event Description</h4>
-                  <p id="details-description" style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">Description...</p>
-                </div>
+            </div>
+          </div>
+          
+          <!-- Webinars Scrollable Grid -->
+          <div class="startups-grid" id="webinars-cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+            <!-- Loaded dynamically -->
+          </div>
+          
+          <!-- Pagination Footer -->
+          <div class="table-pagination-footer" style="margin-top:20px;">
+            <span class="pagination-info" id="webinars-pagination-info">Showing 0 to 0 of 0 webinars</span>
+            <div class="pagination-controls">
+              <div class="page-selector-wrapper">
+                <select class="page-size-select" id="webinars-page-size">
+                  <option value="6" selected>6 / page</option>
+                  <option value="12">12 / page</option>
+                  <option value="24">24 / page</option>
+                </select>
               </div>
+              <div class="events-pagination" id="webinars-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+            </div>
+          </div>
+        </section>
 
-              <!-- Detail Mini-Metrics Grid -->
-              <div class="details-metrics-row">
-                <div class="detail-metric-card">
-                  <div class="detail-metric-icon red">
-                    <i class="fa-solid fa-user-group"></i>
-                  </div>
-                  <div class="detail-metric-info">
-                    <span class="detail-metric-value" id="event-stat-registrations">0</span>
-                    <span class="detail-metric-label">Total Registrations</span>
-                  </div>
-                </div>
-                <div class="detail-metric-card">
-                  <div class="detail-metric-icon red">
-                    <i class="fa-solid fa-user-plus"></i>
-                  </div>
-                  <div class="detail-metric-info">
-                    <span class="detail-metric-value" id="event-stat-yesterday">0</span>
-                    <span class="detail-metric-label">Registered Yesterday</span>
-                  </div>
-                </div>
-                <div class="detail-metric-card">
-                  <div class="detail-metric-icon red">
-                    <i class="fa-solid fa-hourglass-half"></i>
-                  </div>
-                  <div class="detail-metric-info">
-                    <span class="detail-metric-value" id="event-stat-countdown">-</span>
-                    <span class="detail-metric-label">Registration Closed In</span>
-                  </div>
-                </div>
-                <div class="detail-metric-card">
-                  <div class="detail-metric-icon green" id="event-stat-status-icon">
-                    <i class="fa-regular fa-circle-check"></i>
-                  </div>
-                  <div class="detail-metric-info">
-                    <span class="detail-metric-value" id="event-stat-status" style="color: var(--accent-green);">Upcoming</span>
-                    <span class="detail-metric-label">Event Status</span>
-                  </div>
-                </div>
-              </div>
+        <!-- ==========================================
+             WEBINAR DETAILS VIEW
+             ========================================== -->
+        <section id="webinar-details-view" class="content-panel">
+          <!-- Loaded dynamically -->
+        </section>
 
-              <!-- Registered Students Table Section -->
-              <div class="table-section">
-                <div class="table-controls">
-                  <span class="table-section-title">Registered Students</span>
-                  <button class="btn-solid-red" style="padding: 8px 14px; font-size: 12px;" id="register-student-to-event-btn">
-                    <i class="fa-solid fa-user-plus"></i> Register Student
-                  </button>
+        <!-- ==========================================
+             HACKATHONS MANAGEMENT LIST VIEW
+             ========================================== -->
+        <section id="hackathons-list-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Hackathon Management</h1>
+              <p>Organize, launch and track code hackathons, registrations and participating team information.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-solid-red" onclick="window.dashboardApp.openCreateHackathonModal()">
+                <i class="fa-solid fa-plus"></i> Create Hackathon
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section" style="border:none; background:none; padding:0; margin-bottom: 24px;">
+            <div class="table-header-flex">
+              <div class="table-search-box">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="hackathons-search-input" placeholder="Search hackathon name...">
                 </div>
                 
-                <div class="table-controls">
-                  <div class="search-input-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" class="search-input" id="event-students-search" placeholder="Search student name or email...">
-                  </div>
-                  
-                  <div class="table-actions-right">
-                    <button class="btn-export" id="event-students-export-btn">
-                      <i class="fa-solid fa-download"></i> Export Data
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Table Content Container -->
-                <div class="table-responsive">
-                  <table class="data-table" id="event-students-table">
-                    <thead>
-                      <tr>
-                        <th>Reg ID</th>
-                        <th>Student Name</th>
-                        <th>Email</th>
-                        <th>College Name</th>
-                        <th>Phone</th>
-                        <th>Registered On</th>
-                      </tr>
-                    </thead>
-                    <tbody id="event-students-tbody">
-                      <!-- Populated dynamically -->
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Pagination Footer -->
-                <div class="table-pagination-footer">
-                  <span class="pagination-info" id="event-students-pagination-info">Showing 0 to 0 of 0 students</span>
-                  <div class="pagination-controls">
-                    <div class="page-selector-wrapper">
-                      <select class="page-size-select" id="event-students-page-size">
-                        <option value="5">5 / page</option>
-                        <option value="10" selected>10 / page</option>
-                        <option value="25">25 / page</option>
-                      </select>
-                    </div>
-                    <div class="events-pagination" id="event-students-pagination-controls" style="padding: 0; border: none; margin: 0;">
-                      <!-- Generated dynamically -->
-                    </div>
-                  </div>
-                </div>
-
+                <select class="form-control-input" id="hackathons-filter-participation" style="padding:8px 12px; font-size:13px; width:160px;">
+                  <option value="">All Formats</option>
+                  <option value="Solo">Solo</option>
+                  <option value="Team">Team</option>
+                </select>
               </div>
-
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ==========================================
-           STUDENTS ACCOUNT VIEW PANEL
-           ========================================== -->
-      <section id="students-view" class="content-panel">
-        <header class="view-header">
-          <div class="header-title-block">
-            <h1>Student Sign-up Data</h1>
-            <p>View and manage all students who have created accounts on the platform.</p>
-          </div>
-          <div class="header-actions">
-            <div style="display: flex; gap: 10px;">
-              <button class="btn-outline-gray" onclick="window.dashboardApp.openAddStudentModal()">
-                <i class="fa-solid fa-user-plus"></i> Add Student
-              </button>
-              <button class="btn-solid-red" id="global-students-export-btn">
-                <i class="fa-solid fa-download"></i> Export Master Data
+              
+              <button class="btn-export-dropdown" onclick="window.dashboardApp.exportHackathonsList()">
+                <i class="fa-solid fa-download"></i> Export Hackathons
               </button>
             </div>
           </div>
-        </header>
+          
+          <div class="startups-grid" id="hackathons-cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+            <!-- Loaded dynamically -->
+          </div>
+          
+          <!-- Pagination -->
+          <div class="table-pagination-footer" style="margin-top:20px;">
+            <span class="pagination-info" id="hackathons-pagination-info">Showing 0 to 0 of 0 hackathons</span>
+            <div class="pagination-controls">
+              <div class="page-selector-wrapper">
+                <select class="page-size-select" id="hackathons-page-size">
+                  <option value="6" selected>6 / page</option>
+                  <option value="12">12 / page</option>
+                </select>
+              </div>
+              <div class="events-pagination" id="hackathons-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+            </div>
+          </div>
+        </section>
 
-        <!-- Metric Grid -->
-        <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="stud-total-students">0</span>
-              <span class="metric-label">Total Students</span>
-              <span class="metric-sublabel">All time registered</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-calendar-check"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="stud-month-students">0</span>
-              <span class="metric-label">Registered This Month</span>
-              <span class="metric-sublabel" id="stud-month-label">June 2026</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-calendar-days"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="stud-week-students">0</span>
-              <span class="metric-label">Registered This Week</span>
-              <span class="metric-sublabel">Last 7 days</span>
-            </div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-icon-box red">
-              <i class="fa-solid fa-user-plus"></i>
-            </div>
-            <div class="metric-details">
-              <span class="metric-value" id="stud-today-students">0</span>
-              <span class="metric-label">New Today</span>
-              <span class="metric-sublabel" id="stud-today-label">26 May 2025</span>
-            </div>
-          </div>
-        </div>
+        <!-- ==========================================
+             HACKATHON DETAILS VIEW
+             ========================================== -->
+        <section id="hackathon-details-view" class="content-panel">
+          <!-- Loaded dynamically -->
+        </section>
 
-        <!-- Master Table Section -->
-        <div class="students-container">
+        <!-- ==========================================
+             PITCH EVENTS MANAGEMENT LIST VIEW
+             ========================================== -->
+        <section id="pitch-events-list-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Pitch Events Management</h1>
+              <p>Schedule startup pitching programs, regulate tickets sales and access participant records.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-solid-red" onclick="window.dashboardApp.openCreatePitchEventModal()">
+                <i class="fa-solid fa-plus"></i> Create Pitch Event
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section" style="border:none; background:none; padding:0; margin-bottom: 24px;">
+            <div class="table-header-flex">
+              <div class="table-search-box">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="pitch-events-search-input" placeholder="Search pitch event name...">
+                </div>
+              </div>
+              
+              <button class="btn-export-dropdown" onclick="window.dashboardApp.exportPitchEventsList()">
+                <i class="fa-solid fa-download"></i> Export Pitch Events
+              </button>
+            </div>
+          </div>
+          
+          <div class="startups-grid" id="pitch-events-cards-grid" style="grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));">
+            <!-- Loaded dynamically -->
+          </div>
+          
+          <!-- Pagination -->
+          <div class="table-pagination-footer" style="margin-top:20px;">
+            <span class="pagination-info" id="pitch-events-pagination-info">Showing 0 to 0 of 0 events</span>
+            <div class="pagination-controls">
+              <div class="page-selector-wrapper">
+                <select class="page-size-select" id="pitch-events-page-size">
+                  <option value="6" selected>6 / page</option>
+                  <option value="12">12 / page</option>
+                </select>
+              </div>
+              <div class="events-pagination" id="pitch-events-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             PITCH EVENT DETAILS VIEW
+             ========================================== -->
+        <section id="pitch-event-details-view" class="content-panel">
+          <!-- Loaded dynamically -->
+        </section>
+
+        <!-- ==========================================
+             STARTUP APPLICATIONS VIEW
+             ========================================== -->
+        <section id="startup-applications-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Startup Pitch Applications</h1>
+              <p>Evaluate startup investor pitch proposals, review pitch decks, and manage approval statuses.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="applications-export-container">
+                <button class="btn-export-dropdown" id="applications-export-btn">
+                  <i class="fa-solid fa-download"></i> Export Applications <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="applications-export-menu">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApplications('All')"><i class="fa-solid fa-file-invoice"></i> Export All Applications</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApplications('Approved')"><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Export Approved Startups</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApplications('Rejected')"><i class="fa-solid fa-circle-xmark" style="color:var(--accent-red);"></i> Export Rejected Startups</div>
+                </div>
+              </div>
+            </div>
+          </header>
+          
+          <div class="table-section" style="border:none; background:none; padding:0; margin-bottom: 20px;">
+            <div class="table-header-flex" style="flex-wrap: wrap; gap: 16px;">
+              <div class="table-search-box" style="flex-wrap: wrap;">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="startup-search-input" placeholder="Search startup or founder...">
+                </div>
+                
+                <select class="form-control-input" id="startup-filter-stage" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Stages</option>
+                  <option value="Idea Phase">Idea Phase</option>
+                  <option value="Prototype/MVP">Prototype/MVP</option>
+                  <option value="Early Traction">Early Traction</option>
+                  <option value="Scaling">Scaling</option>
+                </select>
+                
+                <select class="form-control-input" id="startup-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="startups-grid" id="startup-applications-grid">
+            <!-- Dynamically populated cards -->
+          </div>
+          
+          <!-- Pagination -->
+          <div class="table-pagination-footer" style="margin-top: 24px;">
+            <span class="pagination-info" id="startup-pagination-info">Showing 0 to 0 of 0 applications</span>
+            <div class="pagination-controls">
+              <div class="page-selector-wrapper">
+                <select class="page-size-select" id="startup-page-size">
+                  <option value="6" selected>6 / page</option>
+                  <option value="12">12 / page</option>
+                  <option value="24">24 / page</option>
+                </select>
+              </div>
+              <div class="events-pagination" id="startup-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             STUDENTS VIEW PANEL
+             ========================================== -->
+        <section id="students-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Students Directory</h1>
+              <p>Roster of all students registered on the StepUp for AI incubator platform.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-outline-gray" onclick="window.dashboardApp.openAddStudentModal()">
+                  <i class="fa-solid fa-user-plus"></i> Add Student
+                </button>
+                <div class="dropdown-action-container" id="students-export-container">
+                  <button class="btn-solid-red" id="students-export-btn">
+                    <i class="fa-solid fa-download"></i> Export Students <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                  </button>
+                  <div class="export-popover-menu" id="students-export-menu">
+                    <div class="export-popover-item" onclick="window.dashboardApp.exportStudentsMaster('All')"><i class="fa-solid fa-users"></i> Export All Students</div>
+                    <div class="export-popover-item" onclick="window.dashboardApp.exportStudentsMaster('College')"><i class="fa-solid fa-building-columns"></i> Export College-wise</div>
+                    <div class="export-popover-item" onclick="window.dashboardApp.exportStudentsMaster('Branch')"><i class="fa-solid fa-code-branch"></i> Export Branch-wise</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+          
+          <!-- Master Students Table -->
+          <div class="students-container">
+            <div class="table-section">
+              <div class="table-header-flex">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="students-search-input" placeholder="Search Student ID, name, college...">
+                </div>
+                
+                <div class="table-search-box">
+                  <select class="form-control-input" id="students-filter-branch" style="padding:8px 12px; font-size:13px; width:160px;">
+                    <option value="">All Branches</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Information Technology">Information Technology</option>
+                    <option value="Electronics & Communication">Electronics & Communication</option>
+                    <option value="Electrical Engineering">Electrical Engineering</option>
+                    <option value="Mechanical Engineering">Mechanical Engineering</option>
+                    <option value="Civil Engineering">Civil Engineering</option>
+                  </select>
+                  
+                  <select class="form-control-input" id="students-filter-year" style="padding:8px 12px; font-size:13px; width:140px;">
+                    <option value="">All Years</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                    <option value="4">4th Year</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Phone Number</th>
+                      <th>College</th>
+                      <th>Branch</th>
+                      <th>Year</th>
+                      <th>Created Date</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="students-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <!-- Pagination -->
+              <div class="table-pagination-footer">
+                <span class="pagination-info" id="students-table-pagination-info">Showing 0 to 0 of 0 students</span>
+                <div class="pagination-controls">
+                  <div class="page-selector-wrapper">
+                    <select class="page-size-select" id="students-table-page-size">
+                      <option value="10" selected>10 / page</option>
+                      <option value="25">25 / page</option>
+                      <option value="50">50 / page</option>
+                    </select>
+                  </div>
+                  <div class="events-pagination" id="students-table-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             APPROVAL MANAGEMENT DASHBOARD VIEW
+             ========================================== -->
+        <section id="approval-dashboard-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Approval Management Dashboard</h1>
+              <p>Verify and manage verified corporate Recruiter and accredited Investor platform accounts.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="approvals-export-container">
+                <button class="btn-export-dropdown" id="approvals-export-btn">
+                  <i class="fa-solid fa-download"></i> Export Approval Data <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="approvals-export-menu">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('All')"><i class="fa-solid fa-user-check"></i> Export All Approvals</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('Recruiters')"><i class="fa-solid fa-user-tie"></i> Export Recruiters</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('Investors')"><i class="fa-solid fa-hand-holding-dollar"></i> Export Investors</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('Pending')"><i class="fa-solid fa-hourglass-half" style="color:#f59e0b;"></i> Export Pending Requests</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('Approved')"><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Export Approved Accounts</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportApprovals('Rejected')"><i class="fa-solid fa-circle-xmark" style="color:var(--accent-red);"></i> Export Rejected Accounts</div>
+                </div>
+              </div>
+            </div>
+          </header>
+          
+          <!-- Recruiter & Investor Analytics cards -->
+          <div class="metrics-grid-6">
+            <!-- Recruiter Pending -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-recruiter">Recruiter</span>
+                <span class="metric-card-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 20%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Pending Recruiters</span>
+                <span class="metric-card-value" id="approve-stat-rec-pending">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-rec-pending"></canvas>
+            </div>
+            
+            <!-- Recruiter Approved -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-recruiter">Recruiter</span>
+                <span class="metric-card-trend up" style="color:var(--accent-green);"><i class="fa-solid fa-arrow-trend-up"></i> 15%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Approved Recruiters</span>
+                <span class="metric-card-value" id="approve-stat-rec-approved">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-rec-approved"></canvas>
+            </div>
+            
+            <!-- Recruiter Rejected -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-recruiter">Recruiter</span>
+                <span class="metric-card-trend down" style="color:var(--accent-red);"><i class="fa-solid fa-arrow-trend-down"></i> 16%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Rejected Recruiters</span>
+                <span class="metric-card-value" id="approve-stat-rec-rejected">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-rec-rejected"></canvas>
+            </div>
+            
+            <!-- Investor Pending -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-investor">Investor</span>
+                <span class="metric-card-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 33%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Pending Investors</span>
+                <span class="metric-card-value" id="approve-stat-inv-pending">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-inv-pending"></canvas>
+            </div>
+            
+            <!-- Investor Approved -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-investor">Investor</span>
+                <span class="metric-card-trend up" style="color:var(--accent-green);"><i class="fa-solid fa-arrow-trend-up"></i> 10%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Approved Investors</span>
+                <span class="metric-card-value" id="approve-stat-inv-approved">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-inv-approved"></canvas>
+            </div>
+            
+            <!-- Investor Rejected -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <span class="badge-investor">Investor</span>
+                <span class="metric-card-trend down" style="color:var(--accent-red);"><i class="fa-solid fa-arrow-trend-down"></i> 25%</span>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Rejected Investors</span>
+                <span class="metric-card-value" id="approve-stat-inv-rejected">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-inv-rejected"></canvas>
+            </div>
+          </div>
+          
+          <!-- Quick Access Cards -->
+          <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom: 24px;">
+            <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-recruiters')"><i class="fa-solid fa-user-tie"></i> Recruiter Approvals</button>
+            <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-investors')"><i class="fa-solid fa-hand-holding-dollar"></i> Investor Approvals</button>
+            <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-pending')"><i class="fa-solid fa-hourglass-half"></i> Pending Requests</button>
+            <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-approved')"><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Approved Accounts</button>
+            <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-rejected')"><i class="fa-solid fa-circle-xmark" style="color:var(--accent-red);"></i> Rejected Accounts</button>
+          </div>
+          
+          <!-- Split Table & Charts Section -->
+          <div class="charts-grid-main">
+            <!-- Pending Requests (All) table view -->
+            <div class="chart-card" style="flex-grow:1; overflow:hidden;">
+              <div class="chart-card-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <h3>Pending Requests (All)</h3>
+                  <span class="badge-rejected" id="approve-pending-count-badge" style="padding:2px 6px; border-radius:10px;">0</span>
+                </div>
+                <div class="search-input-wrapper" style="width:200px;">
+                  <i class="fa-solid fa-magnifying-glass" style="font-size:11px;"></i>
+                  <input type="text" class="search-input" style="padding:6px 12px 6px 30px; font-size:11px;" id="approve-dash-pending-search" placeholder="Search name/company...">
+                </div>
+              </div>
+              
+              <div class="table-responsive" style="min-height:220px; overflow-y:auto;">
+                <table class="data-table" style="font-size:12px;">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Name</th>
+                      <th>Organization</th>
+                      <th>Email</th>
+                      <th>Applied On</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="approve-dash-pending-table-body">
+                    <!-- Loaded dynamically -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="table-pagination-footer" style="padding-top:10px;">
+                <span class="pagination-info" style="font-size:11px;" id="approve-dash-pending-pagination-info">Showing 0 to 0 of 0 entries</span>
+                <div class="events-pagination" id="approve-dash-pending-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+            
+            <!-- Approval Summary charts -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Approval Summary</h3>
+                <select class="page-size-select" style="padding:4px 8px; font-size:11px;" id="approve-summary-range">
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+              <div class="chart-card-body" id="card-approvals-donut-body" style="min-height: 250px;">
+                <div class="donut-container" style="width:100%;">
+                  <div style="position:relative; width:120px; height:120px; display:flex; align-items:center; justify-content:center;">
+                    <canvas id="chart-approvals-donut" width="120" height="120"></canvas>
+                    <div class="donut-inner-text">
+                      <span class="donut-inner-value" id="donut-approvals-total">0</span>
+                      <span class="donut-inner-label" style="font-size:9px;">Total</span>
+                    </div>
+                  </div>
+                  <!-- Mini Legend list -->
+                  <div class="donut-legend" id="donut-approvals-legend" style="font-size:11px;">
+                    <!-- Dynamically drawn -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Lower Graph & Recent lists -->
+          <div class="charts-grid-main">
+            <!-- Line Graph: Approval Trend Graph -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Approval Trend</h3>
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <select class="page-size-select" style="padding:4px 8px; font-size:11px;" id="approve-trend-range">
+                    <option value="month">This Month</option>
+                    <option value="week">This Week</option>
+                    <option value="day">This Day</option>
+                  </select>
+                  <div style="display:flex; gap:10px; font-size:11px; align-items:center;">
+                    <span style="color:var(--accent-red);"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Recruiters</span>
+                    <span style="color:#8b5cf6;"><i class="fa-solid fa-circle" style="font-size:8px;"></i> Investors</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chart-card-body" id="card-approvals-line-body">
+                <canvas class="canvas-chart" id="chart-approvals-trend-line"></canvas>
+              </div>
+            </div>
+            
+            <!-- Split Recent Approved/Rejected grids -->
+            <div class="chart-card" style="gap:10px; min-height: 280px;">
+              <div class="chart-card-header">
+                <h3>Recent Activity Logs</h3>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:16px; overflow-y:auto; max-height:220px;" id="approve-dash-activity-logs">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             RECRUITER APPROVALS TAB
+             ========================================== -->
+        <section id="approval-recruiters-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Recruiter Approvals</h1>
+              <p>Review registration files, designation status, and verify credentials for corporate Recruiters.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-dashboard')">
+                <i class="fa-solid fa-arrow-left"></i> Approval Dashboard
+              </button>
+            </div>
+          </header>
+          
           <div class="table-section">
-            
-            <div class="table-controls" style="position: relative;">
+            <div class="table-header-flex">
               <div class="search-input-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" class="search-input" id="global-students-search" placeholder="Search student ID, name, email...">
+                <input type="text" class="search-input" id="recruiters-search-input" placeholder="Search recruiter name, company...">
               </div>
               
-              <div class="table-actions-right">
-                <button class="btn-filter" id="global-students-filter-trigger">
-                  <i class="fa-solid fa-filter"></i> Filter
-                </button>
-                
-                <!-- Filter Dropdown Popover -->
-                <div class="filter-popover" id="global-students-filter-popover">
-                  <div class="filter-popover-header">Filter Students</div>
-                  
-                  <div class="form-group">
-                    <label for="filter-branch">Branch</label>
-                    <select class="form-control-input" id="filter-branch" style="padding: 8px 12px; font-size: 13px;">
-                      <option value="">All Branches</option>
-                      <option value="Computer Science">Computer Science</option>
-                      <option value="Information Technology">Information Technology</option>
-                      <option value="Electronics & Communication">Electronics & Communication</option>
-                      <option value="Electrical Engineering">Electrical Engineering</option>
-                      <option value="Mechanical Engineering">Mechanical Engineering</option>
-                      <option value="Civil Engineering">Civil Engineering</option>
-                    </select>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label for="filter-year">Eligible Year</label>
-                    <select class="form-control-input" id="filter-year" style="padding: 8px 12px; font-size: 13px;">
-                      <option value="">All Years</option>
-                      <option value="1">1st Year</option>
-                      <option value="2">2nd Year</option>
-                      <option value="3">3rd Year</option>
-                      <option value="4">4th Year</option>
-                    </select>
-                  </div>
-                  
-                  <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px;">
-                    <button class="btn-outline-gray" style="padding: 6px 12px; font-size: 12px;" id="filter-reset-btn">Reset</button>
-                    <button class="btn-solid-red" style="padding: 6px 12px; font-size: 12px;" id="filter-apply-btn">Apply</button>
-                  </div>
-                </div>
+              <div class="table-search-box">
+                <select class="form-control-input" id="recruiters-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
               </div>
             </div>
-
-            <!-- Table Responsive Container -->
-            <div class="table-responsive" style="max-height: 500px;">
-              <table class="data-table" id="global-students-table">
+            
+            <div class="table-responsive">
+              <table class="data-table">
                 <thead>
                   <tr>
-                    <th>Student ID</th>
+                    <th>Recruiter ID</th>
                     <th>Full Name</th>
+                    <th>Company Name</th>
+                    <th>Designation</th>
                     <th>Email</th>
                     <th>Phone Number</th>
-                    <th>College Name</th>
-                    <th>Branch</th>
-                    <th>Year</th>
-                    <th>Created Date</th>
+                    <th>Applied Date</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody id="global-students-tbody">
-                  <!-- Dynamically populated -->
+                <tbody id="recruiters-table-body">
+                  <!-- Loaded dynamically -->
                 </tbody>
               </table>
             </div>
-
-            <!-- Pagination Footer -->
+            
             <div class="table-pagination-footer">
-              <span class="pagination-info" id="global-students-pagination-info">Showing 0 to 0 of 0 students</span>
+              <span class="pagination-info" id="recruiters-pagination-info">Showing 0 to 0 of 0 recruiters</span>
               <div class="pagination-controls">
                 <div class="page-selector-wrapper">
-                  <select class="page-size-select" id="global-students-page-size">
+                  <select class="page-size-select" id="recruiters-page-size">
                     <option value="10" selected>10 / page</option>
                     <option value="25">25 / page</option>
-                    <option value="50">50 / page</option>
                   </select>
                 </div>
-                <div class="events-pagination" id="global-students-pagination-controls" style="padding: 0; border: none; margin: 0;">
-                  <!-- Dynamically generated page buttons -->
-                </div>
+                <div class="events-pagination" id="recruiters-pagination-controls" style="padding:0; border:none; margin:0;"></div>
               </div>
             </div>
-
           </div>
-        </div>
-      </section>
+        </section>
 
+        <!-- ==========================================
+             INVESTOR APPROVALS TAB
+             ========================================== -->
+        <section id="approval-investors-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Investor Approvals</h1>
+              <p>Audit registrations, confirm funding portfolio specifications and verify accredited VC/Angel Investors.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-dashboard')">
+                <i class="fa-solid fa-arrow-left"></i> Approval Dashboard
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="investors-search-input" placeholder="Search investor name, VC name...">
+              </div>
+              
+              <div class="table-search-box">
+                <select class="form-control-input" id="investors-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Investor ID</th>
+                    <th>Full Name</th>
+                    <th>Organization Name</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Applied Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="investors-table-body">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="investors-pagination-info">Showing 0 to 0 of 0 investors</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="investors-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="investors-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-    </main>
+        <!-- ==========================================
+             PENDING REQUESTS TAB (WITH BULK CONTROLS)
+             ========================================== -->
+        <section id="approval-pending-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Pending Approval Requests</h1>
+              <p>Consolidated panel for recruiters and investors seeking account approval. Bulk verify operations available.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-dashboard')">
+                <i class="fa-solid fa-arrow-left"></i> Approval Dashboard
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="table-search-box">
+                <div class="search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" class="search-input" id="pending-search-input" placeholder="Search name or company...">
+                </div>
+                
+                <select class="form-control-input" id="pending-filter-type" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Types</option>
+                  <option value="Recruiter">Recruiters Only</option>
+                  <option value="Investor">Investors Only</option>
+                </select>
+              </div>
+              
+              <!-- Bulk Action Control Box -->
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span style="font-size:12px; color:var(--text-secondary);" id="pending-selected-count">0 items selected</span>
+                <button class="btn-action-check" style="width:110px; font-size:11px; font-weight:700; height:32px; gap:6px;" onclick="window.dashboardApp.bulkApprovePending()"><i class="fa-solid fa-check"></i> Bulk Approve</button>
+                <button class="btn-action-cross" style="width:100px; font-size:11px; font-weight:700; height:32px; gap:6px;" onclick="window.dashboardApp.bulkRejectPending()"><i class="fa-solid fa-xmark"></i> Bulk Reject</button>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="pending-select-all" onclick="window.dashboardApp.toggleSelectAllPending(this)"></th>
+                    <th>Type</th>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Organization / Company</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Applied Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pending-table-body">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="pending-pagination-info">Showing 0 to 0 of 0 requests</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="pending-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="pending-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             APPROVED ACCOUNTS TAB
+             ========================================== -->
+        <section id="approval-approved-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Approved Accounts</h1>
+              <p>Roster of verified recruiter and investor accounts allowed on StepUp Intern platform.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-dashboard')">
+                <i class="fa-solid fa-arrow-left"></i> Approval Dashboard
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="approved-search-input" placeholder="Search name, organization...">
+              </div>
+              
+              <select class="form-control-input" id="approved-filter-type" style="padding:8px 12px; font-size:13px; width:150px;">
+                <option value="">All Types</option>
+                <option value="Recruiter">Recruiters Only</option>
+                <option value="Investor">Investors Only</option>
+              </select>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Account ID</th>
+                    <th>Full Name</th>
+                    <th>Organization</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actioned Date</th>
+                  </tr>
+                </thead>
+                <tbody id="approved-table-body">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="approved-pagination-info">Showing 0 to 0 of 0 accounts</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="approved-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="approved-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             REJECTED ACCOUNTS TAB
+             ========================================== -->
+        <section id="approval-rejected-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Rejected Accounts</h1>
+              <p>Roster of disallowed recruiter and investor accounts. Re-evaluation can be triggered by admins.</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn-outline-gray" onclick="window.dashboardApp.switchTab('approval-dashboard')">
+                <i class="fa-solid fa-arrow-left"></i> Approval Dashboard
+              </button>
+            </div>
+          </header>
+          
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="rejected-search-input" placeholder="Search name, organization...">
+              </div>
+              
+              <select class="form-control-input" id="rejected-filter-type" style="padding:8px 12px; font-size:13px; width:150px;">
+                <option value="">All Types</option>
+                <option value="Recruiter">Recruiters Only</option>
+                <option value="Investor">Investors Only</option>
+              </select>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Account ID</th>
+                    <th>Full Name</th>
+                    <th>Organization</th>
+                    <th>Designation</th>
+                    <th>Email</th>
+                    <th>Actioned Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="rejected-table-body">
+                  <!-- Loaded dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="rejected-pagination-info">Showing 0 to 0 of 0 accounts</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="rejected-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="rejected-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             SETTINGS VIEW
+             ========================================== -->
+        <section id="settings-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>System Settings</h1>
+              <p>Configure ecosystem data, database storage operations and seed demo records.</p>
+            </div>
+          </header>
+          
+          <div class="dashboard-panel-box" style="max-width: 600px; gap: 20px;">
+            <div class="panel-box-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 0;">
+              <h3>Database Storage Management</h3>
+            </div>
+            
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              StepUp for AI uses standard HTML5 LocalStorage configuration to save student portfolios, startup applications, and event registrations.
+            </p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px;" onclick="window.dashboardApp.loadDemoData()">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-red);"></i> Load Demo Data
+              </button>
+              <span style="font-size:11px; color:var(--text-muted); margin-top:-6px; padding-left: 36px;">Pre-seeds 5 Webinars, 4 Hackathons, 3 Pitch Events, 8 Startup Applications, 12 Recruiters, 10 Investors and 30+ registration linkages.</span>
+              
+              <button class="btn-outline-gray" style="justify-content: flex-start; padding: 14px; border-color: rgba(255,46,75,0.15);" onclick="window.dashboardApp.resetApp()">
+                <i class="fa-solid fa-trash-can" style="color: var(--accent-red);"></i> Reset Platform Database
+              </button>
+              <span style="font-size:11px; color:var(--text-muted); margin-top:-6px; padding-left: 36px;">Wipes the local storage variables.</span>
+            </div>
+          </div>
+        </section>
+        
+      </main>
+    </div>
 
   </div>
 
@@ -683,205 +1420,401 @@
        MODAL DIALOGS
        ========================================== -->
 
-  <!-- Modal: Create / Edit Event Form -->
-  <div class="modal-overlay" id="create-event-modal">
+  <!-- Modal: Create / Edit Webinar -->
+  <div class="modal-overlay" id="create-webinar-modal">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title-block">
-          <h3 id="event-modal-title">Create New Event</h3>
-          <p>Fill in the details to schedule a new webinar or hackathon.</p>
+          <h3 id="webinar-modal-title">Create Webinar</h3>
+          <p>Fill in details to schedule a new educational webinar.</p>
         </div>
-        <button class="modal-close-btn" onclick="window.dashboardApp.closeCreateEventModal()">
+        <button class="modal-close-btn" onclick="window.dashboardApp.closeCreateWebinarModal()">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       
-      <form id="create-event-form" class="modal-body">
-        <input type="hidden" id="form-event-id"> <!-- Hidden ID field for editing -->
+      <form id="create-webinar-form" class="modal-body">
+        <input type="hidden" id="webinar-form-id">
         
-        <!-- Basic Details Section -->
-        <div class="form-section-title">Basic Details</div>
-        
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label for="form-event-type">Event Type <span style="color: var(--accent-red);">*</span></label>
-            <select class="form-control-input" id="form-event-type" required>
-              <option value="" disabled selected>Select event type</option>
-              <option value="webinar">Webinar</option>
-              <option value="hackathon">Hackathon</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="form-event-name">Event Name <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="form-event-name" placeholder="Enter event name" required>
-          </div>
-        </div>
-
+        <div class="form-section-title">Webinar Core Info</div>
         <div class="form-group">
-          <label for="form-conducted-by">Conducted By (Company/Organization) <span style="color: var(--accent-red);">*</span></label>
-          <input type="text" class="form-control-input" id="form-conducted-by" placeholder="Enter company/organization name" required>
+          <label for="webinar-form-name">Webinar Name <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="webinar-form-name" placeholder="e.g. AI-driven Software Architecture" required>
         </div>
-
+        
         <div class="upload-card-wrapper">
-          <div class="form-group">
-            <label>Company/Organization Logo</label>
-            <div class="file-upload-card">
+          <div class="form-group" style="flex:1;">
+            <label>Webinar Poster Banner</label>
+            <div class="file-upload-card" id="webinar-upload-poster-card">
               <i class="fa-solid fa-cloud-arrow-up"></i>
-              <span>Click to upload Logo</span>
-              <p>PNG, JPG (max. 2MB)</p>
-              <input type="file" id="form-company-logo" accept="image/*">
+              <span>Click to upload Poster</span>
+              <input type="file" id="webinar-form-poster" accept="image/*" style="opacity:0; position:absolute; inset:0; cursor:pointer;">
             </div>
-            <div id="company-logo-preview-box"></div>
-          </div>
-          
-          <div class="form-group">
-            <label>Banner Image</label>
-            <div class="file-upload-card">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-              <span>Click to upload Banner</span>
-              <p>PNG, JPG (max. 5MB)</p>
-              <input type="file" id="form-banner-image" accept="image/*">
-            </div>
-            <div id="banner-preview-box"></div>
+            <div id="webinar-poster-preview"></div>
           </div>
         </div>
-
+        
         <div class="form-group">
-          <label for="form-description">Description <span style="color: var(--accent-red);">*</span></label>
-          <textarea class="form-control-input" id="form-description" rows="3" placeholder="Enter event description details..." style="resize: vertical;" required></textarea>
+          <label for="webinar-form-overview">Webinar Overview (Short Pitch) <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="webinar-form-overview" placeholder="One-line summary for student lists" required>
         </div>
-
-        <!-- Date & Time Section -->
-        <div class="form-section-title">Date & Time</div>
         
+        <div class="form-group">
+          <label for="webinar-form-description">Description Details <span style="color: var(--accent-red);">*</span></label>
+          <textarea class="form-control-input" id="webinar-form-description" rows="3" placeholder="Webinar syllabus or topics discussed..." style="resize: vertical;" required></textarea>
+        </div>
+        
+        <div class="form-section-title">Schedule & Location</div>
         <div class="form-grid-3">
           <div class="form-group">
-            <label for="form-event-date">Event Date <span style="color: var(--accent-red);">*</span></label>
-            <input type="date" class="form-control-input" id="form-event-date" required>
+            <label for="webinar-form-start-date">Start Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="webinar-form-start-date" required>
           </div>
           <div class="form-group">
-            <label for="form-start-time">Start Time <span style="color: var(--accent-red);">*</span></label>
-            <input type="time" class="form-control-input" id="form-start-time" required>
+            <label for="webinar-form-end-date">End Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="webinar-form-end-date" required>
           </div>
           <div class="form-group">
-            <label for="form-end-time">End Time <span style="color: var(--accent-red);">*</span></label>
-            <input type="time" class="form-control-input" id="form-end-time" required>
+            <label for="webinar-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="webinar-form-timezone" value="UTC+5:30" required>
           </div>
         </div>
-
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label for="form-reg-start">Registration Start Date <span style="color: var(--accent-red);">*</span></label>
-            <input type="date" class="form-control-input" id="form-reg-start" required>
-          </div>
-          <div class="form-group">
-            <label for="form-reg-end">Registration End Date <span style="color: var(--accent-red);">*</span></label>
-            <input type="date" class="form-control-input" id="form-reg-end" required>
-          </div>
-        </div>
-
-        <!-- Eligibility Section -->
-        <div class="form-section-title">Eligibility</div>
-        
-        <div class="form-grid-3">
-          <div class="form-group">
-            <label for="form-eligible-years">Eligible Years <span style="color: var(--accent-red);">*</span></label>
-            <select class="form-control-input" id="form-eligible-years" required>
-              <option value="" disabled selected>Select years</option>
-              <option value="All Years">All Years</option>
-              <option value="1st Year and Above">1st Year and Above</option>
-              <option value="2nd Year and Above">2nd Year and Above</option>
-              <option value="3rd Year and Above">3rd Year and Above</option>
-              <option value="Final Year Only">Final Year Only</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="form-branches">Branches Allowed <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="form-branches" placeholder="e.g. CSE, IT, ECE" required>
-          </div>
-          <div class="form-group">
-            <label for="form-min-cgpa">Minimum CGPA (Optional)</label>
-            <input type="number" step="0.1" min="0" max="10" class="form-control-input" id="form-min-cgpa" placeholder="e.g. 7.5">
-          </div>
-        </div>
-
-        <!-- Participation Section -->
-        <div class="form-section-title">Participation</div>
-        
-        <div class="form-grid-3">
-          <div class="form-group">
-            <label for="form-participation">Team / Solo Selection <span style="color: var(--accent-red);">*</span></label>
-            <select class="form-control-input" id="form-participation" required>
-              <option value="" disabled selected>Select mode</option>
-              <option value="Solo">Solo</option>
-              <option value="Team">Team</option>
-              <option value="Both">Both (Solo or Team)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="form-min-team">Min Team Size (if Team)</label>
-            <input type="number" min="1" class="form-control-input" id="form-min-team" placeholder="Min">
-          </div>
-          <div class="form-group">
-            <label for="form-max-team">Max Team Size (if Team)</label>
-            <input type="number" min="1" class="form-control-input" id="form-max-team" placeholder="Max">
-          </div>
-        </div>
-
-        <!-- Additional Information Section -->
-        <div class="form-section-title">Additional Information</div>
         
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="form-mode">Mode <span style="color: var(--accent-red);">*</span></label>
-            <select class="form-control-input" id="form-mode" required>
-              <option value="" disabled selected>Select mode</option>
-              <option value="Online">Online</option>
+            <label for="webinar-form-start-time">Start Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="webinar-form-start-time" required>
+          </div>
+          <div class="form-group">
+            <label for="webinar-form-end-time">End Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="webinar-form-end-time" required>
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="webinar-form-mode">Mode <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="webinar-form-mode" required>
+              <option value="Online" selected>Online</option>
               <option value="Offline">Offline</option>
               <option value="Hybrid">Hybrid</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="form-venue">Venue or Platform Details <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="form-venue" placeholder="e.g. Zoom or Campus Seminar Hall" required>
+            <label for="webinar-form-venue">Venue or Platform Details <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="webinar-form-venue" placeholder="e.g. Zoom Link or Room 402, Seminar Hall" required>
           </div>
         </div>
-
-        <div class="form-grid-2">
-          <div class="form-group">
-            <label for="form-prize">Prize Details</label>
-            <input type="text" class="form-control-input" id="form-prize" placeholder="e.g. Cash prize of ₹25,000 + Goodies">
-          </div>
-          <div class="form-group">
-            <label for="form-certificate">Certificate Available <span style="color: var(--accent-red);">*</span></label>
-            <select class="form-control-input" id="form-certificate" required>
-              <option value="" disabled selected>Select option</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-        </div>
-
+        
+        <div class="form-section-title">Contact Coordinator</div>
         <div class="form-grid-3">
           <div class="form-group">
-            <label for="form-contact-name">Contact Person <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="form-contact-name" placeholder="Name" required>
+            <label for="webinar-form-contact-name">Full Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="webinar-form-contact-name" placeholder="e.g. Prof. Kumar" required>
           </div>
           <div class="form-group">
-            <label for="form-contact-email">Contact Email <span style="color: var(--accent-red);">*</span></label>
-            <input type="email" class="form-control-input" id="form-contact-email" placeholder="Email" required>
+            <label for="webinar-form-contact-phone">Phone Number <span style="color: var(--accent-red);">*</span></label>
+            <input type="tel" class="form-control-input" id="webinar-form-contact-phone" placeholder="Contact number" required>
           </div>
           <div class="form-group">
-            <label for="form-contact-phone">Contact Phone <span style="color: var(--accent-red);">*</span></label>
-            <input type="tel" class="form-control-input" id="form-contact-phone" placeholder="Phone number" required>
+            <label for="webinar-form-contact-email">Email Address <span style="color: var(--accent-red);">*</span></label>
+            <input type="email" class="form-control-input" id="webinar-form-contact-email" placeholder="Email" required>
           </div>
         </div>
       </form>
       
       <div class="modal-footer">
-        <button class="btn-outline-gray" onclick="window.dashboardApp.closeCreateEventModal()">Cancel</button>
-        <button class="btn-solid-red" type="submit" form="create-event-form" id="event-form-submit-btn">Create Event</button>
+        <button class="btn-outline-gray" onclick="window.dashboardApp.closeCreateWebinarModal()">Cancel</button>
+        <button class="btn-solid-red" type="submit" form="create-webinar-form" id="webinar-submit-btn">Save Webinar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create / Edit Hackathon -->
+  <div class="modal-overlay" id="create-hackathon-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3 id="hackathon-modal-title">Create Hackathon</h3>
+          <p>Fill in details to configure a code hackathon.</p>
+        </div>
+        <button class="modal-close-btn" onclick="window.dashboardApp.closeCreateHackathonModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <form id="create-hackathon-form" class="modal-body">
+        <input type="hidden" id="hackathon-form-id">
+        
+        <div class="form-section-title">Hackathon Organizer Info</div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="hackathon-form-name">Hackathon Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="hackathon-form-name" placeholder="e.g. Build with AI Hackathon" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-conducted">Conducted By <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="hackathon-form-conducted" placeholder="e.g. Google Cloud Developers" required>
+          </div>
+        </div>
+        
+        <div class="upload-card-wrapper">
+          <div class="form-group" style="flex:1;">
+            <label>Organization Logo</label>
+            <div class="file-upload-card" id="hackathon-upload-logo-card">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Brand Logo</span>
+              <input type="file" id="hackathon-form-logo" accept="image/*" style="opacity:0; position:absolute; inset:0; cursor:pointer;">
+            </div>
+            <div id="hackathon-logo-preview"></div>
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label>Hackathon Poster</label>
+            <div class="file-upload-card" id="hackathon-upload-poster-card">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Poster Image</span>
+              <input type="file" id="hackathon-form-poster" accept="image/*" style="opacity:0; position:absolute; inset:0; cursor:pointer;">
+            </div>
+            <div id="hackathon-poster-preview"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="hackathon-form-description">Description & Rules <span style="color: var(--accent-red);">*</span></label>
+          <textarea class="form-control-input" id="hackathon-form-description" rows="3" placeholder="Explain hackathon themes, tech stacks allowed..." required></textarea>
+        </div>
+        
+        <div class="form-section-title">Participation Rules</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="hackathon-form-participation">Solo / Team Selection <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="hackathon-form-participation" required>
+              <option value="Solo">Solo only</option>
+              <option value="Team" selected>Team only</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-min-team">Min Team Size</label>
+            <input type="number" class="form-control-input" id="hackathon-form-min-team" value="2">
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-max-team">Max Team Size</label>
+            <input type="number" class="form-control-input" id="hackathon-form-max-team" value="4">
+          </div>
+        </div>
+        
+        <div class="form-section-title">Schedule & Details</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="hackathon-form-start-date">Start Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="hackathon-form-start-date" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-end-date">End Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="hackathon-form-end-date" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="hackathon-form-timezone" value="UTC+5:30" required>
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="hackathon-form-start-time">Start Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="hackathon-form-start-time" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-end-time">End Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="hackathon-form-end-time" required>
+          </div>
+        </div>
+        
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="hackathon-form-mode">Mode <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="hackathon-form-mode" required>
+              <option value="Online">Online</option>
+              <option value="Offline" selected>Offline</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-venue">Venue or Platform Details <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="hackathon-form-venue" placeholder="e.g. Devfolio / College Lab" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-certificate">Certificate Available <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="hackathon-form-certificate" required>
+              <option value="Yes" selected>Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-section-title">Contact Person</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="hackathon-form-contact-name">Full Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="hackathon-form-contact-name" placeholder="Name" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-contact-phone">Phone Number <span style="color: var(--accent-red);">*</span></label>
+            <input type="tel" class="form-control-input" id="hackathon-form-contact-phone" placeholder="Phone" required>
+          </div>
+          <div class="form-group">
+            <label for="hackathon-form-contact-email">Email Address <span style="color: var(--accent-red);">*</span></label>
+            <input type="email" class="form-control-input" id="hackathon-form-contact-email" placeholder="Email" required>
+          </div>
+        </div>
+      </form>
+      
+      <div class="modal-footer">
+        <button class="btn-outline-gray" onclick="window.dashboardApp.closeCreateHackathonModal()">Cancel</button>
+        <button class="btn-solid-red" type="submit" form="create-hackathon-form" id="hackathon-submit-btn">Save Hackathon</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create / Edit Pitch Event -->
+  <div class="modal-overlay" id="create-pitch-event-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3 id="pitch-event-modal-title">Create Pitch Event</h3>
+          <p>Fill in details to configure a new startup pitching session.</p>
+        </div>
+        <button class="modal-close-btn" onclick="window.dashboardApp.closeCreatePitchEventModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      
+      <form id="create-pitch-event-form" class="modal-body">
+        <input type="hidden" id="pitch-event-form-id">
+        
+        <div class="form-section-title">Pitch Event Details</div>
+        <div class="form-group">
+          <label for="pitch-event-form-name">Pitch Event Name <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="pitch-event-form-name" placeholder="e.g. StepUp Angel Pitch 2025" required>
+        </div>
+        
+        <div class="upload-card-wrapper">
+          <div class="form-group" style="flex:1;">
+            <label>Event Poster Banner</label>
+            <div class="file-upload-card" id="pitch-event-upload-poster-card">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>Upload Poster</span>
+              <input type="file" id="pitch-event-form-poster" accept="image/*" style="opacity:0; position:absolute; inset:0; cursor:pointer;">
+            </div>
+            <div id="pitch-event-poster-preview"></div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="pitch-event-form-description">Event Description <span style="color: var(--accent-red);">*</span></label>
+          <textarea class="form-control-input" id="pitch-event-form-description" rows="3" placeholder="VC panel introductions, structure..." required></textarea>
+        </div>
+        
+        <div class="form-section-title">Schedule & Mode</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="pitch-event-form-start-date">Start Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="pitch-event-form-start-date" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-end-date">End Date <span style="color: var(--accent-red);">*</span></label>
+            <input type="date" class="form-control-input" id="pitch-event-form-end-date" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="pitch-event-form-timezone" value="UTC+5:30" required>
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="pitch-event-form-start-time">Start Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="pitch-event-form-start-time" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-end-time">End Time <span style="color: var(--accent-red);">*</span></label>
+            <input type="time" class="form-control-input" id="pitch-event-form-end-time" required>
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="pitch-event-form-mode">Mode <span style="color: var(--accent-red);">*</span></label>
+            <select class="form-control-input" id="pitch-event-form-mode" required>
+              <option value="Online">Online</option>
+              <option value="Offline" selected>Offline</option>
+              <option value="Hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-venue">Venue or Platform Details <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="pitch-event-form-venue" placeholder="e.g. Taj Hotel Seminar Block" required>
+          </div>
+        </div>
+        
+        <div class="form-section-title">Ticket Management</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="pitch-event-form-ticket-name">Ticket Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="pitch-event-form-ticket-name" placeholder="e.g. VIP Passes" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-ticket-price">Price (₹) <span style="color: var(--accent-red);">*</span></label>
+            <input type="number" class="form-control-input" id="pitch-event-form-ticket-price" placeholder="0 for Free" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-ticket-desc">Short Description</label>
+            <input type="text" class="form-control-input" id="pitch-event-form-ticket-desc" placeholder="e.g. Pitch deck review pass">
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="pitch-event-form-sale-start">Sale Start Date</label>
+            <input type="date" class="form-control-input" id="pitch-event-form-sale-start">
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-sale-end">Sale End Date</label>
+            <input type="date" class="form-control-input" id="pitch-event-form-sale-end">
+          </div>
+        </div>
+        
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="pitch-event-form-sale-start-time">Sale Start Time</label>
+            <input type="time" class="form-control-input" id="pitch-event-form-sale-start-time">
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-sale-end-time">Sale End Time</label>
+            <input type="time" class="form-control-input" id="pitch-event-form-sale-end-time">
+          </div>
+        </div>
+        
+        <div class="form-section-title">Contact Coordinator</div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label for="pitch-event-form-contact-name">Full Name <span style="color: var(--accent-red);">*</span></label>
+            <input type="text" class="form-control-input" id="pitch-event-form-contact-name" placeholder="Name" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-contact-phone">Phone Number <span style="color: var(--accent-red);">*</span></label>
+            <input type="tel" class="form-control-input" id="pitch-event-form-contact-phone" placeholder="Phone" required>
+          </div>
+          <div class="form-group">
+            <label for="pitch-event-form-contact-email">Email Address <span style="color: var(--accent-red);">*</span></label>
+            <input type="email" class="form-control-input" id="pitch-event-form-contact-email" placeholder="Email" required>
+          </div>
+        </div>
+      </form>
+      
+      <div class="modal-footer">
+        <button class="btn-outline-gray" onclick="window.dashboardApp.closeCreatePitchEventModal()">Cancel</button>
+        <button class="btn-solid-red" type="submit" form="create-pitch-event-form" id="pitch-event-submit-btn">Save Pitch Event</button>
       </div>
     </div>
   </div>
@@ -900,7 +1833,8 @@
       </div>
       
       <form id="add-student-form" class="modal-body">
-        <input type="hidden" id="form-student-event-id"> <!-- If registering for a specific event -->
+        <input type="hidden" id="form-student-event-id">
+        <input type="hidden" id="form-student-event-type">
         
         <div class="form-group">
           <label for="form-student-name">Full Name <span style="color: var(--accent-red);">*</span></label>
@@ -1015,6 +1949,27 @@
     </div>
   </div>
 
+  <!-- Modal: View Startup Application Profile -->
+  <div class="modal-overlay" id="view-startup-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Startup Application Details</h3>
+          <p>Review startup profile, valuation, and executive pitch deck files.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('view-startup-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 18px;" id="view-startup-modal-body">
+        <!-- Dynamically populated -->
+      </div>
+      <div class="modal-footer" id="view-startup-modal-footer">
+        <!-- Dynamically populated buttons -->
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Logout Confirmation Dialog -->
   <div class="modal-overlay" id="logout-modal">
     <div class="modal-card small">
@@ -1067,6 +2022,6 @@
   </div>
 
   <!-- JavaScript Scripts -->
-  <script src="admin.js"></script>
+  <script src="admin.js?v=202606190145"></script>
 </body>
 </html>
