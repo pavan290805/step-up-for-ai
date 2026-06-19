@@ -2221,6 +2221,32 @@ select.form-control-input {
 }
 
 /* Red Accent Sparklines Cards */
+.metrics-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+  .metrics-grid-5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .metrics-grid-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .metrics-grid-5 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .metrics-grid-6 {
   display: grid;
   grid-template-columns: repeat(6, 1fr);

@@ -17,6 +17,8 @@
   const STORAGE_KEY_STUDENTS = 'stepup_students_v3';
   const STORAGE_KEY_REGISTRATIONS = 'stepup_regs_v3';
   const STORAGE_KEY_PITCH_REGISTRATIONS = 'stepup_pitch_regs_v3';
+  const STORAGE_KEY_INTERNSHIPS = 'stepup_internships_v3';
+  const STORAGE_KEY_INTERNSHIP_APPLICATIONS = 'stepup_internship_apps_v3';
 
   // App state
   let state = {
@@ -28,7 +30,9 @@
     investors: [],
     students: [],
     registrations: [], // maps students to webinars and hackathons
-    pitchRegistrations: [] // maps participants to pitch events
+    pitchRegistrations: [], // maps participants to pitch events
+    internships: [],
+    internshipApplications: []
   };
 
   // Pagination states
@@ -44,12 +48,17 @@
   let pagApprovedTable = { page: 1, limit: 10 };
   let pagRejectedTable = { page: 1, limit: 10 };
   let pagDetailsStudents = { page: 1, limit: 10 };
+  let pagRecruiterInternships = { page: 1, limit: 10 };
+  let pagRecruiterApplications = { page: 1, limit: 10 };
+  let pagRecruiterProfiles = { page: 1, limit: 10 };
+  let pagRecruiterApplicants = { page: 1, limit: 10 };
 
   // Current active selections
   let currentActiveTab = 'dashboard';
   let selectedWebinarId = null;
   let selectedHackathonId = null;
   let selectedPitchEventId = null;
+  let selectedInternshipId = null;
 
   // Selected checkboxes in Pending Requests
   let selectedPendingIds = new Set();
@@ -65,6 +74,11 @@
   let pendingFilter = { search: '', type: '' };
   let approvedFilter = { search: '', type: '' };
   let rejectedFilter = { search: '', type: '' };
+  let recruiterInternshipsFilter = { search: '', status: '' };
+  let recruiterApplicationsFilter = { search: '', status: '' };
+  let recruiterAnalyticsFilter = { search: '' };
+  let recruiterProfilesFilter = { search: '' };
+  let recruiterApplicantsFilter = { search: '', status: '' };
   let approveDashPendingSearch = '';
   let detailsStudentsSearch = '';
 
@@ -141,6 +155,16 @@
       }
     }
 
+    if (hash.startsWith('/admin/recruiter-management/internships/')) {
+      const idStr = hash.replace('/admin/recruiter-management/internships/', '');
+      const id = parseInt(idStr);
+      if (!isNaN(id)) {
+        selectedInternshipId = id;
+        switchTab('recruiter-internship-details');
+        return;
+      }
+    }
+
     // Map parent hashes and path-like hashes
     const routeMap = {
       '/admin/dashboard': 'dashboard',
@@ -156,6 +180,11 @@
       '/admin/approval-management/pending': 'approval-pending',
       '/admin/approval-management/approved': 'approval-approved',
       '/admin/approval-management/rejected': 'approval-rejected',
+      '/admin/recruiter-management': 'recruiter-dashboard',
+      '/admin/recruiter-management/internships': 'recruiter-internships',
+      '/admin/recruiter-management/applications': 'recruiter-applications',
+      '/admin/recruiter-management/analytics': 'recruiter-analytics',
+      '/admin/recruiter-management/profiles': 'recruiter-profiles',
       '/admin/settings': 'settings'
     };
 
@@ -186,6 +215,8 @@
       state.students = JSON.parse(localStorage.getItem(STORAGE_KEY_STUDENTS)) || [];
       state.registrations = JSON.parse(localStorage.getItem(STORAGE_KEY_REGISTRATIONS)) || [];
       state.pitchRegistrations = JSON.parse(localStorage.getItem(STORAGE_KEY_PITCH_REGISTRATIONS)) || [];
+      state.internships = JSON.parse(localStorage.getItem(STORAGE_KEY_INTERNSHIPS)) || [];
+      state.internshipApplications = JSON.parse(localStorage.getItem(STORAGE_KEY_INTERNSHIP_APPLICATIONS)) || [];
     } catch (e) {
       console.error("Failed to parse LocalStorage", e);
     }
@@ -202,6 +233,8 @@
       localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(state.students));
       localStorage.setItem(STORAGE_KEY_REGISTRATIONS, JSON.stringify(state.registrations));
       localStorage.setItem(STORAGE_KEY_PITCH_REGISTRATIONS, JSON.stringify(state.pitchRegistrations));
+      localStorage.setItem(STORAGE_KEY_INTERNSHIPS, JSON.stringify(state.internships));
+      localStorage.setItem(STORAGE_KEY_INTERNSHIP_APPLICATIONS, JSON.stringify(state.internshipApplications));
     } catch (e) {
       console.error("Local storage save error", e);
       alert("Local storage limit exceeded! Consider uploading smaller logos/posters.");
@@ -220,12 +253,15 @@
         investors: [],
         students: [],
         registrations: [],
-        pitchRegistrations: []
+        pitchRegistrations: [],
+        internships: [],
+        internshipApplications: []
       };
       saveDatabase();
       selectedWebinarId = null;
       selectedHackathonId = null;
       selectedPitchEventId = null;
+      selectedInternshipId = null;
       selectedPendingIds.clear();
       window.location.hash = "/admin/dashboard";
       renderAll();
@@ -465,6 +501,58 @@
       renderApprovalDashboard();
     });
 
+    // Recruiter Management search & filters
+    bindSearchFilter('rec-internships-search', (val) => {
+      recruiterInternshipsFilter.search = val.toLowerCase();
+      pagRecruiterInternships.page = 1;
+      renderPublishedInternshipsTable();
+    });
+    bindSelectFilter('rec-internships-filter-status', (val) => {
+      recruiterInternshipsFilter.status = val;
+      pagRecruiterInternships.page = 1;
+      renderPublishedInternshipsTable();
+    });
+
+    bindSearchFilter('rec-apps-search', (val) => {
+      recruiterApplicationsFilter.search = val.toLowerCase();
+      pagRecruiterApplications.page = 1;
+      renderRecruiterApplicationsTable();
+    });
+    bindSelectFilter('rec-apps-filter-status', (val) => {
+      recruiterApplicationsFilter.status = val;
+      pagRecruiterApplications.page = 1;
+      renderRecruiterApplicationsTable();
+    });
+
+    bindSearchFilter('rec-analytics-search', (val) => {
+      recruiterAnalyticsFilter.search = val.toLowerCase();
+      renderRecruiterAnalytics();
+    });
+
+    bindSearchFilter('rec-profiles-search', (val) => {
+      recruiterProfilesFilter.search = val.toLowerCase();
+      pagRecruiterProfiles.page = 1;
+      renderRecruiterProfilesTable();
+    });
+
+    bindSelectFilter('recruiter-pub-chart-range', () => {
+      renderRecruiterDashboard();
+    });
+    bindSelectFilter('recruiter-app-chart-range', () => {
+      renderRecruiterDashboard();
+    });
+
+    bindLimitSelect('rec-internships-page-size', pagRecruiterInternships, renderPublishedInternshipsTable);
+    bindLimitSelect('rec-apps-page-size', pagRecruiterApplications, renderRecruiterApplicationsTable);
+    bindLimitSelect('rec-profiles-page-size', pagRecruiterProfiles, renderRecruiterProfilesTable);
+
+    // Export popovers
+    bindPopoverToggle('recruiter-dash-export-btn', 'recruiter-dash-export-menu');
+    bindPopoverToggle('rec-internships-export-btn', 'rec-internships-export-menu');
+    bindPopoverToggle('rec-apps-export-btn', 'rec-apps-export-menu');
+    bindPopoverToggle('rec-analytics-export-btn', 'rec-analytics-export-menu');
+    bindPopoverToggle('rec-profiles-export-btn', 'rec-profiles-export-menu');
+
     // Page limits binders
     bindLimitSelect('webinars-page-size', pagWebinars, renderWebinarsGrid);
     bindLimitSelect('hackathons-page-size', pagHackathons, renderHackathonsGrid);
@@ -598,6 +686,18 @@
       renderApprovedTable();
     } else if (tabId === 'approval-rejected') {
       renderRejectedTable();
+    } else if (tabId === 'recruiter-dashboard') {
+      renderRecruiterDashboard();
+    } else if (tabId === 'recruiter-internships') {
+      renderPublishedInternshipsTable();
+    } else if (tabId === 'recruiter-internship-details') {
+      renderInternshipDetailsPane();
+    } else if (tabId === 'recruiter-applications') {
+      renderRecruiterApplicationsTable();
+    } else if (tabId === 'recruiter-analytics') {
+      renderRecruiterAnalytics();
+    } else if (tabId === 'recruiter-profiles') {
+      renderRecruiterProfilesTable();
     }
   }
 
@@ -1737,7 +1837,7 @@
           </div>
           
           <div class="startup-one-liner" style="font-size:12px; margin-top:4px; max-height:40px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-            ${escapeHTML(pe.description)}
+            ${escapeHTML(pe.overview || pe.description)}
           </div>
           
           <div class="startup-stats-row" style="margin-top:10px;">
@@ -1839,6 +1939,9 @@
             </div>
             
             <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:8px;">
+              <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Event Overview</h4>
+              <p style="font-size:13px; color:#fff; font-weight:600; line-height:1.6; margin-bottom:12px;">${escapeHTML(pe.overview || '')}</p>
+              
               <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Event Description</h4>
               <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">${escapeHTML(pe.description)}</p>
             </div>
@@ -2323,6 +2426,19 @@
     document.getElementById('view-student-year').innerText = student.year;
     document.getElementById('view-student-created').innerText = formatDate(student.createdDate);
 
+    // Populate skills & resume link
+    document.getElementById('view-student-skills').innerText = student.skills || 'HTML5, CSS3, JavaScript, Git';
+    const resumeLink = document.getElementById('view-student-resume-link');
+    if (student.resume) {
+      resumeLink.setAttribute('href', student.resume);
+      resumeLink.innerHTML = `<i class="fa-solid fa-file-pdf"></i> Download Resume Portfolio`;
+      resumeLink.onclick = null;
+    } else {
+      resumeLink.setAttribute('href', '#');
+      resumeLink.innerHTML = `<i class="fa-solid fa-file-pdf"></i> Resume Not Available`;
+      resumeLink.onclick = (e) => { e.preventDefault(); alert('Resume portfolio is not uploaded by this student.'); };
+    }
+
     // Get events registered for
     const regs = state.registrations.filter(r => r.studentId === student.id);
     const pitchRegs = state.pitchRegistrations.filter(pr => pr.studentId === student.id);
@@ -2358,6 +2474,29 @@
         }
       });
       eventList.innerHTML = html;
+    }
+
+    // Get applied internships list
+    const appList = (state.internshipApplications || []).filter(app => app.studentId === student.id);
+    const internList = document.getElementById('view-student-internships-list');
+    
+    if (appList.length === 0) {
+      internList.innerHTML = `<li style="font-size:13px; color:var(--text-muted);">No internships applied for yet.</li>`;
+    } else {
+      let html = '';
+      appList.forEach(app => {
+        const internship = (state.internships || []).find(i => i.id === app.internshipId);
+        if (internship) {
+          const statusBadge = app.status === 'Selected' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+          html += `
+            <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+              <span style="font-size:13px; font-weight:600;">${escapeHTML(internship.title)} &bull; <small style="color:var(--text-muted);">${escapeHTML(internship.company)}</small></span>
+              <span class="${statusBadge}" style="font-size:9px; padding:2px 6px;">${app.status}</span>
+            </li>
+          `;
+        }
+      });
+      internList.innerHTML = html;
     }
 
     document.getElementById('view-student-modal').classList.add('active');
@@ -3383,6 +3522,7 @@
 
     document.getElementById('pitch-event-form-id').value = pe.id;
     document.getElementById('pitch-event-form-name').value = pe.name;
+    document.getElementById('pitch-event-form-overview').value = pe.overview || '';
     document.getElementById('pitch-event-form-description').value = pe.description;
     document.getElementById('pitch-event-form-start-date').value = pe.startDate;
     document.getElementById('pitch-event-form-end-date').value = pe.endDate;
@@ -3426,6 +3566,7 @@
     const peData = {
       name: document.getElementById('pitch-event-form-name').value.trim(),
       posterBanner: cachedPitchEventPoster,
+      overview: document.getElementById('pitch-event-form-overview').value.trim(),
       description: document.getElementById('pitch-event-form-description').value.trim(),
       startDate: document.getElementById('pitch-event-form-start-date').value,
       endDate: document.getElementById('pitch-event-form-end-date').value,
@@ -3736,7 +3877,13 @@
     ctx.lineTo(0, h);
     ctx.closePath();
     const grad = ctx.createLinearGradient(0, 0, 0, h);
-    grad.addColorStop(0, color.replace(')', ', 0.15)').replace('#', 'rgba(' + hexToRgb(color) + ', 0.15)'));
+    let fillColor = color;
+    if (color.startsWith('#')) {
+      fillColor = `rgba(${hexToRgb(color)}, 0.15)`;
+    } else if (color.startsWith('rgb(')) {
+      fillColor = color.replace('rgb(', 'rgba(').replace(')', ', 0.15)');
+    }
+    grad.addColorStop(0, fillColor);
     grad.addColorStop(1, 'transparent');
     ctx.fillStyle = grad;
     ctx.fill();
@@ -4334,6 +4481,298 @@ Total Registrations,${totalRegs},+18%
   }
 
   // ==========================================
+  // MULTI-FORMAT EXPORTS FOR RECRUITER MANAGEMENT
+  // ==========================================
+  function printPDF(title, headers, rows) {
+    const printWindow = window.open('', '_blank');
+    let tableHeadersHTML = headers.map(h => `<th>${escapeHTML(h)}</th>`).join('');
+    let tableRowsHTML = rows.map(row => {
+      return `<tr>${row.map(cell => `<td>${escapeHTML(String(cell))}</td>`).join('')}</tr>`;
+    }).join('');
+
+    const htmlContent = `
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              background-color: #0d0d11;
+              color: #ffffff;
+              padding: 40px;
+            }
+            .header {
+              margin-bottom: 30px;
+              border-bottom: 2px solid #8b5cf6;
+              padding-bottom: 10px;
+            }
+            h1 {
+              font-size: 24px;
+              color: #ffffff;
+              margin: 0 0 5px 0;
+            }
+            .meta {
+              font-size: 13px;
+              color: #a78bfa;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid rgba(255, 255, 255, 0.1);
+              padding: 10px 12px;
+              text-align: left;
+              font-size: 13px;
+            }
+            th {
+              background-color: rgba(139, 92, 246, 0.1);
+              color: #a78bfa;
+              font-weight: 600;
+            }
+            tr:nth-child(even) {
+              background-color: rgba(255, 255, 255, 0.02);
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${title}</h1>
+            <div class="meta">Generated on ${new Date().toLocaleString()} &bull; StepUp for AI Platform</div>
+          </div>
+          <table>
+            <thead>
+              <tr>${tableHeadersHTML}</tr>
+            </thead>
+            <tbody>
+              ${tableRowsHTML}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+  }
+
+  function exportRecruiterData(type) {
+    const approvedRecs = state.recruiters.filter(r => r.status === 'Approved');
+    const uniqueCompanies = [...new Set(approvedRecs.map(r => r.company))];
+    const publishedInts = state.internships.filter(i => i.status !== 'Draft');
+    const activeInts = state.internships.filter(i => i.status === 'Active');
+    const totalApps = state.internshipApplications.length;
+    const distinctStudents = [...new Set(state.internshipApplications.map(app => app.studentId))];
+
+    const title = "Recruiter Management Dashboard Metrics";
+    const headers = ["Metric", "Value"];
+    const rows = [
+      ["Total Approved Recruiters", approvedRecs.length],
+      ["Total Companies", uniqueCompanies.length],
+      ["Published Internships", publishedInts.length],
+      ["Active Internships", activeInts.length],
+      ["Applications Received", totalApps],
+      ["Total Student Applicants", distinctStudents.length]
+    ];
+
+    if (type === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}",${r[1]}\n`;
+      });
+      const ext = type === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `recruiter_dashboard_metrics.${ext}`);
+    }
+  }
+
+  function exportRecruiterInternshipsList(format) {
+    let list = [...state.internships];
+    const approvedRecNames = new Set(state.recruiters.filter(r => r.status === 'Approved').map(r => r.name));
+    list = list.filter(i => approvedRecNames.has(i.recruiterName));
+
+    const title = "Recruiter Internships Directory";
+    const headers = ["Internship ID", "Title", "Company", "Recruiter", "Posted Date", "Deadline", "Status", "Applications"];
+    const rows = list.map(i => {
+      const appsCount = state.internshipApplications.filter(app => app.internshipId === i.id).length;
+      return [
+        i.id,
+        i.title,
+        i.company,
+        i.recruiterName,
+        formatDate(i.postedDate),
+        formatDate(i.deadline),
+        i.status,
+        appsCount
+      ];
+    });
+
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}",${r[7]}\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `recruiter_internships_list.${ext}`);
+    }
+  }
+
+  function exportRecruiterApplicationsList(format) {
+    let list = [...state.internshipApplications];
+    const approvedRecs = new Set(state.recruiters.filter(r => r.status === 'Approved').map(r => r.name));
+    list = list.filter(app => {
+      const internship = state.internships.find(i => i.id === app.internshipId);
+      return internship && approvedRecs.has(internship.recruiterName);
+    });
+
+    const title = "Ecosystem Internship Applications";
+    const headers = ["Application ID", "Internship ID", "Internship Title", "Company", "Student ID", "Student Name", "Applied Date", "Status"];
+    const rows = list.map(app => {
+      const student = state.students.find(s => s.id === app.studentId);
+      const internship = state.internships.find(i => i.id === app.internshipId);
+      return [
+        app.id,
+        app.internshipId,
+        internship ? internship.title : '',
+        internship ? internship.company : '',
+        app.studentId,
+        student ? student.name : '',
+        formatDate(app.appliedDate),
+        app.status
+      ];
+    });
+
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}","${r[7]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `recruiter_applications_list.${ext}`);
+    }
+  }
+
+  function exportRecruiterAnalyticsTable(format) {
+    const approvedRecs = state.recruiters.filter(r => r.status === 'Approved');
+    const title = "Recruiter Performance Analytics";
+    const headers = ["Recruiter Name", "Company", "Published", "Active", "Closed", "Applications", "Unique Applicants", "Last Active"];
+    
+    const rows = approvedRecs.map(rec => {
+      const recInts = state.internships.filter(i => i.recruiterName === rec.name);
+      const recApps = state.internshipApplications.filter(app => recInts.some(i => i.id === app.internshipId));
+      const uniqueApplicants = [...new Set(recApps.map(app => app.studentId))].length;
+      
+      let lastActivity = rec.appliedDate;
+      recInts.forEach(i => {
+        if (i.postedDate > lastActivity) lastActivity = i.postedDate;
+      });
+      recApps.forEach(a => {
+        if (a.appliedDate > lastActivity) lastActivity = a.appliedDate;
+      });
+
+      return [
+        rec.name,
+        rec.company,
+        recInts.length,
+        recInts.filter(i => i.status === 'Active').length,
+        recInts.filter(i => i.status === 'Closed').length,
+        recApps.length,
+        uniqueApplicants,
+        formatDate(lastActivity)
+      ];
+    });
+
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}",${r[2]},${r[3]},${r[4]},${r[5]},${r[6]},"${r[7]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `recruiter_analytics.${ext}`);
+    }
+  }
+
+  function exportRecruiterProfilesList(format) {
+    let list = [...state.recruiters].filter(r => r.status === 'Approved');
+    const title = "Verified Corporate Recruiter Profiles";
+    const headers = ["Recruiter ID", "Name", "Company", "Designation", "Email", "Phone", "Status", "Internships", "Applications"];
+
+    const rows = list.map(r => {
+      const totalInts = state.internships.filter(i => i.recruiterName === r.name).length;
+      const recInts = state.internships.filter(i => i.recruiterName === r.name);
+      const totalApps = state.internshipApplications.filter(app => recInts.some(i => i.id === app.internshipId)).length;
+
+      return [
+        r.id,
+        r.name,
+        r.company,
+        r.designation,
+        r.email,
+        r.phone,
+        r.status,
+        totalInts,
+        totalApps
+      ];
+    });
+
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}",${r[7]},${r[8]}\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `recruiter_profiles_list.${ext}`);
+    }
+  }
+
+  function exportInternshipApplicants(internshipId, filterType) {
+    const internship = state.internships.find(i => i.id === internshipId);
+    if (!internship) return;
+
+    let appsList = state.internshipApplications.filter(app => app.internshipId === internship.id);
+    if (filterType === 'Selected') {
+      appsList = appsList.filter(app => app.status === 'Selected');
+    } else if (filterType === 'Rejected') {
+      appsList = appsList.filter(app => app.status === 'Rejected');
+    }
+
+    let csv = "";
+    if (filterType === 'Complete') {
+      csv = "Application ID,Student ID,Student Name,Email,Phone,College,Branch,Year,Applied Date,Status,Skills,Resume Link\n";
+      appsList.forEach(app => {
+        const student = state.students.find(s => s.id === app.studentId);
+        if (student) {
+          csv += `${app.id},${student.id},"${student.name}",${student.email},${student.phone},"${student.college}","${student.branch}",${student.year} Year,${app.appliedDate},${app.status},"${student.skills || ''}","${student.resume || ''}"\n`;
+        }
+      });
+      downloadCSV(csv, `internship_${internship.id}_applicants_complete.csv`);
+    } else {
+      csv = "Application ID,Student ID,Student Name,Email,Phone,College,Branch,Year,Applied Date,Status\n";
+      appsList.forEach(app => {
+        const student = state.students.find(s => s.id === app.studentId);
+        if (student) {
+          csv += `${app.id},${student.id},"${student.name}",${student.email},${student.phone},"${student.college}","${student.branch}",${student.year} Year,${app.appliedDate},${app.status}\n`;
+        }
+      });
+      downloadCSV(csv, `internship_${internship.id}_applicants_${filterType.toLowerCase()}.csv`);
+    }
+  }
+
+  // ==========================================
   // SEED DEMO MOCK ECOSYSTEM DATA
   // ==========================================
   function seedDemoDataQuietly() {
@@ -4358,6 +4797,13 @@ Total Registrations,${totalRegs},+18%
       date.setDate(date.getDate() - (i % 30));
       date.setHours(9 + (i % 8), (i % 12) * 5, 0, 0);
 
+      const skillsPool = [
+        "React, Node.js, JavaScript, Python, Git",
+        "Python, PyTorch, SQL, Machine Learning, Docker",
+        "UI/UX Design, Figma, HTML, CSS, Wireframing",
+        "Java, Spring Boot, MySQL, REST APIs, Git",
+        "Product Management, Agile, Jira, SEO, SQL"
+      ];
       students.push({
         id: `STU${String(1000 + i).substring(1)}`,
         name,
@@ -4366,7 +4812,9 @@ Total Registrations,${totalRegs},+18%
         college,
         branch,
         year,
-        createdDate: date.toISOString()
+        createdDate: date.toISOString(),
+        skills: skillsPool[i % skillsPool.length],
+        resume: `https://stepup.ai/portfolios/resumes/resume_student_${i}.pdf`
       });
     }
 
@@ -4462,6 +4910,7 @@ Total Registrations,${totalRegs},+18%
         id: 4000 + i,
         name,
         posterBanner: "",
+        overview: `Key investor pitch session showcasing ${name.split(" ")[0]} innovators.`,
         description: `Present your startup pitch deck directly to institutional VCs and prominent angel syndicates at ${name}.`,
         startDate: date.toISOString().split('T')[0],
         endDate: date.toISOString().split('T')[0],
@@ -4519,16 +4968,26 @@ Total Registrations,${totalRegs},+18%
       });
     }
 
-    // 6. Generate 35 Recruiters
+    // 6. Generate Recruiters & Companies (86 Approved Recruiters belonging to 30 companies)
+    // Plus 15 Pending and 10 Rejected Recruiters for Approval Management (Total: 111 Recruiters)
+    const recruiterCompanies = [
+      "TechNova Solutions", "DataMind Analytics", "BrandWave Digital", "CodeWave Technologies", "MindEdge Consulting",
+      "Infosys Labs", "Wipro Digital", "TCS AI Hub", "Cognizant MLOps", "Accenture AI",
+      "Quantum Leap Labs", "CyberShield Solutions", "AgriGrow Systems", "MediScan Diagnostics", "CloudPulse Technologies",
+      "AlphaCap Ventures", "Apex Softwares", "BlueHorizon Tech", "Nexus AI Corp", "Vanguard Digital",
+      "SmartCity Logistics", "BioGen Systems", "EduTech Innovators", "FinCore Systems", "WebSaaS Builders",
+      "NeuralCore AI", "HyperScale Labs", "OmniTech Corp", "Delta Software Group", "Vertex Solutions"
+    ];
     const recruiters = [];
     const designations = ["HR Manager", "Senior Recruiter", "VP Talent", "Director of HR", "Technical Recruiter"];
-    const companies = ["TechNova Solutions", "CodeWave Technologies", "MindEdge Consulting", "Infosys Labs", "Wipro Digital", "TCS AI Hub", "Cognizant MLOps", "Accenture AI"];
-    for (let i = 1; i <= 35; i++) {
+    for (let i = 1; i <= 111; i++) {
       const fn = firstNames[(i + 8) % firstNames.length];
       const ln = lastNames[(i + 9) % lastNames.length];
       const name = `${fn} ${ln}`;
-      const email = `${fn.toLowerCase()}@${companies[i % companies.length].toLowerCase().replace(" ", "")}.com`;
-      const status = i <= 15 ? "Pending" : i % 2 === 0 ? "Approved" : "Rejected";
+      const company = recruiterCompanies[i % recruiterCompanies.length];
+      const email = `${fn.toLowerCase()}@${company.toLowerCase().replace(/[^a-z0-9]/g, "")}.com`;
+      // Exactly first 86 are Approved, next 15 Pending, last 10 Rejected
+      const status = i <= 86 ? "Approved" : (i <= 101 ? "Pending" : "Rejected");
       
       const date = new Date();
       date.setDate(date.getDate() - (i % 20));
@@ -4536,7 +4995,7 @@ Total Registrations,${totalRegs},+18%
       recruiters.push({
         id: `REC${String(100 + i).substring(1)}`,
         name,
-        company: companies[i % companies.length],
+        company,
         designation: designations[i % designations.length],
         email,
         phone: `98765${String(30000 + i).substring(1)}`,
@@ -4611,6 +5070,111 @@ Total Registrations,${totalRegs},+18%
       pitchCounter++;
     }
 
+    // 10. Generate 160 Internships (96 Active, 56 Closed, 8 Draft)
+    const internships = [];
+    const internshipTitles = [
+      "Frontend Developer Intern", "Data Science Intern", "Marketing Intern", 
+      "Backend Engineer Intern", "UI/UX Design Intern", "Full Stack Developer Intern",
+      "Product Management Intern", "Machine Learning Intern", "DevOps Engineer Intern",
+      "Software Quality Assurance Intern", "Mobile App Developer Intern", "Cybersecurity Intern",
+      "Data Analyst Intern", "Cloud Architect Intern", "Technical Content Writer Intern"
+    ];
+    const locations = ["Bangalore (Hybrid)", "Remote", "Mumbai (Office)", "Delhi NCR (Hybrid)", "Pune (Office)", "Hyderabad (Remote)"];
+    const stipends = ["₹15,000 / month", "₹25,000 / month", "₹10,000 / month", "₹20,000 / month", "Unpaid"];
+    const durations = ["3 Months", "6 Months", "2 Months", "4 Months"];
+    const skillsRequiredList = [
+      "React, HTML5, CSS3, JavaScript",
+      "Python, Pandas, SQL, Scikit-learn",
+      "SEO, Copywriting, Social Media, Canva",
+      "Node.js, Express, MongoDB, REST APIs",
+      "Figma, Wireframing, User Research, Prototyping",
+      "JavaScript, Vue, Python, Django, PostgreSQL",
+      "Agile, Jira, Product Specs, User Analytics",
+      "Python, TensorFlow, PyTorch, NLP",
+      "Docker, AWS, Kubernetes, CI/CD",
+      "Manual Testing, Selenium, Jest, Postman",
+      "React Native, Swift, Kotlin, Git",
+      "Network Security, OWASP, PenTesting",
+      "Excel, Tableau, SQL, PowerBI",
+      "AWS, Terraform, CloudFormation, Linux",
+      "Technical Writing, Markdown, API Documentation"
+    ];
+
+    for (let i = 1; i <= 160; i++) {
+      let status = "Active";
+      if (i > 96 && i <= 152) {
+        status = "Closed";
+      } else if (i > 152) {
+        status = "Draft";
+      }
+      
+      const title = internshipTitles[i % internshipTitles.length];
+      const recruiter = recruiters[i % 86]; // pick an approved recruiter
+      const company = recruiter.company;
+      const skills = skillsRequiredList[i % skillsRequiredList.length];
+      
+      const postedD = new Date();
+      postedD.setDate(postedD.getDate() - 10 - (i % 20));
+      const deadlineD = new Date(postedD);
+      deadlineD.setDate(deadlineD.getDate() + 30);
+      
+      internships.push({
+        id: 6000 + i,
+        title,
+        company,
+        recruiterName: recruiter.name,
+        description: `Excellent opportunity to work as a ${title} at ${company}. You will collaborate with cross-functional teams, contribute to active projects, and receive direct mentorship from senior engineers.`,
+        skillsRequired: skills,
+        location: locations[i % locations.length],
+        duration: durations[i % durations.length],
+        stipend: stipends[i % stipends.length],
+        postedDate: postedD.toISOString().split('T')[0],
+        deadline: deadlineD.toISOString().split('T')[0],
+        status
+      });
+    }
+
+    // 11. Generate 1248 Internship Applications from 932 Unique Student Applicants
+    const internshipApplications = [];
+    let appCounter = 1;
+    const appStatuses = ["Pending", "Reviewed", "Selected", "Rejected"];
+    
+    // First 932 students get 1 application each to guarantee 932 unique applicants
+    for (let i = 0; i < 932; i++) {
+      const student = students[i];
+      const internship = internships[i % 152]; // map to published internships (Active/Closed)
+      
+      const appliedD = new Date(internship.postedDate);
+      appliedD.setDate(appliedD.getDate() + (i % 5) + 1);
+
+      internshipApplications.push({
+        id: `APP${String(10000 + appCounter).substring(1)}`,
+        internshipId: internship.id,
+        studentId: student.id,
+        appliedDate: appliedD.toISOString().split('T')[0],
+        status: appStatuses[i % 4]
+      });
+      appCounter++;
+    }
+    
+    // Generate remaining 316 applications using the same pool of 932 students
+    for (let i = 0; i < 316; i++) {
+      const student = students[i % 932];
+      const internship = internships[(i + 50) % 152]; // map to published internships (Active/Closed)
+      
+      const appliedD = new Date(internship.postedDate);
+      appliedD.setDate(appliedD.getDate() + (i % 5) + 2);
+
+      internshipApplications.push({
+        id: `APP${String(10000 + appCounter).substring(1)}`,
+        internshipId: internship.id,
+        studentId: student.id,
+        appliedDate: appliedD.toISOString().split('T')[0],
+        status: appStatuses[(i + 2) % 4]
+      });
+      appCounter++;
+    }
+
     state.webinars = webinars;
     state.hackathons = hackathons;
     state.pitchEvents = pitchEvents;
@@ -4620,6 +5184,8 @@ Total Registrations,${totalRegs},+18%
     state.students = students;
     state.registrations = registrations;
     state.pitchRegistrations = pitchRegistrations;
+    state.internships = internships;
+    state.internshipApplications = internshipApplications;
 
     saveDatabase();
   }
@@ -4634,6 +5200,752 @@ Total Registrations,${totalRegs},+18%
     renderAll();
     window.location.hash = "/admin/dashboard";
     alert("Demo startup incubator evaluation database loaded successfully!");
+  }
+
+  // ==========================================
+  // RENDERER: RECRUITER MANAGEMENT DASHBOARD
+  // ==========================================
+  function renderRecruiterDashboard() {
+    const approvedRecs = state.recruiters.filter(r => r.status === 'Approved');
+    const uniqueCompanies = [...new Set(approvedRecs.map(r => r.company))];
+    const publishedInts = state.internships.filter(i => i.status !== 'Draft');
+    const activeInts = state.internships.filter(i => i.status === 'Active');
+    const closedInts = state.internships.filter(i => i.status === 'Closed');
+    const draftInts = state.internships.filter(i => i.status === 'Draft');
+    const totalApps = state.internshipApplications.length;
+    const distinctStudents = [...new Set(state.internshipApplications.map(app => app.studentId))];
+
+    // Stats Cards Values
+    document.getElementById('rec-stat-total-recruiters').innerText = approvedRecs.length;
+    document.getElementById('rec-stat-total-companies').innerText = uniqueCompanies.length;
+    document.getElementById('rec-stat-published-internships').innerText = publishedInts.length;
+    document.getElementById('rec-stat-active-internships').innerText = activeInts.length;
+    document.getElementById('rec-stat-applications-received').innerText = totalApps.toLocaleString();
+    document.getElementById('rec-stat-student-applicants').innerText = distinctStudents.length.toLocaleString();
+
+    // Mini Sparklines
+    drawSparkline('sparkline-recruiter-total', getCumulativeTrend(approvedRecs, 'appliedDate'), '#8b5cf6');
+    drawSparkline('sparkline-recruiter-companies', getCumulativeTrend(approvedRecs, 'appliedDate'), '#3b82f6');
+    drawSparkline('sparkline-recruiter-published', getCumulativeTrend(publishedInts, 'postedDate'), '#fbbf24');
+    drawSparkline('sparkline-recruiter-active', getCumulativeTrend(activeInts, 'postedDate'), '#10b981');
+    drawSparkline('sparkline-recruiter-applications', getCumulativeTrend(state.internshipApplications, 'appliedDate'), '#ec4899');
+    drawSparkline('sparkline-recruiter-student-applicants', getCumulativeTrend(state.internshipApplications, 'appliedDate'), '#ef4444');
+
+    // Charts Row
+    // Line Chart 1: Internship Publishing Trend
+    drawLineChart('chart-recruiter-pub-trend', 
+      ["01 May", "06 May", "11 May", "16 May", "21 May", "26 May", "31 May"], 
+      [{ label: 'Internships', points: [10, 23, 20, 28, 24, 35, 38], color: '#fbbf24' }]
+    );
+
+    // Line Chart 2: Application Trend
+    drawLineChart('chart-recruiter-app-trend', 
+      ["01 May", "06 May", "11 May", "16 May", "21 May", "26 May", "31 May"], 
+      [{ label: 'Applications', points: [50, 120, 100, 160, 130, 180, 190], color: '#ec4899' }]
+    );
+
+    // Donut Chart: Internship Status Distribution
+    const totalInts = activeInts.length + closedInts.length + draftInts.length || 1;
+    document.getElementById('donut-recruiter-status-total').innerText = activeInts.length + closedInts.length;
+    drawDonutChart('chart-recruiter-status-donut', [
+      { value: activeInts.length, color: '#10b981' },
+      { value: closedInts.length, color: '#3b82f6' },
+      { value: draftInts.length, color: '#f59e0b' }
+    ]);
+
+    document.getElementById('donut-recruiter-status-legend').innerHTML = `
+      <div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span>Active: <strong>${activeInts.length}</strong> (${((activeInts.length / totalInts) * 100).toFixed(1)}%)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span>Closed: <strong>${closedInts.length}</strong> (${((closedInts.length / totalInts) * 100).toFixed(1)}%)</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span>Draft: <strong>${draftInts.length}</strong> (${((draftInts.length / totalInts) * 100).toFixed(1)}%)</div>
+    `;
+
+    // Widget Lists
+    // Recent Internships
+    const sortedInts = [...state.internships].sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate)).slice(0, 3);
+    let recentIntsHTML = '';
+    sortedInts.forEach(int => {
+      const appsCount = state.internshipApplications.filter(app => app.internshipId === int.id).length;
+      const statusBadge = int.status === 'Active' ? 'badge-approved' : int.status === 'Closed' ? 'badge-rejected' : 'badge-pending';
+      let iconHTML = `<div class="user-avatar" style="background:rgba(139,92,246,0.1); color:#a78bfa; border-radius:8px;"><i class="fa-solid fa-code"></i></div>`;
+      if (int.title.includes('Data') || int.title.includes('Machine') || int.title.includes('Analytics')) {
+        iconHTML = `<div class="user-avatar" style="background:rgba(59,130,246,0.1); color:#60a5fa; border-radius:8px;"><i class="fa-solid fa-database"></i></div>`;
+      } else if (int.title.includes('Marketing') || int.title.includes('Product')) {
+        iconHTML = `<div class="user-avatar" style="background:rgba(245,158,11,0.1); color:#fbbf24; border-radius:8px;"><i class="fa-solid fa-bullhorn"></i></div>`;
+      }
+      recentIntsHTML += `
+        <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/recruiter-management/internships/${int.id}'">
+          ${iconHTML}
+          <div class="recent-item-info">
+            <span class="recent-item-title">${escapeHTML(int.title)}</span>
+            <span class="recent-item-subtitle">${escapeHTML(int.company)}</span>
+          </div>
+          <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+            <span class="${statusBadge}" style="font-size:9px; padding:2px 6px;">${int.status}</span>
+            <span style="font-size:11px; color:var(--text-muted);">${formatDate(int.postedDate)}</span>
+            <span style="font-size:11px; font-weight:600; color:#fff;">${appsCount} Apps</span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('dash-recruiter-recent-internships').innerHTML = recentIntsHTML || `<div class="table-empty-state"><p>No recent internships.</p></div>`;
+
+    // Recent Applications
+    const sortedApps = [...state.internshipApplications].sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate)).slice(0, 3);
+    let recentAppsHTML = '';
+    sortedApps.forEach(app => {
+      const student = state.students.find(s => s.id === app.studentId);
+      const internship = state.internships.find(i => i.id === app.internshipId);
+      if (student && internship) {
+        const initial = student.name.charAt(0);
+        const statusBadge = app.status === 'Selected' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+        recentAppsHTML += `
+          <div class="recent-item" style="cursor:pointer;" onclick="window.dashboardApp.viewStudentProfile('${student.id}')">
+            <div class="user-avatar" style="border-radius:50%; background:rgba(236,72,153,0.1); color:#f472b6; font-weight:700;">${initial}</div>
+            <div class="recent-item-info">
+              <span class="recent-item-title">${escapeHTML(student.name)}</span>
+              <span class="recent-item-subtitle">${escapeHTML(internship.title)}</span>
+            </div>
+            <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+              <span class="${statusBadge}" style="font-size:9px; padding:2px 6px;">${app.status}</span>
+              <span style="font-size:11px; color:var(--text-muted);">${formatDate(app.appliedDate)}</span>
+            </div>
+          </div>
+        `;
+      }
+    });
+    document.getElementById('dash-recruiter-recent-applications').innerHTML = recentAppsHTML || `<div class="table-empty-state"><p>No recent applications.</p></div>`;
+
+    // Top Recruiters Widget
+    const companyStats = {};
+    uniqueCompanies.forEach(comp => {
+      companyStats[comp] = { name: comp, internships: 0, applications: 0 };
+    });
+    state.internships.forEach(int => {
+      if (companyStats[int.company]) {
+        companyStats[int.company].internships++;
+      }
+    });
+    state.internshipApplications.forEach(app => {
+      const int = state.internships.find(i => i.id === app.internshipId);
+      if (int && companyStats[int.company]) {
+        companyStats[int.company].applications++;
+      }
+    });
+    const sortedCompanies = Object.values(companyStats).sort((a, b) => b.applications - a.applications).slice(0, 3);
+    let topRecHTML = '';
+    sortedCompanies.forEach(c => {
+      const initial = c.name.charAt(0);
+      topRecHTML += `
+        <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/recruiter-management/profiles'; recruiterProfilesFilter.search = '${c.name}'; renderRecruiterProfilesTable();">
+          <div class="user-avatar" style="border-radius:8px; background:rgba(59,130,246,0.1); color:#60a5fa; font-weight:700;">${initial}</div>
+          <div class="recent-item-info">
+            <span class="recent-item-title">${escapeHTML(c.name)}</span>
+            <span class="recent-item-subtitle" style="font-size:11px; color:var(--text-muted);">${c.internships} Internships</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:13px; font-weight:700; color:#fff;">${c.applications}</span>
+            <span style="display:block; font-size:10px; color:var(--text-muted);">Applications</span>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('dash-recruiter-top-recruiters').innerHTML = topRecHTML || `<div class="table-empty-state"><p>No top recruiters.</p></div>`;
+  }
+
+  // ==========================================
+  // RENDERER: PUBLISHED INTERNSHIPS TABLE
+  // ==========================================
+  function renderPublishedInternshipsTable() {
+    const tbody = document.getElementById('rec-internships-table-body');
+    let list = [...state.internships];
+
+    // Filter to only approved recruiters
+    const approvedRecNames = new Set(state.recruiters.filter(r => r.status === 'Approved').map(r => r.name));
+    list = list.filter(i => approvedRecNames.has(i.recruiterName));
+
+    // Search
+    if (recruiterInternshipsFilter.search) {
+      const kw = recruiterInternshipsFilter.search.toLowerCase();
+      list = list.filter(i => i.title.toLowerCase().includes(kw) || i.company.toLowerCase().includes(kw) || i.recruiterName.toLowerCase().includes(kw));
+    }
+
+    // Status filter
+    if (recruiterInternshipsFilter.status) {
+      list = list.filter(i => i.status === recruiterInternshipsFilter.status);
+    }
+
+    // Sort by posted Date
+    list.sort((a, b) => new Date(b.postedDate) - new Date(a.postedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center"><div class="table-empty-state"><p>No internships match filter criteria.</p></div></td></tr>`;
+      document.getElementById('rec-internships-pagination-info').innerText = 'Showing 0 to 0 of 0 internships';
+      document.getElementById('rec-internships-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagRecruiterInternships.limit);
+    if (pagRecruiterInternships.page > pages) pagRecruiterInternships.page = pages || 1;
+
+    const start = (pagRecruiterInternships.page - 1) * pagRecruiterInternships.limit;
+    const pagList = list.slice(start, start + pagRecruiterInternships.limit);
+
+    let html = '';
+    pagList.forEach(int => {
+      const appsCount = state.internshipApplications.filter(app => app.internshipId === int.id).length;
+      const statusBadge = int.status === 'Active' ? 'badge-approved' : int.status === 'Closed' ? 'badge-rejected' : 'badge-pending';
+      html += `
+        <tr>
+          <td style="font-weight:700; color:var(--accent-red); cursor:pointer;" onclick="window.location.hash = '/admin/recruiter-management/internships/${int.id}'">${escapeHTML(int.title)}</td>
+          <td style="font-weight:600;">${escapeHTML(int.company)}</td>
+          <td>${escapeHTML(int.recruiterName)}</td>
+          <td>${formatDate(int.postedDate)}</td>
+          <td>${formatDate(int.deadline)}</td>
+          <td><span class="${statusBadge}">${int.status}</span></td>
+          <td style="font-weight:700;">${appsCount}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" onclick="window.location.hash = '/admin/recruiter-management/internships/${int.id}'"><i class="fa-regular fa-eye"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagRecruiterInternships.limit, total);
+    document.getElementById('rec-internships-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} internships`;
+    renderPaginationControls('rec-internships-pagination-controls', pages, pagRecruiterInternships, (p) => {
+      pagRecruiterInternships.page = p;
+      renderPublishedInternshipsTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: INTERNSHIP DETAILS PANE
+  // ==========================================
+  function renderInternshipDetailsPane() {
+    const pane = document.getElementById('recruiter-internship-details-view');
+    const internship = state.internships.find(i => i.id === selectedInternshipId);
+    if (!internship) {
+      pane.innerHTML = `<div class="table-empty-state"><i class="fa-solid fa-inbox"></i><p>Internship not found.</p></div>`;
+      return;
+    }
+    
+    // Count applications
+    const appsList = state.internshipApplications.filter(app => app.internshipId === internship.id);
+    
+    // Filter applicants
+    let filteredApplicants = [...appsList];
+    if (recruiterApplicantsFilter.search) {
+      const kw = recruiterApplicantsFilter.search.toLowerCase();
+      filteredApplicants = filteredApplicants.filter(app => {
+        const student = state.students.find(s => s.id === app.studentId);
+        return student && (student.name.toLowerCase().includes(kw) || student.college.toLowerCase().includes(kw) || student.email.toLowerCase().includes(kw));
+      });
+    }
+    if (recruiterApplicantsFilter.status) {
+      filteredApplicants = filteredApplicants.filter(app => app.status === recruiterApplicantsFilter.status);
+    }
+    
+    // Pagination for applicants
+    const total = filteredApplicants.length;
+    const pages = Math.ceil(total / pagRecruiterApplicants.limit);
+    if (pagRecruiterApplicants.page > pages) pagRecruiterApplicants.page = pages || 1;
+    const start = (pagRecruiterApplicants.page - 1) * pagRecruiterApplicants.limit;
+    const pagList = filteredApplicants.slice(start, start + pagRecruiterApplicants.limit);
+    
+    let applicantsHTML = '';
+    pagList.forEach(app => {
+      const student = state.students.find(s => s.id === app.studentId);
+      if (student) {
+        const statusBadge = app.status === 'Selected' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+        applicantsHTML += `
+          <tr>
+            <td class="row-id">${app.id}</td>
+            <td class="row-id" style="cursor:pointer; color:var(--accent-red); font-weight:700;" onclick="window.dashboardApp.viewStudentProfile('${student.id}')">${student.id}</td>
+            <td style="font-weight:700; cursor:pointer; color:#fff;" onclick="window.dashboardApp.viewStudentProfile('${student.id}')">${escapeHTML(student.name)}</td>
+            <td>${escapeHTML(student.email)}</td>
+            <td>${escapeHTML(student.phone)}</td>
+            <td>${escapeHTML(student.college)}</td>
+            <td>${escapeHTML(student.branch)}</td>
+            <td>${student.year} Year</td>
+            <td>${formatDate(app.appliedDate)}</td>
+            <td><span class="${statusBadge}">${app.status}</span></td>
+          </tr>
+        `;
+      }
+    });
+    
+    if (filteredApplicants.length === 0) {
+      applicantsHTML = `<tr><td colspan="10" class="text-center"><div class="table-empty-state"><p>No student applicants match filter criteria.</p></div></td></tr>`;
+    }
+    
+    const end = Math.min(start + pagRecruiterApplicants.limit, total);
+    const paginationControlsHTML = pages > 1 ? `
+      <div class="table-pagination-footer" style="border-top: 1px solid var(--border-color); padding-top:16px;">
+        <span class="pagination-info">Showing ${start + 1} to ${end} of ${total} applicants</span>
+        <div class="pagination-controls">
+          <div class="page-selector-wrapper">
+            <select class="page-size-select" id="rec-applicants-page-size">
+              <option value="10" ${pagRecruiterApplicants.limit === 10 ? 'selected' : ''}>10 / page</option>
+              <option value="25" ${pagRecruiterApplicants.limit === 25 ? 'selected' : ''}>25 / page</option>
+            </select>
+          </div>
+          <div class="events-pagination" id="rec-applicants-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+        </div>
+      </div>
+    ` : '';
+    
+    pane.innerHTML = `
+      <header class="view-header">
+        <div class="header-title-block">
+          <a href="#" class="back-to-events-btn" onclick="window.dashboardApp.switchTab('recruiter-internships'); return false;" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">
+            <i class="fa-solid fa-arrow-left"></i> Back to Internships List
+          </a>
+          <h1 style="font-size:24px; font-weight:800;">${escapeHTML(internship.title)}</h1>
+          <p>Company: <strong>${escapeHTML(internship.company)}</strong></p>
+        </div>
+      </header>
+      
+      <!-- Specs details Grid -->
+      <div class="dashboard-panel-box" style="margin-bottom:24px; padding:20px;">
+        <div style="flex-grow:1; display:flex; flex-direction:column; gap:12px; min-width:300px;">
+          <div class="details-specs-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px;">
+            <div class="spec-item">
+              <span class="spec-label">Recruiter Name</span>
+              <span class="spec-value"><i class="fa-solid fa-user-tie" style="color:var(--accent-red); margin-right:6px;"></i>${escapeHTML(internship.recruiterName)}</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Timeline Details</span>
+              <span class="spec-value"><i class="fa-regular fa-calendar" style="color:var(--accent-red); margin-right:6px;"></i>Posted: ${formatDate(internship.postedDate)} &bull; Deadline: ${formatDate(internship.deadline)}</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Location / Stipend</span>
+              <span class="spec-value"><i class="fa-solid fa-location-dot" style="color:var(--accent-red); margin-right:6px;"></i>${escapeHTML(internship.location)} &bull; ${escapeHTML(internship.stipend)}</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Duration / Status</span>
+              <span class="spec-value"><i class="fa-regular fa-clock" style="color:var(--accent-red); margin-right:6px;"></i>${escapeHTML(internship.duration)} &bull; <span class="event-row-badge badge-webinar" style="margin-left:4px;">${internship.status}</span></span>
+            </div>
+          </div>
+          
+          <div style="border-top:1px solid var(--border-color); padding-top:12px; margin-top:8px;">
+            <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Skills Required</h4>
+            <p style="font-size:13px; color:#fff; font-weight:600; line-height:1.6; margin-bottom:12px;">${escapeHTML(internship.skillsRequired)}</p>
+            
+            <h4 style="font-size:12px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Description</h4>
+            <p style="font-size:13px; color:var(--text-secondary); line-height:1.6;">${escapeHTML(internship.description)}</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Applicants Table nested inside details -->
+      <div class="table-section" style="margin-top:24px;">
+        <div class="table-header-flex">
+          <div class="header-title-block">
+            <h3>Registered Applicants (${appsList.length})</h3>
+          </div>
+          
+          <div style="display:flex; gap:10px; align-items:center;">
+            <div class="search-input-wrapper" style="width:230px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" class="search-input" id="rec-applicants-search" placeholder="Search name, email...">
+            </div>
+            
+            <select class="form-control-input" id="rec-applicants-filter-status" style="padding:8px 12px; font-size:13px; width:130px;">
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Reviewed">Reviewed</option>
+              <option value="Selected">Selected</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            
+            <div class="dropdown-action-container" id="rec-applicants-export-container">
+              <button class="btn-export-dropdown" id="rec-applicants-export-btn" style="padding: 8px 12px; font-size: 13px;">
+                <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+              </button>
+              <div class="export-popover-menu" id="rec-applicants-export-menu" style="right: 0; left: auto; width: 230px;">
+                <div class="export-popover-item" onclick="window.dashboardApp.exportInternshipApplicants(${internship.id}, 'All')"><i class="fa-solid fa-users"></i> Export Applicants</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportInternshipApplicants(${internship.id}, 'Selected')"><i class="fa-solid fa-circle-check" style="color:var(--accent-green);"></i> Export Selected Applicants</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportInternshipApplicants(${internship.id}, 'Rejected')"><i class="fa-solid fa-circle-xmark" style="color:var(--accent-red);"></i> Export Rejected Applicants</div>
+                <div class="export-popover-item" onclick="window.dashboardApp.exportInternshipApplicants(${internship.id}, 'Complete')"><i class="fa-solid fa-database"></i> Export Complete Applicant Data</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Application ID</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>College</th>
+                <th>Branch</th>
+                <th>Year</th>
+                <th>Applied Date</th>
+                <th>Application Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${applicantsHTML}
+            </tbody>
+          </table>
+        </div>
+        
+        ${paginationControlsHTML}
+      </div>
+    `;
+    
+    // Bind search & filter inputs in details pane
+    const searchBox = document.getElementById('rec-applicants-search');
+    if (searchBox) {
+      searchBox.value = recruiterApplicantsFilter.search;
+      searchBox.addEventListener('input', (e) => {
+        recruiterApplicantsFilter.search = e.target.value;
+        pagRecruiterApplicants.page = 1;
+        renderInternshipDetailsPane();
+      });
+    }
+    
+    const filterSelect = document.getElementById('rec-applicants-filter-status');
+    if (filterSelect) {
+      filterSelect.value = recruiterApplicantsFilter.status;
+      filterSelect.addEventListener('change', (e) => {
+        recruiterApplicantsFilter.status = e.target.value;
+        pagRecruiterApplicants.page = 1;
+        renderInternshipDetailsPane();
+      });
+    }
+    
+    const sizeSelect = document.getElementById('rec-applicants-page-size');
+    if (sizeSelect) {
+      sizeSelect.value = pagRecruiterApplicants.limit;
+      sizeSelect.addEventListener('change', (e) => {
+        pagRecruiterApplicants.limit = parseInt(e.target.value);
+        pagRecruiterApplicants.page = 1;
+        renderInternshipDetailsPane();
+      });
+    }
+    
+    if (pages > 1) {
+      renderPaginationControls('rec-applicants-pagination-controls', pages, pagRecruiterApplicants, (p) => {
+        pagRecruiterApplicants.page = p;
+        renderInternshipDetailsPane();
+      });
+    }
+    
+    // Bind the export dropdown
+    bindPopoverToggle('rec-applicants-export-btn', 'rec-applicants-export-menu');
+  }
+
+  // ==========================================
+  // RENDERER: RECRUITER APPLICATIONS TABLE
+  // ==========================================
+  function renderRecruiterApplicationsTable() {
+    const tbody = document.getElementById('rec-apps-table-body');
+    let list = [...state.internshipApplications];
+
+    // Filter to only approved recruiters
+    const approvedRecs = new Set(state.recruiters.filter(r => r.status === 'Approved').map(r => r.name));
+    list = list.filter(app => {
+      const internship = state.internships.find(i => i.id === app.internshipId);
+      return internship && approvedRecs.has(internship.recruiterName);
+    });
+
+    // Update Stats Cards
+    const total = list.length;
+    const pending = list.filter(a => a.status === 'Pending').length;
+    const reviewed = list.filter(a => a.status === 'Reviewed').length;
+    const selected = list.filter(a => a.status === 'Selected').length;
+    const rejected = list.filter(a => a.status === 'Rejected').length;
+
+    document.getElementById('app-card-total').innerText = total;
+    document.getElementById('app-card-pending').innerText = pending;
+    document.getElementById('app-card-reviewed').innerText = reviewed;
+    document.getElementById('app-card-selected').innerText = selected;
+    document.getElementById('app-card-rejected').innerText = rejected;
+
+    // Search
+    if (recruiterApplicationsFilter.search) {
+      const kw = recruiterApplicationsFilter.search.toLowerCase();
+      list = list.filter(app => {
+        const student = state.students.find(s => s.id === app.studentId);
+        const internship = state.internships.find(i => i.id === app.internshipId);
+        return (
+          (student && student.name.toLowerCase().includes(kw)) ||
+          (internship && internship.title.toLowerCase().includes(kw)) ||
+          (internship && internship.company.toLowerCase().includes(kw))
+        );
+      });
+    }
+
+    // Status Filter
+    if (recruiterApplicationsFilter.status) {
+      list = list.filter(app => app.status === recruiterApplicationsFilter.status);
+    }
+
+    // Sort by Applied Date
+    list.sort((a, b) => new Date(b.appliedDate) - new Date(a.appliedDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center"><div class="table-empty-state"><p>No applications match filter criteria.</p></div></td></tr>`;
+      document.getElementById('rec-apps-pagination-info').innerText = 'Showing 0 to 0 of 0 applications';
+      document.getElementById('rec-apps-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const totalFiltered = list.length;
+    const pages = Math.ceil(totalFiltered / pagRecruiterApplications.limit);
+    if (pagRecruiterApplications.page > pages) pagRecruiterApplications.page = pages || 1;
+
+    const start = (pagRecruiterApplications.page - 1) * pagRecruiterApplications.limit;
+    const pagList = list.slice(start, start + pagRecruiterApplications.limit);
+
+    let html = '';
+    pagList.forEach(app => {
+      const student = state.students.find(s => s.id === app.studentId);
+      const internship = state.internships.find(i => i.id === app.internshipId);
+      if (student && internship) {
+        const statusBadge = app.status === 'Selected' ? 'badge-approved' : app.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+        html += `
+          <tr>
+            <td class="row-id">${app.id}</td>
+            <td style="font-weight:700; color:var(--accent-red); cursor:pointer;" onclick="window.location.hash = '/admin/recruiter-management/internships/${internship.id}'">${escapeHTML(internship.title)}</td>
+            <td style="font-weight:600;">${escapeHTML(internship.company)}</td>
+            <td style="font-weight:700; cursor:pointer;" onclick="window.dashboardApp.viewStudentProfile('${student.id}')">${escapeHTML(student.name)}</td>
+            <td class="row-id" style="cursor:pointer; color:var(--accent-red); font-weight:700;" onclick="window.dashboardApp.viewStudentProfile('${student.id}')">${student.id}</td>
+            <td>${escapeHTML(student.college)}</td>
+            <td>${formatDate(app.appliedDate)}</td>
+            <td><span class="${statusBadge}">${app.status}</span></td>
+          </tr>
+        `;
+      }
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagRecruiterApplications.limit, totalFiltered);
+    document.getElementById('rec-apps-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${totalFiltered} applications`;
+    renderPaginationControls('rec-apps-pagination-controls', pages, pagRecruiterApplications, (p) => {
+      pagRecruiterApplications.page = p;
+      renderRecruiterApplicationsTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: RECRUITER ANALYTICS
+  // ==========================================
+  function renderRecruiterAnalytics() {
+    const approvedRecs = state.recruiters.filter(r => r.status === 'Approved');
+    
+    // Top Recruiters Horizontal Progress Bars
+    const recruiterStats = {};
+    approvedRecs.forEach(rec => {
+      const recInts = state.internships.filter(i => i.recruiterName === rec.name);
+      const recApps = state.internshipApplications.filter(app => recInts.some(i => i.id === app.internshipId));
+      recruiterStats[rec.name] = { name: rec.name, company: rec.company, count: recApps.length };
+    });
+    const topRecs = Object.values(recruiterStats).sort((a,b) => b.count - a.count).slice(0, 3);
+    const maxRecApps = topRecs[0] ? topRecs[0].count : 1;
+    let topRecsHTML = '';
+    topRecs.forEach(r => {
+      const percentage = (r.count / maxRecApps) * 100;
+      topRecsHTML += `
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600;">
+            <span>${escapeHTML(r.name)} (${escapeHTML(r.company)})</span>
+            <span style="color:#a78bfa;">${r.count} Apps</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.05); height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background:linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%); width:${percentage}%; height:100%;"></div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('analytics-top-recruiters-list').innerHTML = topRecsHTML || `<p style="font-size:12px; color:var(--text-muted);">No data available</p>`;
+
+    // Most Applied Internships Horizontal Progress Bars
+    const internshipStats = state.internships.map(i => {
+      const count = state.internshipApplications.filter(app => app.internshipId === i.id).length;
+      return { id: i.id, title: i.title, company: i.company, count };
+    });
+    const topInts = internshipStats.sort((a,b) => b.count - a.count).slice(0, 3);
+    const maxIntApps = topInts[0] ? topInts[0].count : 1;
+    let topIntsHTML = '';
+    topInts.forEach(i => {
+      const percentage = (i.count / maxIntApps) * 100;
+      topIntsHTML += `
+        <div style="display:flex; flex-direction:column; gap:4px; width:100%;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:600;">
+            <span>${escapeHTML(i.title)} &bull; <small style="color:var(--text-muted);">${escapeHTML(i.company)}</small></span>
+            <span style="color:#34d399;">${i.count} Apps</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.05); height:8px; border-radius:4px; width:100%; overflow:hidden;">
+            <div style="background:linear-gradient(90deg, #10b981 0%, #3b82f6 100%); width:${percentage}%; height:100%;"></div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('analytics-most-applied-list').innerHTML = topIntsHTML || `<p style="font-size:12px; color:var(--text-muted);">No data available</p>`;
+
+    // Activity Trends Line Charts
+    drawLineChart('chart-analytics-activity-trend',
+      ["01 May", "06 May", "11 May", "16 May", "21 May", "26 May", "31 May"],
+      [{ label: 'Activity', points: [5, 12, 10, 18, 15, 22, 25], color: '#8b5cf6' }]
+    );
+    drawLineChart('chart-analytics-apps-trend',
+      ["01 May", "06 May", "11 May", "16 May", "21 May", "26 May", "31 May"],
+      [{ label: 'Applications', points: [50, 120, 100, 160, 130, 180, 190], color: '#10b981' }]
+    );
+
+    // Analytics Table Rows
+    const tbody = document.getElementById('rec-analytics-table-body');
+    let analyticsList = approvedRecs.map(rec => {
+      const recInts = state.internships.filter(i => i.recruiterName === rec.name);
+      const recApps = state.internshipApplications.filter(app => recInts.some(i => i.id === app.internshipId));
+      const uniqueApplicants = [...new Set(recApps.map(app => app.studentId))].length;
+      
+      let lastActivity = rec.appliedDate;
+      recInts.forEach(i => {
+        if (i.postedDate > lastActivity) lastActivity = i.postedDate;
+      });
+      recApps.forEach(a => {
+        if (a.appliedDate > lastActivity) lastActivity = a.appliedDate;
+      });
+
+      return {
+        name: rec.name,
+        company: rec.company,
+        published: recInts.length,
+        active: recInts.filter(i => i.status === 'Active').length,
+        closed: recInts.filter(i => i.status === 'Closed').length,
+        apps: recApps.length,
+        unique: uniqueApplicants,
+        lastActive: lastActivity
+      };
+    });
+
+    // Search filter
+    if (recruiterAnalyticsFilter.search) {
+      const kw = recruiterAnalyticsFilter.search.toLowerCase();
+      analyticsList = analyticsList.filter(row => row.name.toLowerCase().includes(kw) || row.company.toLowerCase().includes(kw));
+    }
+
+    analyticsList.sort((a,b) => b.apps - a.apps);
+
+    if (analyticsList.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No analytics data matches filter criteria.</p></div></td></tr>`;
+      return;
+    }
+
+    let html = '';
+    analyticsList.forEach(row => {
+      html += `
+        <tr>
+          <td style="font-weight:700; color:#fff;">${escapeHTML(row.name)}</td>
+          <td style="font-weight:600;">${escapeHTML(row.company)}</td>
+          <td>${row.published}</td>
+          <td>${row.active}</td>
+          <td>${row.closed}</td>
+          <td style="font-weight:700;">${row.apps}</td>
+          <td style="font-weight:700; color:#fbbf24;">${row.unique}</td>
+          <td>${row.apps}</td>
+          <td>${formatDate(row.lastActive)}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+  }
+
+  // ==========================================
+  // RENDERER: RECRUITER PROFILES TABLE
+  // ==========================================
+  function renderRecruiterProfilesTable() {
+    const tbody = document.getElementById('rec-profiles-table-body');
+    let list = [...state.recruiters].filter(r => r.status === 'Approved');
+
+    // Search
+    if (recruiterProfilesFilter.search) {
+      const kw = recruiterProfilesFilter.search.toLowerCase();
+      list = list.filter(r => r.name.toLowerCase().includes(kw) || r.company.toLowerCase().includes(kw));
+    }
+
+    list.sort((a,b) => a.name.localeCompare(b.name));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No recruiter profiles match filter criteria.</p></div></td></tr>`;
+      document.getElementById('rec-profiles-pagination-info').innerText = 'Showing 0 to 0 of 0 profiles';
+      document.getElementById('rec-profiles-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagRecruiterProfiles.limit);
+    if (pagRecruiterProfiles.page > pages) pagRecruiterProfiles.page = pages || 1;
+
+    const start = (pagRecruiterProfiles.page - 1) * pagRecruiterProfiles.limit;
+    const pagList = list.slice(start, start + pagRecruiterProfiles.limit);
+
+    let html = '';
+    pagList.forEach(r => {
+      const totalInts = state.internships.filter(i => i.recruiterName === r.name).length;
+      const recInts = state.internships.filter(i => i.recruiterName === r.name);
+      const totalApps = state.internshipApplications.filter(app => recInts.some(i => i.id === app.internshipId)).length;
+
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td style="font-weight:700; color:#fff;">${escapeHTML(r.name)}</td>
+          <td style="font-weight:600;">${escapeHTML(r.company)}</td>
+          <td>${escapeHTML(r.email)}</td>
+          <td>${escapeHTML(r.phone)}</td>
+          <td><span class="badge-approved">${r.status}</span></td>
+          <td style="font-weight:700;">${totalInts}</td>
+          <td style="font-weight:700;">${totalApps}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" title="View Profile" onclick="window.dashboardApp.viewRecruiterProfile('${r.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-eye" style="background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.2); color:#60a5fa;" title="View Internships" onclick="window.location.hash = '/admin/recruiter-management/internships'; recruiterInternshipsFilter.search = '${r.name}'; renderPublishedInternshipsTable();"><i class="fa-solid fa-briefcase"></i></button>
+              <button class="btn-action-eye" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.2); color:#34d399;" title="View Analytics" onclick="window.location.hash = '/admin/recruiter-management/analytics'; recruiterAnalyticsFilter.search = '${r.name}'; renderRecruiterAnalytics();"><i class="fa-solid fa-chart-line"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagRecruiterProfiles.limit, total);
+    document.getElementById('rec-profiles-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} profiles`;
+    renderPaginationControls('rec-profiles-pagination-controls', pages, pagRecruiterProfiles, (p) => {
+      pagRecruiterProfiles.page = p;
+      renderRecruiterProfilesTable();
+    });
+  }
+
+  // Popup modal profile display helper
+  function viewRecruiterProfile(recId) {
+    const rec = state.recruiters.find(r => r.id === recId);
+    if (!rec) return;
+
+    document.getElementById('view-rec-id').innerText = rec.id;
+    document.getElementById('view-rec-name').innerText = rec.name;
+    document.getElementById('view-rec-company').innerText = rec.company;
+    document.getElementById('view-rec-designation').innerText = rec.designation;
+    document.getElementById('view-rec-email').innerText = rec.email;
+    document.getElementById('view-rec-phone').innerText = rec.phone;
+    document.getElementById('view-rec-status').innerText = rec.status;
+    document.getElementById('view-rec-joined').innerText = formatDate(rec.appliedDate);
+
+    const statusEl = document.getElementById('view-rec-status');
+    statusEl.className = rec.status === 'Approved' ? 'badge-approved' : rec.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+
+    document.getElementById('view-rec-avatar').innerText = rec.name.charAt(0);
+    document.getElementById('recruiter-profile-modal').classList.add('active');
   }
 
   // ==========================================
@@ -4698,7 +6010,22 @@ Total Registrations,${totalRegs},+18%
     
     // Redirect clicks
     viewEventDetails,
-    exportDashboard
+    exportDashboard,
+
+    // Recruiter Management Exporters and Renderers
+    viewRecruiterProfile,
+    exportRecruiterData,
+    exportRecruiterInternshipsList,
+    exportRecruiterApplicationsList,
+    exportRecruiterAnalyticsTable,
+    exportRecruiterProfilesList,
+    exportInternshipApplicants,
+    renderRecruiterDashboard,
+    renderPublishedInternshipsTable,
+    renderInternshipDetailsPane,
+    renderRecruiterApplicationsTable,
+    renderRecruiterAnalytics,
+    renderRecruiterProfilesTable
   };
 
 })();

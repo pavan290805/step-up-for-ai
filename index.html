@@ -99,6 +99,22 @@
             </a>
           </li>
           
+          <!-- Recruiter Management Accordion -->
+          <li class="nav-item has-submenu" id="menu-recruiter-management">
+            <a href="#/admin/recruiter-management" class="submenu-toggle">
+              <i class="fa-solid fa-briefcase"></i>
+              <span>Recruiter Management</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="recruiter-dashboard"><a href="#/admin/recruiter-management">Dashboard</a></li>
+              <li class="submenu-item" data-tab="recruiter-internships"><a href="#/admin/recruiter-management/internships">Internships</a></li>
+              <li class="submenu-item" data-tab="recruiter-applications"><a href="#/admin/recruiter-management/applications">Applications</a></li>
+              <li class="submenu-item" data-tab="recruiter-analytics"><a href="#/admin/recruiter-management/analytics">Recruiter Analytics</a></li>
+              <li class="submenu-item" data-tab="recruiter-profiles"><a href="#/admin/recruiter-management/profiles">Recruiter Profiles</a></li>
+            </ul>
+          </li>
+          
           <!-- Approval Management Accordion -->
           <li class="nav-item has-submenu" id="menu-approval-management">
             <a href="#/admin/approval-management" class="submenu-toggle">
@@ -1410,7 +1426,582 @@
             </div>
           </div>
         </section>
-        
+
+        <!-- ==========================================
+             RECRUITER DASHBOARD VIEW
+             ========================================== -->
+        <section id="recruiter-dashboard-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Recruiter Dashboard</h1>
+              <p>Performance metrics, applications, internships publishing activity and top corporate profiles.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="recruiter-dash-export-container">
+                <button class="btn-export-dropdown" id="recruiter-dash-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="recruiter-dash-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterData('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Metrics (Excel)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterData('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export Metrics (CSV)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterData('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-6">
+            <!-- Approved Recruiters -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +12%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Recruiters</span>
+                <span class="metric-card-value" id="rec-stat-total-recruiters">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-total"></canvas>
+            </div>
+            
+            <!-- Approved Companies -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon blue">
+                  <i class="fa-solid fa-building"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +15%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Companies</span>
+                <span class="metric-card-value" id="rec-stat-total-companies">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-companies"></canvas>
+            </div>
+            
+            <!-- Published Internships -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon orange">
+                  <i class="fa-solid fa-briefcase"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +8%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Published Internships</span>
+                <span class="metric-card-value" id="rec-stat-published-internships">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-published"></canvas>
+            </div>
+            
+            <!-- Active Internships -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon green">
+                  <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +10%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Active Internships</span>
+                <span class="metric-card-value" id="rec-stat-active-internships">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-active"></canvas>
+            </div>
+            
+            <!-- Applications Received -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon purple">
+                  <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +25%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Applications Received</span>
+                <span class="metric-card-value" id="rec-stat-applications-received">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-applications"></canvas>
+            </div>
+            
+            <!-- Student Applicants -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +18%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Student Applicants</span>
+                <span class="metric-card-value" id="rec-stat-student-applicants">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-recruiter-student-applicants"></canvas>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-grid-main">
+            <!-- Line Chart: Publishing Trend -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Internship Publishing Activity</h3>
+                <select class="page-size-select" style="padding:4px 8px; font-size:11px;" id="recruiter-pub-chart-range">
+                  <option value="month">This Month</option>
+                  <option value="week">This Week</option>
+                </select>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-recruiter-pub-trend"></canvas>
+              </div>
+            </div>
+            
+            <!-- Donut Chart: Status Distribution -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Internship Status Distribution</h3>
+              </div>
+              <div class="chart-card-body">
+                <div class="donut-container" style="width:100%;">
+                  <div style="position:relative; width:140px; height:140px; display:flex; align-items:center; justify-content:center;">
+                    <canvas id="chart-recruiter-status-donut" width="140" height="140"></canvas>
+                    <div class="donut-inner-text">
+                      <span class="donut-inner-value" id="donut-recruiter-status-total">0</span>
+                      <span class="donut-inner-label">Total</span>
+                    </div>
+                  </div>
+                  <div class="donut-legend" id="donut-recruiter-status-legend">
+                    <!-- Dynamic legends -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid-main" style="grid-template-columns: 1fr; margin-top:-10px; margin-bottom: 24px;">
+            <!-- Line Chart: Applications Trend -->
+            <div class="chart-card" style="width: 100%;">
+              <div class="chart-card-header">
+                <h3>Ecosystem Application Inflow</h3>
+                <select class="page-size-select" style="padding:4px 8px; font-size:11px;" id="recruiter-app-chart-range">
+                  <option value="month">This Month</option>
+                  <option value="week">This Week</option>
+                </select>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-recruiter-app-trend" style="height: 220px;"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Widgets Grid -->
+          <div class="dashboard-grid-3">
+            <!-- Recent Internships Published -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Internships</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('recruiter-internships'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-recruiter-recent-internships" style="max-height: 320px;">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+            <!-- Recent Applications Received -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Applications</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('recruiter-applications'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-recruiter-recent-applications" style="max-height: 320px;">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+
+            <!-- Top Recruiter Companies -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Top Recruiters</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('recruiter-profiles'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-recruiter-top-recruiters" style="max-height: 320px;">
+                <!-- Loaded dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             RECRUITER INTERNSHIPS LIST VIEW
+             ========================================== -->
+        <section id="recruiter-internships-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Ecosystem Internships</h1>
+              <p>Manage and track published corporate internships, applications counts, and student job rosters.</p>
+            </div>
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="rec-internships-export-container">
+                <button class="btn-export-dropdown" id="rec-internships-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="rec-internships-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterInternshipsList('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterInternshipsList('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterInternshipsList('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="rec-internships-search" placeholder="Search internships, companies...">
+              </div>
+              
+              <div class="table-search-box">
+                <select class="form-control-input" id="rec-internships-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Closed">Closed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Company</th>
+                    <th>Recruiter Name</th>
+                    <th>Posted Date</th>
+                    <th>Deadline</th>
+                    <th>Status</th>
+                    <th>Applications</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="rec-internships-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="rec-internships-pagination-info">Showing 0 to 0 of 0 internships</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="rec-internships-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="rec-internships-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             RECRUITER INTERNSHIP DETAILS VIEW
+             ========================================== -->
+        <section id="recruiter-internship-details-view" class="content-panel">
+          <!-- Dynamically populated panel content -->
+        </section>
+
+        <!-- ==========================================
+             RECRUITER APPLICATIONS LIST VIEW
+             ========================================== -->
+        <section id="recruiter-applications-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Internship Applications</h1>
+              <p>Consolidated student applications roster across all corporate jobs in the StepUp ecosystem.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="rec-apps-export-container">
+                <button class="btn-export-dropdown" id="rec-apps-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="rec-apps-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterApplicationsList('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterApplicationsList('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterApplicationsList('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-5" style="margin-bottom:24px;">
+            <div class="metric-card-dark">
+              <div class="metric-card-info" style="margin-top:0;">
+                <span class="metric-card-label" style="font-size:11px;">Total Applications</span>
+                <span class="metric-card-value" id="app-card-total" style="font-size:24px; font-weight:800; color:#fff;">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info" style="margin-top:0;">
+                <span class="metric-card-label" style="font-size:11px;">Pending Applications</span>
+                <span class="metric-card-value" id="app-card-pending" style="font-size:24px; font-weight:800; color:#f59e0b;">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info" style="margin-top:0;">
+                <span class="metric-card-label" style="font-size:11px;">Reviewed Applications</span>
+                <span class="metric-card-value" id="app-card-reviewed" style="font-size:24px; font-weight:800; color:#3b82f6;">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info" style="margin-top:0;">
+                <span class="metric-card-label" style="font-size:11px;">Selected Candidates</span>
+                <span class="metric-card-value" id="app-card-selected" style="font-size:24px; font-weight:800; color:#10b981;">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info" style="margin-top:0;">
+                <span class="metric-card-label" style="font-size:11px;">Rejected Applications</span>
+                <span class="metric-card-value" id="app-card-rejected" style="font-size:24px; font-weight:800; color:#ef4444;">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="rec-apps-search" placeholder="Search student name, company, job...">
+              </div>
+              
+              <div class="table-search-box">
+                <select class="form-control-input" id="rec-apps-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Reviewed">Reviewed</option>
+                  <option value="Selected">Selected</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>App ID</th>
+                    <th>Internship Title</th>
+                    <th>Company</th>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>College</th>
+                    <th>Applied Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="rec-apps-table-body">
+                  <!-- Dynamic applications -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="rec-apps-pagination-info">Showing 0 to 0 of 0 applications</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="rec-apps-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="rec-apps-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             RECRUITER ANALYTICS VIEW
+             ========================================== -->
+        <section id="recruiter-analytics-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Recruiter Analytics</h1>
+              <p>Examine individual recruiter engagement, total unique applicants, and ecosystem job metrics.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="rec-analytics-export-container">
+                <button class="btn-export-dropdown" id="rec-analytics-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="rec-analytics-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterAnalyticsTable('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterAnalyticsTable('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterAnalyticsTable('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="charts-grid-main" style="margin-bottom:24px;">
+            <!-- Top Recruiters by Inflow -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Top Recruiters by Applications</h3>
+              </div>
+              <div class="chart-card-body" id="analytics-top-recruiters-list" style="display:flex; flex-direction:column; gap:16px; padding:20px;">
+                <!-- Dynamic progress bars -->
+              </div>
+            </div>
+
+            <!-- Most Applied Internships -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Most Applied Internships</h3>
+              </div>
+              <div class="chart-card-body" id="analytics-most-applied-list" style="display:flex; flex-direction:column; gap:16px; padding:20px;">
+                <!-- Dynamic progress bars -->
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid-main" style="margin-bottom:24px;">
+            <!-- Activity trend -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Recruiter Activity Trend</h3>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-analytics-activity-trend"></canvas>
+              </div>
+            </div>
+            <!-- Apps Inflow trend -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Application Inflow Trend</h3>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-analytics-apps-trend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="rec-analytics-search" placeholder="Search name, company...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Recruiter Name</th>
+                    <th>Company Name</th>
+                    <th>Internships Published</th>
+                    <th>Active Internships</th>
+                    <th>Closed Internships</th>
+                    <th>Applications Received</th>
+                    <th>Unique Applicants</th>
+                    <th>Last Activity Date</th>
+                  </tr>
+                </thead>
+                <tbody id="rec-analytics-table-body">
+                  <!-- Dynamic analytics rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             RECRUITER PROFILES VIEW
+             ========================================== -->
+        <section id="recruiter-profiles-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Recruiter Corporate Profiles</h1>
+              <p>Directory of approved corporate recruiter profiles and contacts active in the system.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="rec-profiles-export-container">
+                <button class="btn-export-dropdown" id="rec-profiles-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="rec-profiles-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterProfilesList('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterProfilesList('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportRecruiterProfilesList('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="rec-profiles-search" placeholder="Search name, company...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Recruiter ID</th>
+                    <th>Full Name</th>
+                    <th>Company Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Status</th>
+                    <th>Internships</th>
+                    <th>Applications</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="rec-profiles-table-body">
+                  <!-- Dynamic profiles rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="rec-profiles-pagination-info">Showing 0 to 0 of 0 profiles</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="rec-profiles-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="rec-profiles-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
 
@@ -1476,7 +2067,18 @@
           </div>
           <div class="form-group">
             <label for="webinar-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="webinar-form-timezone" value="UTC+5:30" required>
+            <select class="form-control-input" id="webinar-form-timezone" required>
+              <option value="UTC+5:30" selected>India Standard Time (UTC+5:30)</option>
+              <option value="UTC">Coordinated Universal Time (UTC)</option>
+              <option value="UTC-5:00">Eastern Standard Time (UTC-5:00)</option>
+              <option value="UTC-8:00">Pacific Standard Time (UTC-8:00)</option>
+              <option value="UTC+0:00">Greenwich Mean Time (UTC+0:00)</option>
+              <option value="UTC+1:00">Central European Time (UTC+1:00)</option>
+              <option value="UTC+4:00">Gulf Standard Time (UTC+4:00)</option>
+              <option value="UTC+8:00">Singapore Time (UTC+8:00)</option>
+              <option value="UTC+9:00">Japan Standard Time (UTC+9:00)</option>
+              <option value="UTC+10:00">Australian Eastern Standard Time (UTC+10:00)</option>
+            </select>
           </div>
         </div>
         
@@ -1615,7 +2217,18 @@
           </div>
           <div class="form-group">
             <label for="hackathon-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="hackathon-form-timezone" value="UTC+5:30" required>
+            <select class="form-control-input" id="hackathon-form-timezone" required>
+              <option value="UTC+5:30" selected>India Standard Time (UTC+5:30)</option>
+              <option value="UTC">Coordinated Universal Time (UTC)</option>
+              <option value="UTC-5:00">Eastern Standard Time (UTC-5:00)</option>
+              <option value="UTC-8:00">Pacific Standard Time (UTC-8:00)</option>
+              <option value="UTC+0:00">Greenwich Mean Time (UTC+0:00)</option>
+              <option value="UTC+1:00">Central European Time (UTC+1:00)</option>
+              <option value="UTC+4:00">Gulf Standard Time (UTC+4:00)</option>
+              <option value="UTC+8:00">Singapore Time (UTC+8:00)</option>
+              <option value="UTC+9:00">Japan Standard Time (UTC+9:00)</option>
+              <option value="UTC+10:00">Australian Eastern Standard Time (UTC+10:00)</option>
+            </select>
           </div>
         </div>
         
@@ -1711,6 +2324,11 @@
         </div>
         
         <div class="form-group">
+          <label for="pitch-event-form-overview">Event Overview <span style="color: var(--accent-red);">*</span></label>
+          <input type="text" class="form-control-input" id="pitch-event-form-overview" placeholder="e.g. Showcase your AI startup to early-stage investors" required>
+        </div>
+        
+        <div class="form-group">
           <label for="pitch-event-form-description">Event Description <span style="color: var(--accent-red);">*</span></label>
           <textarea class="form-control-input" id="pitch-event-form-description" rows="3" placeholder="VC panel introductions, structure..." required></textarea>
         </div>
@@ -1727,7 +2345,18 @@
           </div>
           <div class="form-group">
             <label for="pitch-event-form-timezone">Time Zone <span style="color: var(--accent-red);">*</span></label>
-            <input type="text" class="form-control-input" id="pitch-event-form-timezone" value="UTC+5:30" required>
+            <select class="form-control-input" id="pitch-event-form-timezone" required>
+              <option value="UTC+5:30" selected>India Standard Time (UTC+5:30)</option>
+              <option value="UTC">Coordinated Universal Time (UTC)</option>
+              <option value="UTC-5:00">Eastern Standard Time (UTC-5:00)</option>
+              <option value="UTC-8:00">Pacific Standard Time (UTC-8:00)</option>
+              <option value="UTC+0:00">Greenwich Mean Time (UTC+0:00)</option>
+              <option value="UTC+1:00">Central European Time (UTC+1:00)</option>
+              <option value="UTC+4:00">Gulf Standard Time (UTC+4:00)</option>
+              <option value="UTC+8:00">Singapore Time (UTC+8:00)</option>
+              <option value="UTC+9:00">Japan Standard Time (UTC+9:00)</option>
+              <option value="UTC+10:00">Australian Eastern Standard Time (UTC+10:00)</option>
+            </select>
           </div>
         </div>
         
@@ -1934,11 +2563,26 @@
             <span class="spec-label" style="width: 150px;">Account Created</span>
             <span class="spec-value" id="view-student-created">20 May 2025</span>
           </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Key Skills</span>
+            <span class="spec-value" id="view-student-skills">React, JavaScript, Python</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Resume Portfolio</span>
+            <span class="spec-value" id="view-student-resume"><a href="#" target="_blank" id="view-student-resume-link" style="color: var(--accent-red); text-decoration: underline;"><i class="fa-solid fa-file-pdf"></i> Download Resume</a></span>
+          </div>
         </div>
         
         <div>
           <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Events Registered For</h4>
           <ul id="view-student-events-list" style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">Applied Internships</h4>
+          <ul id="view-student-internships-list" style="list-style: none; display: flex; flex-direction: column; gap: 8px;">
             <!-- Dynamically populated -->
           </ul>
         </div>
@@ -2017,6 +2661,58 @@
       </div>
       <div class="modal-footer" style="justify-content: center; border-top: none; background: none; padding-top: 0;">
         <button class="btn-solid-red" onclick="document.getElementById('student-success-modal').classList.remove('active')" style="width: 100%;">Acknowledge & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: View Recruiter Profile Details -->
+  <div class="modal-overlay" id="recruiter-profile-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Recruiter Corporate Profile</h3>
+          <p>Viewing verified recruiter contact and corporate details.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('recruiter-profile-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="text-align: center; padding: 20px 0 10px; border-bottom: 1px solid var(--border-color);">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background-color: rgba(139, 92, 246, 0.1); border: 2px solid #8b5cf6; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; font-weight: 700; color: #8b5cf6;" id="view-rec-avatar">R</div>
+          <h3 id="view-rec-name" style="font-size: 20px; font-weight: 800;">Recruiter Name</h3>
+          <span id="view-rec-id" style="font-size: 13px; font-weight: 700; color: #8b5cf6;">REC001</span>
+        </div>
+        
+        <div class="details-specs-grid" style="grid-template-columns: 1fr; gap: 14px; padding: 10px 0;">
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Company Name</span>
+            <span class="spec-value" id="view-rec-company" style="font-weight:700;">TechNova Solutions</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Corporate Designation</span>
+            <span class="spec-value" id="view-rec-designation">Talent Acquisition Lead</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Email Address</span>
+            <span class="spec-value" id="view-rec-email">recruiter@company.com</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Phone Number</span>
+            <span class="spec-value" id="view-rec-phone">9876543210</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Account Status</span>
+            <span class="spec-value"><span id="view-rec-status" class="badge-approved">Approved</span></span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Date Joined</span>
+            <span class="spec-value" id="view-rec-joined">20 May 2026</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-solid-red" style="background:#8b5cf6; border-color:#8b5cf6;" onclick="document.getElementById('recruiter-profile-modal').classList.remove('active')">Close Profile</button>
       </div>
     </div>
   </div>
