@@ -115,6 +115,22 @@
             </ul>
           </li>
           
+          <!-- Investor Management Accordion -->
+          <li class="nav-item has-submenu" id="menu-investor-management">
+            <a href="#/admin/investor-management" class="submenu-toggle">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+              <span>Investor Management</span>
+              <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+            </a>
+            <ul class="submenu-list">
+              <li class="submenu-item" data-tab="investor-dashboard"><a href="#/admin/investor-management">Dashboard</a></li>
+              <li class="submenu-item" data-tab="investor-profiles"><a href="#/admin/investor-management/profiles">Investor Profiles</a></li>
+              <li class="submenu-item" data-tab="investor-interests"><a href="#/admin/investor-management/interests">Startup Interests</a></li>
+              <li class="submenu-item" data-tab="investor-analytics"><a href="#/admin/investor-management/analytics">Investment Analytics</a></li>
+              <li class="submenu-item" data-tab="investor-contacts"><a href="#/admin/investor-management/contacts">Contact Requests</a></li>
+            </ul>
+          </li>
+
           <!-- Approval Management Accordion -->
           <li class="nav-item has-submenu" id="menu-approval-management">
             <a href="#/admin/approval-management" class="submenu-toggle">
@@ -2002,6 +2018,626 @@
           </div>
         </section>
 
+        <!-- ==========================================
+             INVESTOR DASHBOARD VIEW
+             ========================================== -->
+        <section id="investor-dashboard-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Investor Dashboard</h1>
+              <p>Performance metrics, startup interests, contact requests and top VC & angel activity profiles.</p>
+            </div>
+            
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
+              <!-- Date Range Selector -->
+              <select class="page-size-select" style="padding: 8px 12px; font-size:13px; min-width: 150px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 4px;" id="investor-dashboard-date-range">
+                <option value="all" selected>All Time</option>
+                <option value="30">Last 30 Days</option>
+                <option value="15">Last 15 Days</option>
+                <option value="7">Last 7 Days</option>
+              </select>
+
+              <div class="dropdown-action-container" id="investor-dashboard-export-container">
+                <button class="btn-export-dropdown" id="investor-dashboard-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="investor-dashboard-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorDashboard('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Metrics (Excel)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorDashboard('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export Metrics (CSV)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorDashboard('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportCompleteInvestorReport('Excel')" style="border-top: 1px solid var(--border-color); margin-top: 4px; padding-top: 8px;"><i class="fa-solid fa-file-invoice" style="color:#3b82f6;"></i> Master Report (Excel)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportCompleteInvestorReport('CSV')"><i class="fa-solid fa-file-lines" style="color:#a855f7;"></i> Master Report (CSV)</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportCompleteInvestorReport('PDF')"><i class="fa-solid fa-file-pdf" style="color:#ec4899;"></i> Master Report (PDF)</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-6">
+            <!-- Total Investors -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +8%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Investors</span>
+                <span class="metric-card-value" id="inv-stat-total-investors">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-total"></canvas>
+            </div>
+            
+            <!-- Verified Investors -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon blue">
+                  <i class="fa-solid fa-shield-check"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +10%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Verified Investors</span>
+                <span class="metric-card-value" id="inv-stat-verified-investors">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-verified"></canvas>
+            </div>
+
+            <!-- Active Investors -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon green">
+                  <i class="fa-solid fa-user-check"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +14%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Active Investors</span>
+                <span class="metric-card-value" id="inv-stat-active-investors">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-active"></canvas>
+            </div>
+            
+            <!-- Startup Interests -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon yellow">
+                  <i class="fa-solid fa-heart"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +25%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Startup Interests</span>
+                <span class="metric-card-value" id="inv-stat-startup-interests">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-interests"></canvas>
+            </div>
+
+            <!-- Contact Requests -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon purple">
+                  <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +18%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Contact Requests</span>
+                <span class="metric-card-value" id="inv-stat-contact-requests">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-contacts"></canvas>
+            </div>
+
+            <!-- Total Startup Applications -->
+            <div class="metric-card-dark">
+              <div class="metric-card-header">
+                <div class="metric-card-icon red">
+                  <i class="fa-solid fa-rocket"></i>
+                </div>
+                <div class="metric-card-trend up">
+                  <i class="fa-solid fa-arrow-trend-up"></i> +12%
+                </div>
+              </div>
+              <div class="metric-card-info">
+                <span class="metric-card-label">Startup Applications</span>
+                <span class="metric-card-value" id="inv-stat-startup-applications">0</span>
+              </div>
+              <canvas class="metric-card-sparkline" id="sparkline-investor-applications"></canvas>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="charts-grid-main">
+            <!-- Growth Trend Chart -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Investor Onboarding Growth</h3>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-investor-growth-trend"></canvas>
+              </div>
+            </div>
+
+            <!-- Industry Distribution Chart -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Industry Interest Distribution</h3>
+              </div>
+              <div class="chart-card-body">
+                <div class="donut-container" style="width:100%;">
+                  <div style="position:relative; width:140px; height:140px; display:flex; align-items:center; justify-content:center;">
+                    <canvas id="chart-investor-industry-donut" width="140" height="140"></canvas>
+                    <div class="donut-inner-text">
+                      <span class="donut-inner-value" id="donut-investor-industry-total">0</span>
+                      <span class="donut-inner-label">Total</span>
+                    </div>
+                  </div>
+                  <div class="donut-legend" id="donut-investor-industry-legend">
+                    <!-- Dynamic legends -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart & Progress Bars Grid -->
+          <div class="charts-grid-main" style="margin-bottom: 24px;">
+            <!-- Activity Trend Chart -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Investor Activity Trend</h3>
+              </div>
+              <div class="chart-card-body">
+                <canvas class="canvas-chart" id="chart-investor-activity-trend" style="height: 220px;"></canvas>
+              </div>
+            </div>
+
+            <!-- Top Industries List -->
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <h3>Top Interested Industries</h3>
+              </div>
+              <div class="chart-card-body" id="investor-top-industries-progress" style="display:flex; flex-direction:column; gap:16px; justify-content:center; height:100%; min-height: 220px; padding: 10px 0;">
+                <!-- Dynamically loaded progress bars -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Widgets Grid -->
+          <div class="dashboard-grid-3">
+            <!-- Recent Investors -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Investors</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('investor-profiles'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-investor-recent" style="max-height: 320px;">
+                <!-- dynamic -->
+              </div>
+            </div>
+
+            <!-- Recent Startup Interests -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Recent Startup Interests</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('investor-interests'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-interests-recent" style="max-height: 320px;">
+                <!-- dynamic -->
+              </div>
+            </div>
+
+            <!-- Most Active Investors -->
+            <div class="dashboard-panel-box">
+              <div class="panel-box-header">
+                <h3>Most Active Investors</h3>
+                <a href="#" onclick="window.dashboardApp.switchTab('investor-analytics'); return false;" class="view-all-link" style="color: var(--accent-red); font-size: 12px; font-weight:600;">View All</a>
+              </div>
+              <div class="recent-list" id="dash-investors-active" style="max-height: 320px;">
+                <!-- dynamic -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             INVESTOR PROFILES VIEW
+             ========================================== -->
+        <section id="investor-profiles-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Investor Profiles</h1>
+              <p>Directory of approved VC, angel network and investor contact profiles active in the system.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="investor-profiles-export-container">
+                <button class="btn-export-dropdown" id="investor-profiles-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="investor-profiles-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorProfiles('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorProfiles('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestorProfiles('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="investor-profiles-search" placeholder="Search investor name, organization...">
+              </div>
+              <div class="table-search-box">
+                <select class="form-control-input" id="investor-profiles-filter-org" style="padding:8px 12px; font-size:13px; width:200px;">
+                  <option value="">All Organizations</option>
+                  <!-- dynamic -->
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Investor ID</th>
+                    <th>Full Name</th>
+                    <th>Organization</th>
+                    <th>Designation</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Date Joined</th>
+                    <th>Startup Interests</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="investor-profiles-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="investor-profiles-pagination-info">Showing 0 to 0 of 0 profiles</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="investor-profiles-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="investor-profiles-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             STARTUP INTERESTS VIEW
+             ========================================== -->
+        <section id="investor-interests-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Startup Interests</h1>
+              <p>Track startup interest submissions, meeting request pipeline and status changes from VCs.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="investor-interests-export-container">
+                <button class="btn-export-dropdown" id="investor-interests-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="investor-interests-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportStartupInterests('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportStartupInterests('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportStartupInterests('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-4" style="margin-bottom: 20px;">
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Interests Logged</span>
+                <span class="metric-card-value" id="int-stat-total">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Active (Interested/Contacted)</span>
+                <span class="metric-card-value" id="int-stat-active">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Meetings Scheduled</span>
+                <span class="metric-card-value" id="int-stat-meetings">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Declined Interests</span>
+                <span class="metric-card-value" id="int-stat-declined">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="investor-interests-search" placeholder="Search investor or startup name...">
+              </div>
+              <div class="table-search-box" style="gap:10px;">
+                <select class="form-control-input" id="investor-interests-filter-industry" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Industries</option>
+                  <!-- dynamic -->
+                </select>
+                <select class="form-control-input" id="investor-interests-filter-stage" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Stages</option>
+                  <!-- dynamic -->
+                </select>
+                <select class="form-control-input" id="investor-interests-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Interested">Interested</option>
+                  <option value="Contacted">Contacted</option>
+                  <option value="Meeting Scheduled">Meeting Scheduled</option>
+                  <option value="Declined">Declined</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Interest ID</th>
+                    <th>Investor Name</th>
+                    <th>Startup Name</th>
+                    <th>Startup Industry</th>
+                    <th>Startup Stage</th>
+                    <th>Interest Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="investor-interests-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="investor-interests-pagination-info">Showing 0 to 0 of 0 interests</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="investor-interests-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="investor-interests-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             INVESTMENT ANALYTICS VIEW
+             ========================================== -->
+        <section id="investor-analytics-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Investment Analytics</h1>
+              <p>Deep-dive review of investor performance, focus areas, outreach activities and engagement scoring.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="investor-analytics-export-container">
+                <button class="btn-export-dropdown" id="investor-analytics-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="investor-analytics-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestmentAnalytics('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestmentAnalytics('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportInvestmentAnalytics('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-4" style="margin-bottom: 20px;">
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Most Active Investor</span>
+                <span class="metric-card-value" id="ana-stat-most-active" style="font-size:16px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">-</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Highest Engagement Score</span>
+                <span class="metric-card-value" id="ana-stat-high-score">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Most Interested Industry</span>
+                <span class="metric-card-value" id="ana-stat-top-industry" style="font-size:16px; font-weight:800;">-</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Investor Activities</span>
+                <span class="metric-card-value" id="ana-stat-total-actions">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="investor-analytics-search" placeholder="Search investor name, focus industries...">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Investor ID</th>
+                    <th>Full Name</th>
+                    <th>Organization</th>
+                    <th>Industries Focused</th>
+                    <th>Startup Interests</th>
+                    <th>Contact Requests Sent</th>
+                    <th>Meetings Scheduled</th>
+                    <th>Last Activity Date</th>
+                    <th>Engagement Score</th>
+                  </tr>
+                </thead>
+                <tbody id="investor-analytics-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="investor-analytics-pagination-info">Showing 0 to 0 of 0 metrics</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="investor-analytics-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="investor-analytics-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==========================================
+             CONTACT REQUESTS VIEW
+             ========================================== -->
+        <section id="investor-contacts-view" class="content-panel">
+          <header class="view-header">
+            <div class="header-title-block">
+              <h1>Contact Requests</h1>
+              <p>Roster of communication requests between startups and investors with status management actions.</p>
+            </div>
+            
+            <div class="header-actions">
+              <div class="dropdown-action-container" id="investor-contacts-export-container">
+                <button class="btn-export-dropdown" id="investor-contacts-export-btn">
+                  <i class="fa-solid fa-download"></i> Export <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
+                </button>
+                <div class="export-popover-menu" id="investor-contacts-export-menu" style="right: 0; left: auto;">
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportContactRequests('Excel')"><i class="fa-regular fa-file-excel" style="color:#10b981;"></i> Export Excel</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportContactRequests('CSV')"><i class="fa-regular fa-file-lines" style="color:var(--accent-red);"></i> Export CSV</div>
+                  <div class="export-popover-item" onclick="window.dashboardApp.exportContactRequests('PDF')"><i class="fa-regular fa-file-pdf" style="color:#f59e0b;"></i> Export PDF Report</div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div class="metrics-grid-5" style="margin-bottom: 20px;">
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Total Requests</span>
+                <span class="metric-card-value" id="con-stat-total">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Pending</span>
+                <span class="metric-card-value" id="con-stat-pending">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Accepted</span>
+                <span class="metric-card-value" id="con-stat-accepted">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Rejected</span>
+                <span class="metric-card-value" id="con-stat-rejected">0</span>
+              </div>
+            </div>
+            <div class="metric-card-dark">
+              <div class="metric-card-info">
+                <span class="metric-card-label">Completed</span>
+                <span class="metric-card-value" id="con-stat-completed">0</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-section">
+            <div class="table-header-flex">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="investor-contacts-search" placeholder="Search startup, founder, or investor...">
+              </div>
+              <div class="table-search-box">
+                <select class="form-control-input" id="investor-contacts-filter-status" style="padding:8px 12px; font-size:13px; width:150px;">
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Accepted">Accepted</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Startup Name</th>
+                    <th>Founder Details</th>
+                    <th>Investor Name</th>
+                    <th>Request Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="investor-contacts-table-body">
+                  <!-- Dynamic rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="investor-contacts-pagination-info">Showing 0 to 0 of 0 requests</span>
+              <div class="pagination-controls">
+                <div class="page-selector-wrapper">
+                  <select class="page-size-select" id="investor-contacts-page-size">
+                    <option value="10" selected>10 / page</option>
+                    <option value="25">25 / page</option>
+                  </select>
+                </div>
+                <div class="events-pagination" id="investor-contacts-pagination-controls" style="padding:0; border:none; margin:0;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
 
@@ -2713,6 +3349,130 @@
       </div>
       <div class="modal-footer">
         <button class="btn-solid-red" style="background:#8b5cf6; border-color:#8b5cf6;" onclick="document.getElementById('recruiter-profile-modal').classList.remove('active')">Close Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: View Investor Profile Details -->
+  <div class="modal-overlay" id="investor-profile-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Investor Professional Profile</h3>
+          <p>Viewing verified investor contact and corporate details.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('investor-profile-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="text-align: center; padding: 20px 0 10px; border-bottom: 1px solid var(--border-color);">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.1); border: 2px solid var(--accent-red); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 28px; font-weight: 700; color: var(--accent-red);" id="view-inv-avatar">I</div>
+          <h3 id="view-inv-name" style="font-size: 20px; font-weight: 800;">Investor Name</h3>
+          <span id="view-inv-id" style="font-size: 13px; font-weight: 700; color: var(--accent-red);">INV001</span>
+        </div>
+        
+        <div class="details-specs-grid" style="grid-template-columns: 1fr; gap: 14px; padding: 10px 0;">
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Organization</span>
+            <span class="spec-value" id="view-inv-org" style="font-weight:700;">Alpha Capital Ventures</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Corporate Designation</span>
+            <span class="spec-value" id="view-inv-designation">Managing Partner</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Email Address</span>
+            <span class="spec-value" id="view-inv-email">investor@capital.com</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Phone Number</span>
+            <span class="spec-value" id="view-inv-phone">9876543210</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Areas of Interest</span>
+            <span class="spec-value" id="view-inv-interests">Healthcare AI, Fintech Blockchain</span>
+          </div>
+          <div class="spec-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+            <span class="spec-label" style="width: 100%;">Bio / Professional Intro</span>
+            <span class="spec-value" id="view-inv-bio" style="line-height:1.4; display:block; width: 100%;">Early-stage tech investor specializing in AI and SaaS.</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Account Status</span>
+            <span class="spec-value"><span id="view-inv-status" class="badge-approved">Approved</span></span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Date Joined</span>
+            <span class="spec-value" id="view-inv-joined">20 May 2026</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-solid-red" onclick="document.getElementById('investor-profile-modal').classList.remove('active')">Close Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: View Contact Request Details & Update Status -->
+  <div class="modal-overlay" id="investor-contact-modal">
+    <div class="modal-card small">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <h3>Contact Request Details</h3>
+          <p>Review and update status of communication requests.</p>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('investor-contact-modal').classList.remove('active')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="details-specs-grid" style="grid-template-columns: 1fr; gap: 14px; padding: 10px 0;">
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Request ID</span>
+            <span class="spec-value" id="view-con-id" style="font-weight:700;">REQ001</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Startup Name</span>
+            <span class="spec-value" id="view-con-startup" style="font-weight:700; color:var(--accent-red); cursor:pointer;">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Founder Name</span>
+            <span class="spec-value" id="view-con-founder">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Founder Email</span>
+            <span class="spec-value" id="view-con-email">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Founder Phone</span>
+            <span class="spec-value" id="view-con-phone">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Investor Name</span>
+            <span class="spec-value" id="view-con-investor" style="font-weight:700;">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Request Date</span>
+            <span class="spec-value" id="view-con-date">-</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label" style="width: 150px;">Current Status</span>
+            <span class="spec-value" id="view-con-status-badge">-</span>
+          </div>
+          <div class="spec-item" style="flex-direction: column; align-items: flex-start; gap: 8px; margin-top: 10px;">
+            <span class="spec-label" style="width: 100%;">Update Request Status</span>
+            <select class="form-control-input" id="view-con-status-select" style="width: 100%; padding: 10px;">
+              <option value="Pending">Pending</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="gap: 10px;">
+        <button class="btn-outline-gray" onclick="document.getElementById('investor-contact-modal').classList.remove('active')">Cancel</button>
+        <button class="btn-solid-red" id="view-con-save-btn">Save Changes</button>
       </div>
     </div>
   </div>

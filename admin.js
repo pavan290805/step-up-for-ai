@@ -19,6 +19,8 @@
   const STORAGE_KEY_PITCH_REGISTRATIONS = 'stepup_pitch_regs_v3';
   const STORAGE_KEY_INTERNSHIPS = 'stepup_internships_v3';
   const STORAGE_KEY_INTERNSHIP_APPLICATIONS = 'stepup_internship_apps_v3';
+  const STORAGE_KEY_STARTUP_INTERESTS = 'stepup_startup_interests_v3';
+  const STORAGE_KEY_CONTACT_REQUESTS = 'stepup_contact_requests_v3';
 
   // App state
   let state = {
@@ -32,7 +34,9 @@
     registrations: [], // maps students to webinars and hackathons
     pitchRegistrations: [], // maps participants to pitch events
     internships: [],
-    internshipApplications: []
+    internshipApplications: [],
+    startupInterests: [],
+    contactRequests: []
   };
 
   // Pagination states
@@ -52,6 +56,10 @@
   let pagRecruiterApplications = { page: 1, limit: 10 };
   let pagRecruiterProfiles = { page: 1, limit: 10 };
   let pagRecruiterApplicants = { page: 1, limit: 10 };
+  let pagInvestorProfiles = { page: 1, limit: 10 };
+  let pagStartupInterests = { page: 1, limit: 10 };
+  let pagInvestorAnalytics = { page: 1, limit: 10 };
+  let pagContactRequests = { page: 1, limit: 10 };
 
   // Current active selections
   let currentActiveTab = 'dashboard';
@@ -79,6 +87,10 @@
   let recruiterAnalyticsFilter = { search: '' };
   let recruiterProfilesFilter = { search: '' };
   let recruiterApplicantsFilter = { search: '', status: '' };
+  let investorProfilesFilter = { search: '', org: '' };
+  let startupInterestsFilter = { search: '', industry: '', stage: '', status: '' };
+  let investorAnalyticsFilter = { search: '' };
+  let contactRequestsFilter = { search: '', status: '' };
   let approveDashPendingSearch = '';
   let detailsStudentsSearch = '';
 
@@ -185,6 +197,11 @@
       '/admin/recruiter-management/applications': 'recruiter-applications',
       '/admin/recruiter-management/analytics': 'recruiter-analytics',
       '/admin/recruiter-management/profiles': 'recruiter-profiles',
+      '/admin/investor-management': 'investor-dashboard',
+      '/admin/investor-management/profiles': 'investor-profiles',
+      '/admin/investor-management/interests': 'investor-interests',
+      '/admin/investor-management/analytics': 'investor-analytics',
+      '/admin/investor-management/contacts': 'investor-contacts',
       '/admin/settings': 'settings'
     };
 
@@ -217,6 +234,8 @@
       state.pitchRegistrations = JSON.parse(localStorage.getItem(STORAGE_KEY_PITCH_REGISTRATIONS)) || [];
       state.internships = JSON.parse(localStorage.getItem(STORAGE_KEY_INTERNSHIPS)) || [];
       state.internshipApplications = JSON.parse(localStorage.getItem(STORAGE_KEY_INTERNSHIP_APPLICATIONS)) || [];
+      state.startupInterests = JSON.parse(localStorage.getItem(STORAGE_KEY_STARTUP_INTERESTS)) || [];
+      state.contactRequests = JSON.parse(localStorage.getItem(STORAGE_KEY_CONTACT_REQUESTS)) || [];
     } catch (e) {
       console.error("Failed to parse LocalStorage", e);
     }
@@ -235,6 +254,8 @@
       localStorage.setItem(STORAGE_KEY_PITCH_REGISTRATIONS, JSON.stringify(state.pitchRegistrations));
       localStorage.setItem(STORAGE_KEY_INTERNSHIPS, JSON.stringify(state.internships));
       localStorage.setItem(STORAGE_KEY_INTERNSHIP_APPLICATIONS, JSON.stringify(state.internshipApplications));
+      localStorage.setItem(STORAGE_KEY_STARTUP_INTERESTS, JSON.stringify(state.startupInterests));
+      localStorage.setItem(STORAGE_KEY_CONTACT_REQUESTS, JSON.stringify(state.contactRequests));
     } catch (e) {
       console.error("Local storage save error", e);
       alert("Local storage limit exceeded! Consider uploading smaller logos/posters.");
@@ -255,7 +276,9 @@
         registrations: [],
         pitchRegistrations: [],
         internships: [],
-        internshipApplications: []
+        internshipApplications: [],
+        startupInterests: [],
+        contactRequests: []
       };
       saveDatabase();
       selectedWebinarId = null;
@@ -618,6 +641,71 @@
       e.preventDefault();
       submitStudentForm();
     });
+
+    // Investor Management Bindings
+    bindSearchFilter('investor-profiles-search', (val) => {
+      investorProfilesFilter.search = val.toLowerCase();
+      pagInvestorProfiles.page = 1;
+      renderInvestorProfilesTable();
+    });
+    bindSelectFilter('investor-profiles-filter-org', (val) => {
+      investorProfilesFilter.org = val;
+      pagInvestorProfiles.page = 1;
+      renderInvestorProfilesTable();
+    });
+
+    bindSearchFilter('investor-interests-search', (val) => {
+      startupInterestsFilter.search = val.toLowerCase();
+      pagStartupInterests.page = 1;
+      renderStartupInterestsTable();
+    });
+    bindSelectFilter('investor-interests-filter-industry', (val) => {
+      startupInterestsFilter.industry = val;
+      pagStartupInterests.page = 1;
+      renderStartupInterestsTable();
+    });
+    bindSelectFilter('investor-interests-filter-stage', (val) => {
+      startupInterestsFilter.stage = val;
+      pagStartupInterests.page = 1;
+      renderStartupInterestsTable();
+    });
+    bindSelectFilter('investor-interests-filter-status', (val) => {
+      startupInterestsFilter.status = val;
+      pagStartupInterests.page = 1;
+      renderStartupInterestsTable();
+    });
+
+    bindSearchFilter('investor-analytics-search', (val) => {
+      investorAnalyticsFilter.search = val.toLowerCase();
+      pagInvestorAnalytics.page = 1;
+      renderInvestmentAnalytics();
+    });
+
+    bindSearchFilter('investor-contacts-search', (val) => {
+      contactRequestsFilter.search = val.toLowerCase();
+      pagContactRequests.page = 1;
+      renderContactRequestsTable();
+    });
+    bindSelectFilter('investor-contacts-filter-status', (val) => {
+      contactRequestsFilter.status = val;
+      pagContactRequests.page = 1;
+      renderContactRequestsTable();
+    });
+
+    bindSelectFilter('investor-dashboard-date-range', () => {
+      renderInvestorDashboard();
+    });
+
+    bindLimitSelect('investor-profiles-page-size', pagInvestorProfiles, renderInvestorProfilesTable);
+    bindLimitSelect('investor-interests-page-size', pagStartupInterests, renderStartupInterestsTable);
+    bindLimitSelect('investor-analytics-page-size', pagInvestorAnalytics, renderInvestmentAnalytics);
+    bindLimitSelect('investor-contacts-page-size', pagContactRequests, renderContactRequestsTable);
+
+    bindPopoverToggle('investor-dashboard-export-btn', 'investor-dashboard-export-menu');
+    bindPopoverToggle('investor-profiles-export-btn', 'investor-profiles-export-menu');
+    bindPopoverToggle('investor-interests-export-btn', 'investor-interests-export-menu');
+    bindPopoverToggle('investor-analytics-export-btn', 'investor-analytics-export-menu');
+    bindPopoverToggle('investor-contacts-export-btn', 'investor-contacts-export-menu');
   }
 
   // ==========================================
@@ -698,6 +786,16 @@
       renderRecruiterAnalytics();
     } else if (tabId === 'recruiter-profiles') {
       renderRecruiterProfilesTable();
+    } else if (tabId === 'investor-dashboard') {
+      renderInvestorDashboard();
+    } else if (tabId === 'investor-profiles') {
+      renderInvestorProfilesTable();
+    } else if (tabId === 'investor-interests') {
+      renderStartupInterestsTable();
+    } else if (tabId === 'investor-analytics') {
+      renderInvestmentAnalytics();
+    } else if (tabId === 'investor-contacts') {
+      renderContactRequestsTable();
     }
   }
 
@@ -5004,29 +5102,107 @@ Total Registrations,${totalRegs},+18%
       });
     }
 
-    // 7. Generate 25 Investors
+    // 7. Generate 75 Investors (50 Approved, 15 Pending, 10 Rejected)
     const investors = [];
-    const orgs = ["Alpha Capital Ventures", "Peak Fund Partners", "Sequoia India Hub", "Kalaari Angel Network", "Matrix AI Fund", "Nexus Venture Partners", "Blume Ventures"];
-    for (let i = 1; i <= 25; i++) {
+    const orgs = [
+      "Alpha Capital Ventures", "Peak Fund Partners", "Sequoia India Hub", "Kalaari Angel Network", 
+      "Matrix AI Fund", "Nexus Venture Partners", "Blume Ventures", "Tiger Global India",
+      "SoftBank Ventures", "Accel Partners", "Elevation Capital", "Lightspeed India",
+      "Chiratae Ventures", "3one4 Capital", "India Quotient", "Omnivore Partners"
+    ];
+    const bios = [
+      "Early-stage tech investor specializing in AI, SaaS, and DeepTech.",
+      "Venture capitalist with 10+ years of experience funding enterprise blockchain and fintech innovations.",
+      "Venture partner focusing on consumer tech, healthtech, and AI-enabled diagnostics solutions.",
+      "Angel investor passionate about green energy, smart cities, and sustainable agricultural technologies.",
+      "Growth-stage VC associate looking for startups scaling rapidly in the South-Asian tech corridor."
+    ];
+    const interestPool = [
+      ["Healthcare AI", "Biotech Diagnostics"],
+      ["Fintech Blockchain", "Cybersecurity AI"],
+      ["EdTech AI", "Logistics MLOps"],
+      ["Agritech IoT", "GreenTech Smart Grid"],
+      ["Healthcare AI", "EdTech AI", "Fintech Blockchain"]
+    ];
+
+    for (let i = 1; i <= 75; i++) {
       const fn = firstNames[(i + 10) % firstNames.length];
       const ln = lastNames[(i + 11) % lastNames.length];
       const name = `${fn} ${ln}`;
-      const email = `${fn.toLowerCase()}@${orgs[i % orgs.length].toLowerCase().replace(" ", "")}.com`;
-      const status = i <= 10 ? "Pending" : i % 2 === 0 ? "Approved" : "Rejected";
+      const org = orgs[i % orgs.length];
+      const email = `${fn.toLowerCase()}@${org.toLowerCase().replace(/[^a-z0-9]/g, "")}.com`;
+      // Exactly first 50 are Approved, next 15 Pending, last 10 Rejected
+      const status = i <= 50 ? "Approved" : (i <= 65 ? "Pending" : "Rejected");
 
       const date = new Date();
-      date.setDate(date.getDate() - (i % 20));
+      date.setDate(date.getDate() - (i % 25) - 5);
 
       investors.push({
         id: `INV${String(100 + i).substring(1)}`,
         name,
-        organization: orgs[i % orgs.length],
+        organization: org,
         designation: i % 3 === 0 ? "Managing Partner" : i % 3 === 1 ? "Investment Director" : "VC Associate",
         email,
         phone: `98765${String(40000 + i).substring(1)}`,
         appliedDate: date.toISOString().split('T')[0],
-        status
+        status,
+        bio: bios[i % bios.length],
+        interests: interestPool[i % interestPool.length]
       });
+    }
+
+    // Generate exactly 200 Startup Interests
+    const startupInterests = [];
+    const interestStatuses = ["Interested", "Contacted", "Meeting Scheduled", "Declined"];
+    const approvedInvList = investors.filter(inv => inv.status === 'Approved');
+    
+    let interestCounter = 1;
+    for (let i = 0; i < 200; i++) {
+      const inv = approvedInvList[i % approvedInvList.length];
+      const startup = startupApps[i % startupApps.length];
+      
+      const interestD = new Date(startup.appliedDate);
+      interestD.setDate(interestD.getDate() + (i % 5) + 1);
+
+      startupInterests.push({
+        id: `INT${String(1000 + interestCounter).substring(1)}`,
+        investorId: inv.id,
+        investorName: inv.name,
+        startupId: startup.id,
+        startupName: startup.startupName,
+        startupIndustry: startup.industry,
+        startupStage: startup.stage,
+        interestDate: interestD.toISOString().split('T')[0],
+        status: interestStatuses[i % 4]
+      });
+      interestCounter++;
+    }
+
+    // Generate exactly 100 Contact Requests
+    const contactRequests = [];
+    const contactStatuses = ["Pending", "Accepted", "Rejected", "Completed"];
+    
+    let contactCounter = 1;
+    for (let i = 0; i < 100; i++) {
+      const inv = approvedInvList[(i + 5) % approvedInvList.length];
+      const startup = startupApps[(i + 3) % startupApps.length];
+      
+      const requestD = new Date(startup.appliedDate);
+      requestD.setDate(requestD.getDate() + (i % 7) + 2);
+
+      contactRequests.push({
+        id: `REQ${String(1000 + contactCounter).substring(1)}`,
+        startupId: startup.id,
+        startupName: startup.startupName,
+        founderName: startup.founderName,
+        founderEmail: startup.email,
+        founderPhone: startup.phone,
+        investorId: inv.id,
+        investorName: inv.name,
+        requestDate: requestD.toISOString().split('T')[0],
+        status: contactStatuses[i % 4]
+      });
+      contactCounter++;
     }
 
     // 8. Generate Event Registrations (Total: 950)
@@ -5186,6 +5362,8 @@ Total Registrations,${totalRegs},+18%
     state.pitchRegistrations = pitchRegistrations;
     state.internships = internships;
     state.internshipApplications = internshipApplications;
+    state.startupInterests = startupInterests;
+    state.contactRequests = contactRequests;
 
     saveDatabase();
   }
@@ -5949,6 +6127,1046 @@ Total Registrations,${totalRegs},+18%
   }
 
   // ==========================================
+  // RENDERER: INVESTOR DASHBOARD
+  // ==========================================
+  function renderInvestorDashboard() {
+    const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+    const verifiedInvestors = approvedInvestors.filter(inv => inv.bio && inv.interests && inv.interests.length > 0);
+    
+    // Active Investors: approved with at least 1 startup interest or contact request or last activity date in last 15 days
+    const activeInvestors = approvedInvestors.filter(inv => {
+      const hasInterest = state.startupInterests.some(i => i.investorId === inv.id);
+      const hasContact = state.contactRequests.some(c => c.investorId === inv.id);
+      
+      let isRecent = false;
+      let lastActivityDateStr = inv.appliedDate;
+      const invInterests = state.startupInterests.filter(i => i.investorId === inv.id);
+      const invContacts = state.contactRequests.filter(c => c.investorId === inv.id);
+      invInterests.forEach(i => { if (i.interestDate > lastActivityDateStr) lastActivityDateStr = i.interestDate; });
+      invContacts.forEach(c => { if (c.requestDate > lastActivityDateStr) lastActivityDateStr = c.requestDate; });
+      
+      const diff = (new Date() - new Date(lastActivityDateStr)) / (1000 * 60 * 60 * 24);
+      if (diff <= 15) isRecent = true;
+      
+      return hasInterest || hasContact || isRecent;
+    });
+
+    let dateLimit = document.getElementById('investor-dashboard-date-range').value;
+    let filteredInterests = state.startupInterests;
+    let filteredContacts = state.contactRequests;
+    if (dateLimit !== 'all') {
+      const limitDays = parseInt(dateLimit);
+      const limitDate = new Date();
+      limitDate.setDate(limitDate.getDate() - limitDays);
+      const limitDateStr = limitDate.toISOString().split('T')[0];
+      filteredInterests = state.startupInterests.filter(i => i.interestDate >= limitDateStr);
+      filteredContacts = state.contactRequests.filter(c => c.requestDate >= limitDateStr);
+    }
+
+    // Set metrics card values
+    document.getElementById('inv-stat-total-investors').innerText = approvedInvestors.length;
+    document.getElementById('inv-stat-verified-investors').innerText = verifiedInvestors.length;
+    document.getElementById('inv-stat-active-investors').innerText = activeInvestors.length;
+    document.getElementById('inv-stat-startup-interests').innerText = filteredInterests.length;
+    document.getElementById('inv-stat-contact-requests').innerText = filteredContacts.length;
+    document.getElementById('inv-stat-startup-applications').innerText = state.startupApplications.length;
+
+    // Mini Sparklines
+    drawSparkline('sparkline-investor-total', getCumulativeTrend(approvedInvestors, 'appliedDate'), '#ef4444');
+    drawSparkline('sparkline-investor-verified', getCumulativeTrend(verifiedInvestors, 'appliedDate'), '#3b82f6');
+    drawSparkline('sparkline-investor-active', getCumulativeTrend(activeInvestors, 'appliedDate'), '#10b981');
+    drawSparkline('sparkline-investor-interests', getCumulativeTrend(filteredInterests, 'interestDate'), '#fbbf24');
+    drawSparkline('sparkline-investor-contacts', getCumulativeTrend(filteredContacts, 'requestDate'), '#8b5cf6');
+    drawSparkline('sparkline-investor-applications', getCumulativeTrend(state.startupApplications, 'appliedDate'), '#ec4899');
+
+    // Growth Trend Large Chart
+    const growthTrend = getLast7DaysLabelsAndPoints(approvedInvestors, 'appliedDate');
+    drawLineChart('chart-investor-growth-trend', growthTrend.labels, [
+      { label: 'Investors', points: growthTrend.points, color: '#ef4444' }
+    ]);
+
+    // Donut Chart: Industry Distribution from interests
+    const indCounts = {};
+    filteredInterests.forEach(i => {
+      const ind = i.startupIndustry || "Other";
+      indCounts[ind] = (indCounts[ind] || 0) + 1;
+    });
+    const sortedInds = Object.keys(indCounts).sort((a,b) => indCounts[b] - indCounts[a]);
+    const segments = [];
+    const colors = ['#ef4444', '#3b82f6', '#10b981', '#fbbf24', '#8b5cf6'];
+    let otherSum = 0;
+    sortedInds.forEach((ind, index) => {
+      if (index < 4) {
+        segments.push({ label: ind, value: indCounts[ind], color: colors[index] });
+      } else {
+        otherSum += indCounts[ind];
+      }
+    });
+    if (otherSum > 0) {
+      segments.push({ label: 'Other', value: otherSum, color: colors[4] });
+    }
+    const totalVal = segments.reduce((sum, s) => sum + s.value, 0) || 1;
+    document.getElementById('donut-investor-industry-total').innerText = totalVal;
+    drawDonutChart('chart-investor-industry-donut', segments);
+
+    // Donut Legend
+    const legendContainer = document.getElementById('donut-investor-industry-legend');
+    if (legendContainer) {
+      legendContainer.innerHTML = segments.map(seg => `
+        <div class="legend-item">
+          <span class="legend-dot" style="background:${seg.color};"></span>
+          ${escapeHTML(seg.label)}: <strong>${seg.value}</strong> (${((seg.value / totalVal) * 100).toFixed(1)}%)
+        </div>
+      `).join('');
+    }
+
+    // Top Industries Progress Bars
+    const barContainer = document.getElementById('investor-top-industries-progress');
+    if (barContainer) {
+      const topIndBars = segments.slice(0, 4);
+      let barHtml = '';
+      topIndBars.forEach(b => {
+        const pct = ((b.value / totalVal) * 100).toFixed(0);
+        barHtml += `
+          <div class="progress-bar-item" style="width:100%;">
+            <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; font-weight:600;">
+              <span style="color:var(--text-secondary);">${escapeHTML(b.label)}</span>
+              <span style="color:var(--text-main);">${pct}% (${b.value})</span>
+            </div>
+            <div style="width:100%; height:6px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden;">
+              <div style="width:${pct}%; height:100%; background:${b.color}; border-radius:3px;"></div>
+            </div>
+          </div>
+        `;
+      });
+      barContainer.innerHTML = barHtml || '<p style="font-size:12px; color:var(--text-muted); text-align:center;">No industry interest data active.</p>';
+    }
+
+    // Activity Trend Chart
+    const activities = [
+      ...filteredInterests.map(i => ({ date: i.interestDate })),
+      ...filteredContacts.map(c => ({ date: c.requestDate }))
+    ];
+    const actTrend = getLast7DaysDailyPoints(activities, 'date');
+    drawLineChart('chart-investor-activity-trend', actTrend.labels, [
+      { label: 'Activities', points: actTrend.points, color: '#8b5cf6' }
+    ]);
+
+    // Widgets: Recent Investors
+    let recentInv = [...approvedInvestors]
+      .sort((a,b) => b.appliedDate.localeCompare(a.appliedDate))
+      .slice(0, 5);
+    let recentInvHtml = '';
+    recentInv.forEach(inv => {
+      recentInvHtml += `
+        <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/investor-management/profiles'; investorProfilesFilter.search = '${escapeHTML(inv.name)}'; renderInvestorProfilesTable();">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(239, 68, 68, 0.1); border:1px solid var(--accent-red); color:var(--accent-red); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">${inv.name.charAt(0)}</div>
+            <div style="flex:1; min-width: 0;">
+              <div style="font-size:13px; font-weight:700; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(inv.name)}</div>
+              <div style="font-size:11px; color:var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(inv.organization)} &bull; ${escapeHTML(inv.designation)}</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600; white-space: nowrap;">${formatDate(inv.appliedDate)}</div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('dash-investor-recent').innerHTML = recentInvHtml || '<p style="text-align:center; padding:20px; font-size:12px; color:var(--text-muted);">No recent investors.</p>';
+
+    // Widgets: Recent Startup Interests
+    let recentInt = [...state.startupInterests]
+      .sort((a,b) => b.interestDate.localeCompare(a.interestDate))
+      .slice(0, 5);
+    let recentIntHtml = '';
+    recentInt.forEach(int => {
+      recentIntHtml += `
+        <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/investor-management/interests'; startupInterestsFilter.search = '${escapeHTML(int.startupName)}'; renderStartupInterestsTable();">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div style="flex:1; min-width: 0;">
+              <div style="font-size:13px; font-weight:700; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(int.investorName)} <span style="font-weight:500; color:var(--text-muted);">interested in</span> ${escapeHTML(int.startupName)}</div>
+              <div style="font-size:11px; color:var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(int.startupIndustry)} &bull; ${escapeHTML(int.startupStage)}</div>
+            </div>
+            <div style="font-size:11px; color:var(--text-muted); font-weight:600; white-space: nowrap;">${formatDate(int.interestDate)}</div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('dash-interests-recent').innerHTML = recentIntHtml || '<p style="text-align:center; padding:20px; font-size:12px; color:var(--text-muted);">No startup interests.</p>';
+
+    // Widgets: Most Active Investors
+    let invActivity = approvedInvestors.map(inv => {
+      const ints = state.startupInterests.filter(i => i.investorId === inv.id).length;
+      const cons = state.contactRequests.filter(c => c.investorId === inv.id).length;
+      return { inv, count: ints + cons };
+    }).sort((a,b) => b.count - a.count).slice(0, 5);
+    
+    let activeInvHtml = '';
+    invActivity.forEach(item => {
+      activeInvHtml += `
+        <div class="recent-item" style="cursor:pointer;" onclick="window.location.hash = '/admin/investor-management/analytics'; investorAnalyticsFilter.search = '${escapeHTML(item.inv.name)}'; renderInvestmentAnalytics();">
+          <div style="display:flex; align-items:center; gap:12px; width:100%;">
+            <div style="width:36px; height:36px; border-radius:50%; background:rgba(59, 130, 246, 0.1); border:1px solid #3b82f6; color:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">${item.inv.name.charAt(0)}</div>
+            <div style="flex:1; min-width: 0;">
+              <div style="font-size:13px; font-weight:700; color:#fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(item.inv.name)}</div>
+              <div style="font-size:11px; color:var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(item.inv.organization)}</div>
+            </div>
+            <div style="text-align:right; white-space: nowrap;">
+              <div style="font-size:13px; font-weight:800; color:var(--accent-red);">${item.count}</div>
+              <div style="font-size:10px; color:var(--text-muted); font-weight:600;">Activities</div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    document.getElementById('dash-investors-active').innerHTML = activeInvHtml || '<p style="text-align:center; padding:20px; font-size:12px; color:var(--text-muted);">No activity data.</p>';
+  }
+
+  function getLast7DaysLabelsAndPoints(list, dateField) {
+    const labels = [];
+    const points = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      
+      const day = d.getDate();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const label = `${day} ${monthNames[d.getMonth()]}`;
+      labels.push(label);
+      
+      const count = list.filter(item => item[dateField] <= dStr).length;
+      points.push(count);
+    }
+    return { labels, points };
+  }
+
+  function getLast7DaysDailyPoints(list, dateField) {
+    const labels = [];
+    const points = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dStr = d.toISOString().split('T')[0];
+      
+      const day = d.getDate();
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const label = `${day} ${monthNames[d.getMonth()]}`;
+      labels.push(label);
+      
+      const count = list.filter(item => item[dateField] === dStr).length;
+      points.push(count);
+    }
+    return { labels, points };
+  }
+
+  // ==========================================
+  // RENDERER: INVESTOR PROFILES TABLE
+  // ==========================================
+  function renderInvestorProfilesTable() {
+    const tbody = document.getElementById('investor-profiles-table-body');
+    if (!tbody) return;
+
+    let list = [...state.investors].filter(r => r.status === 'Approved');
+
+    // Populate Organization Filter dropdown dynamically if empty
+    const orgDropdown = document.getElementById('investor-profiles-filter-org');
+    if (orgDropdown && orgDropdown.options.length <= 1) {
+      const orgs = [...new Set(list.map(inv => inv.organization))].sort();
+      let optionsHtml = '<option value="">All Organizations</option>';
+      orgs.forEach(o => {
+        optionsHtml += `<option value="${escapeHTML(o)}">${escapeHTML(o)}</option>`;
+      });
+      orgDropdown.innerHTML = optionsHtml;
+      orgDropdown.value = investorProfilesFilter.org;
+    }
+
+    // Filter Search
+    if (investorProfilesFilter.search) {
+      const kw = investorProfilesFilter.search.toLowerCase();
+      list = list.filter(r => r.name.toLowerCase().includes(kw) || r.organization.toLowerCase().includes(kw));
+    }
+
+    // Filter Organization
+    if (investorProfilesFilter.org) {
+      list = list.filter(r => r.organization === investorProfilesFilter.org);
+    }
+
+    list.sort((a,b) => a.name.localeCompare(b.name));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No investor profiles match filter criteria.</p></div></td></tr>`;
+      document.getElementById('investor-profiles-pagination-info').innerText = 'Showing 0 to 0 of 0 profiles';
+      document.getElementById('investor-profiles-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagInvestorProfiles.limit);
+    if (pagInvestorProfiles.page > pages) pagInvestorProfiles.page = pages || 1;
+
+    const start = (pagInvestorProfiles.page - 1) * pagInvestorProfiles.limit;
+    const pagList = list.slice(start, start + pagInvestorProfiles.limit);
+
+    let html = '';
+    pagList.forEach(r => {
+      const totalInts = state.startupInterests.filter(i => i.investorId === r.id).length;
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td style="font-weight:700; color:#fff;">${escapeHTML(r.name)}</td>
+          <td style="font-weight:600;">${escapeHTML(r.organization)}</td>
+          <td>${escapeHTML(r.designation)}</td>
+          <td>${escapeHTML(r.email)}</td>
+          <td>${escapeHTML(r.phone)}</td>
+          <td>${formatDate(r.appliedDate)}</td>
+          <td style="font-weight:700;">${totalInts}</td>
+          <td>
+            <div style="display:flex; gap:4px;">
+              <button class="btn-action-eye" title="View Profile" onclick="window.dashboardApp.viewInvestorProfile('${r.id}')"><i class="fa-regular fa-eye"></i></button>
+              <button class="btn-action-eye" style="background:rgba(16,185,129,0.1); border-color:rgba(16,185,129,0.2); color:#34d399;" title="View Analytics" onclick="window.location.hash = '/admin/investor-management/analytics'; investorAnalyticsFilter.search = '${r.name}'; renderInvestmentAnalytics();"><i class="fa-solid fa-chart-line"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagInvestorProfiles.limit, total);
+    document.getElementById('investor-profiles-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} profiles`;
+    renderPaginationControls('investor-profiles-pagination-controls', pages, pagInvestorProfiles, (p) => {
+      pagInvestorProfiles.page = p;
+      renderInvestorProfilesTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: STARTUP INTERESTS TABLE
+  // ==========================================
+  function renderStartupInterestsTable() {
+    const tbody = document.getElementById('investor-interests-table-body');
+    if (!tbody) return;
+
+    // Load filter selectors dynamically
+    const indDropdown = document.getElementById('investor-interests-filter-industry');
+    if (indDropdown && indDropdown.options.length <= 1) {
+      const inds = [...new Set(state.startupApplications.map(s => s.industry))].sort();
+      let opts = '<option value="">All Industries</option>';
+      inds.forEach(i => { opts += `<option value="${escapeHTML(i)}">${escapeHTML(i)}</option>`; });
+      indDropdown.innerHTML = opts;
+      indDropdown.value = startupInterestsFilter.industry;
+    }
+    const stageDropdown = document.getElementById('investor-interests-filter-stage');
+    if (stageDropdown && stageDropdown.options.length <= 1) {
+      const stgs = [...new Set(state.startupApplications.map(s => s.stage))].sort();
+      let opts = '<option value="">All Stages</option>';
+      stgs.forEach(s => { opts += `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`; });
+      stageDropdown.innerHTML = opts;
+      stageDropdown.value = startupInterestsFilter.stage;
+    }
+
+    // Statistics metrics above table
+    const activeInterests = state.startupInterests.filter(i => i.status === 'Interested' || i.status === 'Contacted' || i.status === 'Meeting Scheduled');
+    const meetingsCount = state.startupInterests.filter(i => i.status === 'Meeting Scheduled');
+    const declinedCount = state.startupInterests.filter(i => i.status === 'Declined');
+    document.getElementById('int-stat-total').innerText = state.startupInterests.length;
+    document.getElementById('int-stat-active').innerText = activeInterests.length;
+    document.getElementById('int-stat-meetings').innerText = meetingsCount.length;
+    document.getElementById('int-stat-declined').innerText = declinedCount.length;
+
+    let list = [...state.startupInterests];
+
+    // Filter Search
+    if (startupInterestsFilter.search) {
+      const kw = startupInterestsFilter.search.toLowerCase();
+      list = list.filter(i => i.investorName.toLowerCase().includes(kw) || i.startupName.toLowerCase().includes(kw));
+    }
+
+    // Filters select options
+    if (startupInterestsFilter.industry) {
+      list = list.filter(i => i.startupIndustry === startupInterestsFilter.industry);
+    }
+    if (startupInterestsFilter.stage) {
+      list = list.filter(i => i.startupStage === startupInterestsFilter.stage);
+    }
+    if (startupInterestsFilter.status) {
+      list = list.filter(i => i.status === startupInterestsFilter.status);
+    }
+
+    list.sort((a,b) => b.interestDate.localeCompare(a.interestDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center"><div class="table-empty-state"><p>No startup interest entries match filter criteria.</p></div></td></tr>`;
+      document.getElementById('investor-interests-pagination-info').innerText = 'Showing 0 to 0 of 0 interests';
+      document.getElementById('investor-interests-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagStartupInterests.limit);
+    if (pagStartupInterests.page > pages) pagStartupInterests.page = pages || 1;
+
+    const start = (pagStartupInterests.page - 1) * pagStartupInterests.limit;
+    const pagList = list.slice(start, start + pagStartupInterests.limit);
+
+    let html = '';
+    pagList.forEach(r => {
+      let statusBadge = '';
+      if (r.status === 'Interested') {
+        statusBadge = '<span class="badge-approved">Interested</span>';
+      } else if (r.status === 'Contacted') {
+        statusBadge = '<span class="badge-pending" style="background:rgba(59,130,246,0.1); color:#60a5fa; border-color:rgba(59,130,246,0.2);">Contacted</span>';
+      } else if (r.status === 'Meeting Scheduled') {
+        statusBadge = '<span class="badge-pending" style="background:rgba(139,92,246,0.1); color:#a78bfa; border-color:rgba(139,92,246,0.2);">Meeting Scheduled</span>';
+      } else {
+        statusBadge = '<span class="badge-rejected">Declined</span>';
+      }
+
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td><a href="#" style="font-weight:700; color:#fff;" onclick="window.dashboardApp.viewInvestorProfile('${r.investorId}'); return false;">${escapeHTML(r.investorName)}</a></td>
+          <td><a href="#" style="font-weight:700; color:var(--accent-red);" onclick="window.dashboardApp.viewStartupApplication(${r.startupId}); return false;">${escapeHTML(r.startupName)}</a></td>
+          <td style="font-weight:600;">${escapeHTML(r.startupIndustry)}</td>
+          <td>${escapeHTML(r.startupStage)}</td>
+          <td>${formatDate(r.interestDate)}</td>
+          <td>${statusBadge}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagStartupInterests.limit, total);
+    document.getElementById('investor-interests-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} interests`;
+    renderPaginationControls('investor-interests-pagination-controls', pages, pagStartupInterests, (p) => {
+      pagStartupInterests.page = p;
+      renderStartupInterestsTable();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: INVESTMENT ANALYTICS
+  // ==========================================
+  function renderInvestmentAnalytics() {
+    const tbody = document.getElementById('investor-analytics-table-body');
+    if (!tbody) return;
+
+    const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+
+    // Aggregate statistics
+    let mostActiveName = '-';
+    let highestScore = 0;
+    let mostActiveCount = 0;
+    let totalActions = state.startupInterests.length + state.contactRequests.length;
+
+    const stats = approvedInvestors.map(inv => {
+      const intsCount = state.startupInterests.filter(i => i.investorId === inv.id).length;
+      const contactsCount = state.contactRequests.filter(c => c.investorId === inv.id).length;
+      const meetingsCount = state.startupInterests.filter(i => i.investorId === inv.id && i.status === 'Meeting Scheduled').length;
+      
+      const score = calculateEngagementScore(intsCount, contactsCount, meetingsCount);
+      const totalAct = intsCount + contactsCount;
+
+      if (totalAct > mostActiveCount) {
+        mostActiveCount = totalAct;
+        mostActiveName = inv.name;
+      }
+      if (score > highestScore) {
+        highestScore = score;
+      }
+
+      let lastActivity = inv.appliedDate;
+      state.startupInterests.filter(i => i.investorId === inv.id).forEach(i => { if (i.interestDate > lastActivity) lastActivity = i.interestDate; });
+      state.contactRequests.filter(c => c.investorId === inv.id).forEach(c => { if (c.requestDate > lastActivity) lastActivity = c.requestDate; });
+
+      return {
+        inv,
+        intsCount,
+        contactsCount,
+        meetingsCount,
+        score,
+        lastActivity
+      };
+    });
+
+    // Most Interested Industry
+    const indCounts = {};
+    state.startupInterests.forEach(i => {
+      const ind = i.startupIndustry || "Other";
+      indCounts[ind] = (indCounts[ind] || 0) + 1;
+    });
+    let topIndustry = '-';
+    let topIndustryCount = 0;
+    Object.keys(indCounts).forEach(ind => {
+      if (indCounts[ind] > topIndustryCount) {
+        topIndustryCount = indCounts[ind];
+        topIndustry = ind;
+      }
+    });
+
+    document.getElementById('ana-stat-most-active').innerText = mostActiveName;
+    document.getElementById('ana-stat-high-score').innerText = highestScore;
+    document.getElementById('ana-stat-top-industry').innerText = topIndustry;
+    document.getElementById('ana-stat-total-actions').innerText = totalActions;
+
+    let list = [...stats];
+
+    // Filter Search
+    if (investorAnalyticsFilter.search) {
+      const kw = investorAnalyticsFilter.search.toLowerCase();
+      list = list.filter(item => 
+        item.inv.name.toLowerCase().includes(kw) || 
+        item.inv.organization.toLowerCase().includes(kw) ||
+        (Array.isArray(item.inv.interests) && item.inv.interests.some(i => i.toLowerCase().includes(kw)))
+      );
+    }
+
+    list.sort((a,b) => b.score - a.score);
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center"><div class="table-empty-state"><p>No analytics metrics match filter criteria.</p></div></td></tr>`;
+      document.getElementById('investor-analytics-pagination-info').innerText = 'Showing 0 to 0 of 0 metrics';
+      document.getElementById('investor-analytics-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagInvestorAnalytics.limit);
+    if (pagInvestorAnalytics.page > pages) pagInvestorAnalytics.page = pages || 1;
+
+    const start = (pagInvestorAnalytics.page - 1) * pagInvestorAnalytics.limit;
+    const pagList = list.slice(start, start + pagInvestorAnalytics.limit);
+
+    let html = '';
+    pagList.forEach(item => {
+      const r = item.inv;
+      const focusAreas = Array.isArray(r.interests) ? r.interests.slice(0, 2).map(f => `<span class="badge-webinar" style="font-size:10px; padding: 2px 6px;">${escapeHTML(f)}</span>`).join(' ') : '';
+      
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td style="font-weight:700; color:#fff;">${escapeHTML(r.name)}</td>
+          <td style="font-weight:600;">${escapeHTML(r.organization)}</td>
+          <td><div style="display:flex; gap:4px; flex-wrap:wrap;">${focusAreas}</div></td>
+          <td style="font-weight:700;">${item.intsCount}</td>
+          <td style="font-weight:700;">${item.contactsCount}</td>
+          <td style="font-weight:700;">${item.meetingsCount}</td>
+          <td>${formatDate(item.lastActivity)}</td>
+          <td style="font-weight:800; color:var(--accent-red); font-size:14px;">${item.score}</td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagInvestorAnalytics.limit, total);
+    document.getElementById('investor-analytics-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} metrics`;
+    renderPaginationControls('investor-analytics-pagination-controls', pages, pagInvestorAnalytics, (p) => {
+      pagInvestorAnalytics.page = p;
+      renderInvestmentAnalytics();
+    });
+  }
+
+  // ==========================================
+  // RENDERER: CONTACT REQUESTS TABLE
+  // ==========================================
+  function renderContactRequestsTable() {
+    const tbody = document.getElementById('investor-contacts-table-body');
+    if (!tbody) return;
+
+    // Table statistics
+    const totalCount = state.contactRequests.length;
+    const pendingCount = state.contactRequests.filter(c => c.status === 'Pending').length;
+    const acceptedCount = state.contactRequests.filter(c => c.status === 'Accepted').length;
+    const rejectedCount = state.contactRequests.filter(c => c.status === 'Rejected').length;
+    const completedCount = state.contactRequests.filter(c => c.status === 'Completed').length;
+
+    document.getElementById('con-stat-total').innerText = totalCount;
+    document.getElementById('con-stat-pending').innerText = pendingCount;
+    document.getElementById('con-stat-accepted').innerText = acceptedCount;
+    document.getElementById('con-stat-rejected').innerText = rejectedCount;
+    document.getElementById('con-stat-completed').innerText = completedCount;
+
+    let list = [...state.contactRequests];
+
+    // Filter Search
+    if (contactRequestsFilter.search) {
+      const kw = contactRequestsFilter.search.toLowerCase();
+      list = list.filter(c => 
+        c.startupName.toLowerCase().includes(kw) || 
+        c.founderName.toLowerCase().includes(kw) || 
+        c.investorName.toLowerCase().includes(kw)
+      );
+    }
+
+    // Filter Status
+    if (contactRequestsFilter.status) {
+      list = list.filter(c => c.status === contactRequestsFilter.status);
+    }
+
+    list.sort((a,b) => b.requestDate.localeCompare(a.requestDate));
+
+    if (list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center"><div class="table-empty-state"><p>No contact requests match filter criteria.</p></div></td></tr>`;
+      document.getElementById('investor-contacts-pagination-info').innerText = 'Showing 0 to 0 of 0 requests';
+      document.getElementById('investor-contacts-pagination-controls').innerHTML = '';
+      return;
+    }
+
+    const total = list.length;
+    const pages = Math.ceil(total / pagContactRequests.limit);
+    if (pagContactRequests.page > pages) pagContactRequests.page = pages || 1;
+
+    const start = (pagContactRequests.page - 1) * pagContactRequests.limit;
+    const pagList = list.slice(start, start + pagContactRequests.limit);
+
+    let html = '';
+    pagList.forEach(r => {
+      let statusBadge = '';
+      if (r.status === 'Pending') {
+        statusBadge = '<span class="badge-pending">Pending</span>';
+      } else if (r.status === 'Accepted') {
+        statusBadge = '<span class="badge-approved">Accepted</span>';
+      } else if (r.status === 'Rejected') {
+        statusBadge = '<span class="badge-rejected">Rejected</span>';
+      } else {
+        statusBadge = '<span class="badge-approved" style="background:rgba(16,185,129,0.1); color:#34d399; border-color:rgba(16,185,129,0.2);">Completed</span>';
+      }
+
+      const statusSelect = `
+        <select class="form-control-input" style="padding:4px 8px; font-size:12px; width:120px; background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-main); height: 28px;" onchange="window.dashboardApp.updateContactStatus('${r.id}', this.value)">
+          <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Accepted" ${r.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+          <option value="Rejected" ${r.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+          <option value="Completed" ${r.status === 'Completed' ? 'selected' : ''}>Completed</option>
+        </select>
+      `;
+
+      html += `
+        <tr>
+          <td class="row-id">${r.id}</td>
+          <td><a href="#" style="font-weight:700; color:var(--accent-red);" onclick="window.dashboardApp.viewStartupApplication(${r.startupId}); return false;">${escapeHTML(r.startupName)}</a></td>
+          <td>
+            <div style="font-weight:700; color:#fff;">${escapeHTML(r.founderName)}</div>
+            <div style="font-size:11px; color:var(--text-secondary);">${escapeHTML(r.founderEmail)} &bull; ${escapeHTML(r.founderPhone)}</div>
+          </td>
+          <td><a href="#" style="font-weight:700; color:#fff;" onclick="window.dashboardApp.viewInvestorProfile('${r.investorId}'); return false;">${escapeHTML(r.investorName)}</a></td>
+          <td>${formatDate(r.requestDate)}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn-action-eye" title="View Details" onclick="window.dashboardApp.viewContactRequest('${r.id}')" style="height: 28px; width: 28px; display:flex; align-items:center; justify-content:center;"><i class="fa-regular fa-eye"></i></button>
+              ${statusSelect}
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    tbody.innerHTML = html;
+
+    const end = Math.min(start + pagContactRequests.limit, total);
+    document.getElementById('investor-contacts-pagination-info').innerText = `Showing ${start + 1} to ${end} of ${total} requests`;
+    renderPaginationControls('investor-contacts-pagination-controls', pages, pagContactRequests, (p) => {
+      pagContactRequests.page = p;
+      renderContactRequestsTable();
+    });
+  }
+
+  // ==========================================
+  // INVESTOR MANAGEMENT LOGIC & ACTIONS
+  // ==========================================
+  function viewInvestorProfile(invId) {
+    const inv = state.investors.find(i => i.id === invId);
+    if (!inv) return;
+
+    document.getElementById('view-inv-id').innerText = inv.id;
+    document.getElementById('view-inv-name').innerText = inv.name;
+    document.getElementById('view-inv-org').innerText = inv.organization;
+    document.getElementById('view-inv-designation').innerText = inv.designation;
+    document.getElementById('view-inv-email').innerText = inv.email;
+    document.getElementById('view-inv-phone').innerText = inv.phone;
+    document.getElementById('view-inv-interests').innerText = Array.isArray(inv.interests) ? inv.interests.join(', ') : '-';
+    document.getElementById('view-inv-bio').innerText = inv.bio || '-';
+    document.getElementById('view-inv-status').innerText = inv.status;
+    document.getElementById('view-inv-joined').innerText = formatDate(inv.appliedDate);
+
+    const statusEl = document.getElementById('view-inv-status');
+    statusEl.className = inv.status === 'Approved' ? 'badge-approved' : inv.status === 'Rejected' ? 'badge-rejected' : 'badge-pending';
+
+    document.getElementById('view-inv-avatar').innerText = inv.name.charAt(0);
+    document.getElementById('investor-profile-modal').classList.add('active');
+  }
+
+  function viewContactRequest(reqId) {
+    const req = state.contactRequests.find(r => r.id === reqId);
+    if (!req) return;
+
+    document.getElementById('view-con-id').innerText = req.id;
+    document.getElementById('view-con-startup').innerText = req.startupName;
+    document.getElementById('view-con-startup').onclick = (e) => {
+      e.preventDefault();
+      document.getElementById('investor-contact-modal').classList.remove('active');
+      window.dashboardApp.viewStartupApplication(req.startupId);
+    };
+    document.getElementById('view-con-founder').innerText = req.founderName || '-';
+    document.getElementById('view-con-email').innerText = req.founderEmail || '-';
+    document.getElementById('view-con-phone').innerText = req.founderPhone || '-';
+    document.getElementById('view-con-investor').innerText = req.investorName || '-';
+    document.getElementById('view-con-date').innerText = formatDate(req.requestDate);
+    
+    const badge = document.getElementById('view-con-status-badge');
+    badge.innerText = req.status;
+    badge.className = req.status === 'Accepted' ? 'badge-approved' : req.status === 'Rejected' ? 'badge-rejected' : req.status === 'Completed' ? 'badge-approved' : 'badge-pending';
+    if (req.status === 'Completed') {
+      badge.style.background = 'rgba(16,185,129,0.1)';
+      badge.style.color = '#34d399';
+    } else {
+      badge.style.background = '';
+      badge.style.color = '';
+    }
+
+    const select = document.getElementById('view-con-status-select');
+    select.value = req.status;
+
+    const saveBtn = document.getElementById('view-con-save-btn');
+    saveBtn.onclick = () => {
+      updateContactStatus(req.id, select.value);
+      document.getElementById('investor-contact-modal').classList.remove('active');
+    };
+
+    document.getElementById('investor-contact-modal').classList.add('active');
+  }
+
+  function updateContactStatus(reqId, newStatus) {
+    const req = state.contactRequests.find(r => r.id === reqId);
+    if (req) {
+      req.status = newStatus;
+      saveDatabase();
+      if (currentActiveTab === 'investor-contacts') {
+        renderContactRequestsTable();
+      } else if (currentActiveTab === 'investor-dashboard') {
+        renderInvestorDashboard();
+      }
+    }
+  }
+
+  function calculateEngagementScore(interestsCount, contactsCount, meetingsCount) {
+    return (interestsCount * 2) + (contactsCount * 5) + (meetingsCount * 10);
+  }
+
+  // ==========================================
+  // EXPORTERS: INVESTOR MANAGEMENT MODULE
+  // ==========================================
+  function exportInvestorDashboard(format) {
+    const title = "Investor Ecosystem Overview Metrics";
+    const headers = ["Metric Name", "Value"];
+    
+    const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+    const verifiedCount = approvedInvestors.filter(inv => inv.bio && inv.interests && inv.interests.length > 0).length;
+    const activeCount = approvedInvestors.filter(inv => {
+      const hasInterest = state.startupInterests.some(i => i.investorId === inv.id);
+      const hasContact = state.contactRequests.some(c => c.investorId === inv.id);
+      return hasInterest || hasContact;
+    }).length;
+    
+    const rows = [
+      ["Total Approved Investors", approvedInvestors.length],
+      ["Verified Investors", verifiedCount],
+      ["Active Investors", activeCount],
+      ["Total Startup Interests", state.startupInterests.length],
+      ["Total Contact Requests", state.contactRequests.length],
+      ["Total Startup Applications", state.startupApplications.length]
+    ];
+    
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}",${r[1]}\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `investor_dashboard_metrics.${ext}`);
+    }
+  }
+
+  function exportInvestorProfiles(format) {
+    const title = "Verified Approved Investor Profiles";
+    const headers = ["Investor ID", "Name", "Organization", "Designation", "Email", "Phone", "Focus Areas", "Date Joined"];
+    const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+    
+    const rows = approvedInvestors.map(inv => [
+      inv.id,
+      inv.name,
+      inv.organization,
+      inv.designation,
+      inv.email,
+      inv.phone,
+      Array.isArray(inv.interests) ? inv.interests.join(' | ') : '',
+      formatDate(inv.appliedDate)
+    ]);
+    
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}","${r[7]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `investor_profiles.${ext}`);
+    }
+  }
+
+  function exportStartupInterests(format) {
+    const title = "Investor Startup Interests Log";
+    const headers = ["Interest ID", "Investor ID", "Investor Name", "Startup ID", "Startup Name", "Startup Industry", "Startup Stage", "Interest Date", "Status"];
+    
+    const rows = state.startupInterests.map(int => [
+      int.id,
+      int.investorId,
+      int.investorName,
+      int.startupId,
+      int.startupName,
+      int.startupIndustry,
+      int.startupStage,
+      formatDate(int.interestDate),
+      int.status
+    ]);
+    
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}","${r[7]}","${r[8]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `startup_interests.${ext}`);
+    }
+  }
+
+  function exportInvestmentAnalytics(format) {
+    const title = "Investor Performance Analytics";
+    const headers = ["Investor ID", "Investor Name", "Organization", "Interests Logged", "Contact Requests", "Meetings Scheduled", "Engagement Score", "Last Activity"];
+    const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+    
+    const rows = approvedInvestors.map(inv => {
+      const totalInts = state.startupInterests.filter(i => i.investorId === inv.id).length;
+      const totalContacts = state.contactRequests.filter(c => c.investorId === inv.id).length;
+      const meetingsCount = state.startupInterests.filter(i => i.investorId === inv.id && i.status === 'Meeting Scheduled').length;
+      const score = calculateEngagementScore(totalInts, totalContacts, meetingsCount);
+      
+      let lastActivity = inv.appliedDate;
+      state.startupInterests.filter(i => i.investorId === inv.id).forEach(i => { if (i.interestDate > lastActivity) lastActivity = i.interestDate; });
+      state.contactRequests.filter(c => c.investorId === inv.id).forEach(c => { if (c.requestDate > lastActivity) lastActivity = c.requestDate; });
+      
+      return [
+        inv.id,
+        inv.name,
+        inv.organization,
+        totalInts,
+        totalContacts,
+        meetingsCount,
+        score,
+        formatDate(lastActivity)
+      ];
+    }).sort((a,b) => b[6] - a[6]);
+    
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}",${r[3]},${r[4]},${r[5]},${r[6]},"${r[7]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `investor_analytics.${ext}`);
+    }
+  }
+
+  function exportContactRequests(format) {
+    const title = "Investor Contact Requests";
+    const headers = ["Request ID", "Startup Name", "Founder Name", "Founder Email", "Founder Phone", "Investor Name", "Request Date", "Status"];
+    
+    const rows = state.contactRequests.map(req => [
+      req.id,
+      req.startupName,
+      req.founderName,
+      req.founderEmail,
+      req.founderPhone,
+      req.investorName,
+      formatDate(req.requestDate),
+      req.status
+    ]);
+    
+    if (format === 'PDF') {
+      printPDF(title, headers, rows);
+    } else {
+      let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+      rows.forEach(r => {
+        csv += `"${r[0]}","${r[1]}","${r[2]}","${r[3]}","${r[4]}","${r[5]}","${r[6]}","${r[7]}"\n`;
+      });
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `investor_contact_requests.${ext}`);
+    }
+  }
+
+  function exportCompleteInvestorReport(format) {
+    const title = "StepUp for AI - Investor Management Master Report";
+    
+    if (format === 'PDF') {
+      const printWindow = window.open('', '_blank');
+      const approvedInvestors = state.investors.filter(inv => inv.status === 'Approved');
+      
+      let profilesHTML = approvedInvestors.map(inv => `
+        <tr>
+          <td>${escapeHTML(inv.id)}</td>
+          <td>${escapeHTML(inv.name)}</td>
+          <td>${escapeHTML(inv.organization)}</td>
+          <td>${escapeHTML(inv.email)}</td>
+          <td>${escapeHTML(inv.phone)}</td>
+          <td>${formatDate(inv.appliedDate)}</td>
+        </tr>
+      `).join('');
+      
+      let interestsHTML = state.startupInterests.map(int => `
+        <tr>
+          <td>${escapeHTML(int.id)}</td>
+          <td>${escapeHTML(int.investorName)}</td>
+          <td>${escapeHTML(int.startupName)}</td>
+          <td>${escapeHTML(int.startupIndustry)}</td>
+          <td>${formatDate(int.interestDate)}</td>
+          <td>${escapeHTML(int.status)}</td>
+        </tr>
+      `).join('');
+      
+      let contactsHTML = state.contactRequests.map(req => `
+        <tr>
+          <td>${escapeHTML(req.id)}</td>
+          <td>${escapeHTML(req.startupName)}</td>
+          <td>${escapeHTML(req.founderName)}</td>
+          <td>${escapeHTML(req.investorName)}</td>
+          <td>${formatDate(req.requestDate)}</td>
+          <td>${escapeHTML(req.status)}</td>
+        </tr>
+      `).join('');
+      
+      const htmlContent = `
+        <html>
+          <head>
+            <title>${title}</title>
+            <style>
+              body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #0d0d11;
+                color: #ffffff;
+                padding: 40px;
+              }
+              .header {
+                margin-bottom: 30px;
+                border-bottom: 2px solid #ef4444;
+                padding-bottom: 10px;
+              }
+              h1 { font-size: 24px; color: #ffffff; margin: 0 0 5px 0; }
+              h2 { font-size: 18px; color: #ef4444; margin: 30px 0 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 6px; }
+              .meta { font-size: 13px; color: #a78bfa; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+              th, td { border: 1px solid rgba(255, 255, 255, 0.1); padding: 8px 10px; text-align: left; font-size: 11px; }
+              th { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600; }
+              tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+               <h1>${title}</h1>
+               <div class="meta">Generated on ${new Date().toLocaleString()} &bull; StepUp for AI Platform</div>
+            </div>
+            
+            <h2>1. Approved Investor Profiles (${approvedInvestors.length})</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Investor ID</th>
+                  <th>Name</th>
+                  <th>Organization</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Date Joined</th>
+                </tr>
+              </thead>
+              <tbody>${profilesHTML}</tbody>
+            </table>
+            
+            <h2>2. Startup Interests Log (${state.startupInterests.length})</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Interest ID</th>
+                  <th>Investor Name</th>
+                  <th>Startup Name</th>
+                  <th>Industry</th>
+                  <th>Interest Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>${interestsHTML}</tbody>
+            </table>
+            
+            <h2>3. Contact Requests (${state.contactRequests.length})</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Startup Name</th>
+                  <th>Founder Name</th>
+                  <th>Investor Name</th>
+                  <th>Request Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>${contactsHTML}</tbody>
+            </table>
+            
+            <script>
+              window.onload = function() { window.print(); };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } else {
+      let csv = `"STEPUP FOR AI - INVESTOR MASTER REPORT"\n`;
+      csv += `"Generated Date","${new Date().toLocaleString()}"\n\n`;
+      
+      csv += `"SECTION 1: APPROVED INVESTOR PROFILES"\n`;
+      csv += `"Investor ID","Name","Organization","Designation","Email","Phone","Date Joined"\n`;
+      state.investors.filter(inv => inv.status === 'Approved').forEach(inv => {
+        csv += `"${inv.id}","${inv.name}","${inv.organization}","${inv.designation}","${inv.email}","${inv.phone}","${inv.appliedDate}"\n`;
+      });
+      csv += `\n\n`;
+      
+      csv += `"SECTION 2: STARTUP INTERESTS LOG"\n`;
+      csv += `"Interest ID","Investor ID","Investor Name","Startup ID","Startup Name","Startup Industry","Startup Stage","Interest Date","Status"\n`;
+      state.startupInterests.forEach(int => {
+        csv += `"${int.id}","${int.investorId}","${int.investorName}","${int.startupId}","${int.startupName}","${int.startupIndustry}","${int.startupStage}","${int.interestDate}","${int.status}"\n`;
+      });
+      csv += `\n\n`;
+      
+      csv += `"SECTION 3: CONTACT REQUESTS LOG"\n`;
+      csv += `"Request ID","Startup ID","Startup Name","Founder Name","Founder Email","Founder Phone","Investor ID","Investor Name","Request Date","Status"\n`;
+      state.contactRequests.forEach(req => {
+        csv += `"${req.id}","${req.startupId}","${req.startupName}","${req.founderName}","${req.founderEmail}","${req.founderPhone}","${req.investorId}","${req.investorName}","${req.requestDate}","${req.status}"\n`;
+      });
+      
+      const ext = format === 'Excel' ? 'xlsx' : 'csv';
+      downloadCSV(csv, `investor_ecosystem_master_report.${ext}`);
+    }
+  }
+
+
+  // ==========================================
   // EXPORTS
   // ==========================================
   window.dashboardApp = {
@@ -6025,7 +7243,23 @@ Total Registrations,${totalRegs},+18%
     renderInternshipDetailsPane,
     renderRecruiterApplicationsTable,
     renderRecruiterAnalytics,
-    renderRecruiterProfilesTable
+    renderRecruiterProfilesTable,
+
+    // Investor Management Exporters and Renderers
+    viewInvestorProfile,
+    viewContactRequest,
+    updateContactStatus,
+    exportInvestorDashboard,
+    exportInvestorProfiles,
+    exportStartupInterests,
+    exportInvestmentAnalytics,
+    exportContactRequests,
+    exportCompleteInvestorReport,
+    renderInvestorDashboard,
+    renderInvestorProfilesTable,
+    renderStartupInterestsTable,
+    renderInvestmentAnalytics,
+    renderContactRequestsTable
   };
 
 })();
