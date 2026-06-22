@@ -19,6 +19,10 @@
 
 # production
 /build
+/dist
+/node_modules
+react-step-up-for-ai/dist
+react-step-up-for-ai/node_modules
 
 # misc
 .DS_Store

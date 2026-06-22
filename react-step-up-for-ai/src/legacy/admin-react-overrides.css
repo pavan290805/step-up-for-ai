@@ -25,6 +25,11 @@ body {
   width: calc(100vw - var(--sidebar-width));
 }
 
+.react-admin-shell .sidebar {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .react-admin-shell .top-nav-bar,
 .react-admin-shell .main-content {
   width: 100%;
