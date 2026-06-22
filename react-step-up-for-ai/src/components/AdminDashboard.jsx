@@ -20,14 +20,18 @@ export default function AdminDashboard() {
   useEffect(() => {
     document.title = 'StepUp for AI - Admin Dashboard';
     if (!window.location.hash) {
-      window.location.hash = '/admin/dashboard';
+      window.location.hash = '/admin/investor-management';
     }
 
     const container = containerRef.current;
     container.innerHTML = adminBody;
 
-    const runDashboard = new Function(`${adminJs}\nwindow.dispatchEvent(new Event('load'));`);
-    runDashboard();
+    try {
+      const runDashboard = new Function(`${adminJs}\nwindow.dispatchEvent(new Event('load'));`);
+      runDashboard();
+    } catch (error) {
+      console.error('Dashboard failed to initialize:', error);
+    }
 
     return () => {
       container.innerHTML = '';
