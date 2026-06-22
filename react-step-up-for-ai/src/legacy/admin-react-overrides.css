@@ -1,0 +1,54 @@
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+body {
+  display: block;
+}
+
+#root > div,
+.react-admin-shell,
+.react-admin-shell > div,
+.react-admin-shell .app-container {
+  width: 100%;
+  min-width: 100%;
+  height: 100vh;
+}
+
+.react-admin-shell .main-layout-container {
+  min-width: 0;
+  width: calc(100vw - var(--sidebar-width));
+}
+
+.react-admin-shell .top-nav-bar,
+.react-admin-shell .main-content {
+  width: 100%;
+}
+
+.logo-container {
+  padding: 0 0 30px;
+  align-items: center;
+}
+
+.logo-image {
+  display: block;
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+}
+
+@media (max-width: 1024px) {
+  .react-admin-shell .main-layout-container {
+    width: 100%;
+  }
+
+  .logo-image {
+    width: 96px;
+    height: 96px;
+  }
+}
