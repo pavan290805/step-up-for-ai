@@ -1,3 +1,4 @@
+export default function runAdminRuntime() {
 /* 
 ================================================================
    STEPUP FOR AI - ADMIN DASHBOARD CLIENT-SIDE LOGIC & DATABASE
@@ -7263,3 +7264,7 @@ Total Registrations,${totalRegs},+18%
   };
 
 })();
+
+}
+
+
