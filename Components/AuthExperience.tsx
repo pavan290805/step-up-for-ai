@@ -182,7 +182,7 @@ function HeroVisual({ config }: { config: RoleConfig }) {
   );
 }
 
-function HeroPanel({ config, activeRole, setActiveRole, mode }: { config: RoleConfig; activeRole: Role; setActiveRole: (role: Role) => void; mode: Mode }) {
+function HeroPanel({ config, activeRole, setActiveRole }: { config: RoleConfig; activeRole: Role; setActiveRole: (role: Role) => void }) {
   return (
     <section className="hero-panel">
       <HeroVisual config={config} />
