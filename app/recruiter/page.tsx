@@ -146,6 +146,7 @@ export default function RecruiterDashboard() {
               ))}
             </div>
           </div>
+        </div>
       </div>
     </>
   );
