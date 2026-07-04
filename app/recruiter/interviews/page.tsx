@@ -31,43 +31,43 @@ function PremiumContent() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .iv-page { font-family: Inter, sans-serif; }
         .iv-header { margin-bottom: 28px; }
-        .iv-title { font-size: 26px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; }
-        .iv-sub { font-size: 13px; color: #4a8a5e; margin-top: 4px; }
+        .iv-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
+        .iv-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
         .iv-layout { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
-        .iv-panel { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 22px; padding: 28px; }
-        .iv-panel-title { font-size: 15px; font-weight: 700; color: #d4f5e2; margin-bottom: 22px; }
+        .iv-panel { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); border-radius: 22px; padding: 28px; }
+        .iv-panel-title { font-size: 15px; font-weight: 700; color: #e2d9ff; margin-bottom: 22px; }
         .iv-scheduled-list { display: flex; flex-direction: column; gap: 12px; }
-        .iv-sched-card { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 14px; background: rgba(47,191,100,.06); border: 1px solid rgba(47,191,100,.12); transition: all .2s; }
-        .iv-sched-card:hover { border-color: rgba(47,191,100,.3); background: rgba(47,191,100,.1); }
-        .iv-av { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); display:grid; place-items:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; }
+        .iv-sched-card { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 14px; background: rgba(168, 85, 247,.06); border: 1px solid rgba(168, 85, 247,.12); transition: all .2s; }
+        .iv-sched-card:hover { border-color: rgba(168, 85, 247,.3); background: rgba(168, 85, 247,.1); }
+        .iv-av { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg,#a855f7,#7c3aed); display:grid; place-items:center; font-size:15px; font-weight:700; color:#fff; flex-shrink:0; }
         .iv-info { flex: 1; }
-        .iv-name { font-size: 14px; font-weight: 700; color: #e8faf0; }
-        .iv-role { font-size: 12px; color: #4a8a5e; margin-top: 2px; }
-        .iv-datetime { font-size: 12px; color: #6ee09c; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+        .iv-name { font-size: 14px; font-weight: 700; color: #f1eeff; }
+        .iv-role { font-size: 12px; color: #7c6d9e; margin-top: 2px; }
+        .iv-datetime { font-size: 12px; color: #c084fc; font-weight: 600; margin-top: 4px; display: flex; align-items: center; gap: 6px; }
         .iv-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; }
-        .iv-status.confirmed { background: rgba(34,197,94,.15); color: #86efac; }
+        .iv-status.confirmed { background: rgba(168, 85, 247,.15); color: #86efac; }
         .iv-status.pending { background: rgba(251,191,36,.12); color: #fbbf24; }
         .iv-cal-header { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 6px; }
-        .iv-cal-day-label { text-align: center; font-size: 11px; font-weight: 700; color: #3d6b52; text-transform: uppercase; }
+        .iv-cal-day-label { text-align: center; font-size: 11px; font-weight: 700; color: #6b5d85; text-transform: uppercase; }
         .iv-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-        .iv-cal-day { aspect-ratio: 1; border-radius: 10px; display:grid; place-items:center; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all .15s; color: #5cb87a; }
-        .iv-cal-day:hover { background: rgba(47,191,100,.15); color: #d4f5e2; }
-        .iv-cal-day.busy { background: rgba(47,191,100,.08); border-color: rgba(47,191,100,.2); color: #6ee09c; position: relative; }
-        .iv-cal-day.busy::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #2fbf64; }
-        .iv-cal-day.selected { background: linear-gradient(135deg,#2fbf64,#1a9e4a); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(47,191,100,.4); }
+        .iv-cal-day { aspect-ratio: 1; border-radius: 10px; display:grid; place-items:center; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all .15s; color: #9d7ec7; }
+        .iv-cal-day:hover { background: rgba(168, 85, 247,.15); color: #e2d9ff; }
+        .iv-cal-day.busy { background: rgba(168, 85, 247,.08); border-color: rgba(168, 85, 247,.2); color: #c084fc; position: relative; }
+        .iv-cal-day.busy::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #a855f7; }
+        .iv-cal-day.selected { background: linear-gradient(135deg,#a855f7,#7c3aed); color: #fff; border-color: transparent; box-shadow: 0 4px 12px rgba(168, 85, 247,.4); }
         .iv-wizard { margin-top: 22px; }
-        .iv-wiz-label { font-size: 12px; font-weight: 600; color: #5cb87a; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; }
+        .iv-wiz-label { font-size: 12px; font-weight: 600; color: #9d7ec7; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 10px; }
         .iv-time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-        .iv-time-btn { padding: 10px; border-radius: 10px; border: 1px solid rgba(47,191,100,.2); background: rgba(47,191,100,.06); color: #c4b5e4; font: 600 13px Inter; cursor: pointer; transition: all .15s; }
-        .iv-time-btn:hover { background: rgba(47,191,100,.14); }
-        .iv-time-btn.selected { background: rgba(47,191,100,.25); border-color: rgba(47,191,100,.55); color: #d4f5e2; }
+        .iv-time-btn { padding: 10px; border-radius: 10px; border: 1px solid rgba(168, 85, 247,.2); background: rgba(168, 85, 247,.06); color: #c4b5e4; font: 600 13px Inter; cursor: pointer; transition: all .15s; }
+        .iv-time-btn:hover { background: rgba(168, 85, 247,.14); }
+        .iv-time-btn.selected { background: rgba(168, 85, 247,.25); border-color: rgba(168, 85, 247,.55); color: #e2d9ff; }
         .iv-type-row { display: flex; gap: 8px; margin-bottom: 18px; }
-        .iv-type-btn { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(47,191,100,.2); background: rgba(47,191,100,.06); color: #c4b5e4; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
-        .iv-type-btn.selected { background: rgba(47,191,100,.22); border-color: rgba(47,191,100,.5); color: #d4f5e2; }
-        .iv-send-btn { width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); color:#fff; font: 700 14px Inter; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 8px 22px rgba(47,191,100,.38); }
+        .iv-type-btn { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid rgba(168, 85, 247,.2); background: rgba(168, 85, 247,.06); color: #c4b5e4; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
+        .iv-type-btn.selected { background: rgba(168, 85, 247,.22); border-color: rgba(168, 85, 247,.5); color: #e2d9ff; }
+        .iv-send-btn { width: 100%; padding: 13px; border-radius: 12px; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 14px Inter; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 8px 22px rgba(168, 85, 247,.38); }
         .iv-send-btn:hover { transform: translateY(-2px); }
         .iv-send-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-        .iv-sent-msg { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.25); color: #86efac; font: 700 13px Inter; margin-top: 12px; animation: fadeIn .3s; }
+        .iv-sent-msg { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 12px; background: rgba(168, 85, 247,.1); border: 1px solid rgba(168, 85, 247,.25); color: #86efac; font: 700 13px Inter; margin-top: 12px; animation: fadeIn .3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
         @media (max-width: 900px) { .iv-layout { grid-template-columns: 1fr; } }
       `}</style>

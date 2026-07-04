@@ -41,17 +41,14 @@ function NavIcon({ name }: { name: string }) {
 
 function LogoIcon() {
   return (
-    <svg viewBox="0 0 40 40" width={40} height={40} style={{ flexShrink: 0 }}>
-      <defs>
-        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#34d97a" />
-          <stop offset="100%" stopColor="#1a9e4a" />
-        </linearGradient>
-      </defs>
-      <rect width="40" height="40" rx="12" fill="url(#logoGrad)" />
-      {/* Upward arrow — "step up" */}
-      <path d="M20 10 L20 28 M13 17 L20 10 L27 17" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    </svg>
+    <img 
+      src="/logos/logo-recruiter.jpeg" 
+      alt="StepUp Logo" 
+      width={40} 
+      height={40} 
+      className="r-logo-img"
+      style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} 
+    />
   );
 }
 
@@ -65,21 +62,21 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         body { margin: 0; }
-        .r-shell { min-height: 100vh; display: flex; background: #060d08; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e8faf0; }
-        .r-sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #081a0e 0%, #050f07 100%); border-right: 1px solid rgba(47,191,100,.12); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; flex-shrink: 0; }
-        .r-sidebar-logo { padding: 24px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(47,191,100,.08); }
-        .r-logo-text { font-size: 17px; font-weight: 800; color: #e8faf0; line-height: 1.15; letter-spacing: -.02em; }
-        .r-logo-text span { display: block; font-size: 11px; font-weight: 500; color: #4a8a5e; letter-spacing: .02em; margin-top: 2px; }
+        .r-shell { min-height: 100vh; display: flex; background: #080511; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f1eeff; }
+        .r-sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0d0718 0%, #08041a 100%); border-right: 1px solid rgba(168, 85, 247,.12); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; flex-shrink: 0; }
+        .r-sidebar-logo { padding: 24px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(168, 85, 247,.08); }
+        .r-logo-text { font-size: 17px; font-weight: 800; color: #f1eeff; line-height: 1.15; letter-spacing: -.02em; }
+        .r-logo-text span { display: block; font-size: 11px; font-weight: 500; color: #7c6d9e; letter-spacing: .02em; margin-top: 2px; }
         .r-nav { flex: 1; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
         .r-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: #5a8868; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: all .15s; position: relative; }
-        .r-nav-item:hover { color: #c8f0d4; background: rgba(47,191,100,.07); }
-        .r-nav-item.active { color: #e0faec; background: rgba(47,191,100,.14); font-weight: 600; }
-        .r-nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); height:55%; width:3px; border-radius:0 3px 3px 0; background:#2fbf64; }
+        .r-nav-item:hover { color: #c8f0d4; background: rgba(168, 85, 247,.07); }
+        .r-nav-item.active { color: #e0faec; background: rgba(168, 85, 247,.14); font-weight: 600; }
+        .r-nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); height:55%; width:3px; border-radius:0 3px 3px 0; background:#a855f7; }
         .r-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .r-topbar { display: none; padding: 16px 20px; background: rgba(6,13,8,.95); border-bottom: 1px solid rgba(47,191,100,.1); align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); }
+        .r-topbar { display: none; padding: 16px 20px; background: rgba(6,13,8,.95); border-bottom: 1px solid rgba(168, 85, 247,.1); align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); }
         .r-topbar-btn { border: none; background: transparent; color: #5a8868; cursor: pointer; padding: 6px; border-radius: 8px; display: grid; place-items: center; }
-        .r-topbar-btn:hover { background: rgba(47,191,100,.1); color: #6ee09c; }
-        .r-topbar-title { font-size: 16px; font-weight: 700; color: #e8faf0; }
+        .r-topbar-btn:hover { background: rgba(168, 85, 247,.1); color: #c084fc; }
+        .r-topbar-title { font-size: 16px; font-weight: 700; color: #f1eeff; }
         .r-content { flex: 1; padding: 36px 40px; }
         .r-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 90; backdrop-filter: blur(4px); }
         @media (max-width: 900px) {

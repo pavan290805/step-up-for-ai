@@ -49,8 +49,8 @@ function MiniDonut({ slices }: { slices: { value: number; color: string; label: 
           />
         );
       })}
-      <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fill="#e8faf0" fontSize="11" fontWeight="700">{total}</text>
-      <text x="50%" y="62%" dominantBaseline="middle" textAnchor="middle" fill="#4a8a5e" fontSize="7">Total</text>
+      <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fill="#f1eeff" fontSize="11" fontWeight="700">{total}</text>
+      <text x="50%" y="62%" dominantBaseline="middle" textAnchor="middle" fill="#7c6d9e" fontSize="7">Total</text>
     </svg>
   );
 }
@@ -62,38 +62,38 @@ function PremiumContent() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .an-page { font-family: Inter, sans-serif; }
         .an-header { margin-bottom: 28px; }
-        .an-title { font-size: 26px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; }
-        .an-sub { font-size: 13px; color: #4a8a5e; margin-top: 4px; }
+        .an-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
+        .an-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
         .an-date-row { display: flex; gap: 8px; margin-top: 14px; margin-bottom: 28px; }
-        .an-date-btn { padding: 8px 16px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(47,191,100,.15); color: #5cb87a; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
-        .an-date-btn.active { background: rgba(47,191,100,.18); border-color: rgba(47,191,100,.4); color: #6ee09c; }
+        .an-date-btn { padding: 8px 16px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(168, 85, 247,.15); color: #9d7ec7; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
+        .an-date-btn.active { background: rgba(168, 85, 247,.18); border-color: rgba(168, 85, 247,.4); color: #c084fc; }
         .an-kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 18px; margin-bottom: 28px; }
-        .an-kpi { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 18px; padding: 22px; transition: all .2s; }
-        .an-kpi:hover { border-color: rgba(47,191,100,.35); transform: translateY(-2px); }
+        .an-kpi { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); border-radius: 18px; padding: 22px; transition: all .2s; }
+        .an-kpi:hover { border-color: rgba(168, 85, 247,.35); transform: translateY(-2px); }
         .an-kpi-icon { font-size: 26px; margin-bottom: 12px; }
-        .an-kpi-val { font-size: 32px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; }
-        .an-kpi-label { font-size: 13px; color: #5cb87a; margin-top: 4px; }
+        .an-kpi-val { font-size: 32px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
+        .an-kpi-label { font-size: 13px; color: #9d7ec7; margin-top: 4px; }
         .an-kpi-delta { font-size: 11.5px; font-weight: 600; margin-top: 6px; }
         .an-kpi-delta.up { color: #86efac; }
         .an-kpi-delta.down { color: #fca5a5; }
         .an-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
-        .an-panel { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 20px; padding: 26px; }
-        .an-panel-title { font-size: 15px; font-weight: 700; color: #d4f5e2; margin-bottom: 22px; }
+        .an-panel { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); border-radius: 20px; padding: 26px; }
+        .an-panel-title { font-size: 15px; font-weight: 700; color: #e2d9ff; margin-bottom: 22px; }
         .an-funnel { display: flex; flex-direction: column; gap: 10px; }
         .an-funnel-row { }
         .an-funnel-label { display: flex; justify-content: space-between; font-size: 12.5px; color: #c4b5e4; margin-bottom: 5px; }
         .an-funnel-bar { height: 28px; border-radius: 8px; display: flex; align-items: center; padding-left: 12px; font-size: 12px; font-weight: 700; color: #fff; transition: width .6s; }
         .an-chart-bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding-top: 16px; }
         .an-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; }
-        .an-chart-bar { width: 100%; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, #2fbf64, #1a9e4a); transition: height .5s; }
-        .an-chart-label { font-size: 11px; color: #3d6b52; }
-        .an-chart-val { font-size: 11px; color: #6ee09c; font-weight: 600; }
+        .an-chart-bar { width: 100%; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, #a855f7, #7c3aed); transition: height .5s; }
+        .an-chart-label { font-size: 11px; color: #6b5d85; }
+        .an-chart-val { font-size: 11px; color: #c084fc; font-weight: 600; }
         .an-donut-row { display: flex; align-items: center; gap: 28px; }
         .an-donut-legend { display: flex; flex-direction: column; gap: 10px; }
         .an-legend-item { display: flex; align-items: center; gap: 8px; }
         .an-legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         .an-legend-label { font-size: 12px; color: #c4b5e4; }
-        .an-legend-val { font-size: 12px; font-weight: 700; color: #e8faf0; margin-left: auto; }
+        .an-legend-val { font-size: 12px; font-weight: 700; color: #f1eeff; margin-left: auto; }
         .an-skills-list { display: flex; flex-direction: column; gap: 14px; }
         @media (max-width: 900px) { .an-kpi-row { grid-template-columns: repeat(2,1fr); } .an-grid { grid-template-columns: 1fr; } }
       `}</style>
@@ -147,8 +147,8 @@ function PremiumContent() {
             <div className="an-funnel">
               {[
                 { label: 'Viewed', n: 3420, pct: 100, color: '#6366f1' },
-                { label: 'Applied', n: 127, pct: 37, color: '#2fbf64' },
-                { label: 'Reviewed', n: 84, pct: 24, color: '#6ee09c' },
+                { label: 'Applied', n: 127, pct: 37, color: '#a855f7' },
+                { label: 'Reviewed', n: 84, pct: 24, color: '#c084fc' },
                 { label: 'Interviewed', n: 22, pct: 6, color: '#818cf8' },
                 { label: 'Offered', n: 6, pct: 2, color: '#86efac' },
               ].map(f => (
@@ -165,17 +165,17 @@ function PremiumContent() {
             <div className="an-panel-title"> Applicant Locations</div>
             <div className="an-donut-row">
               <MiniDonut slices={[
-                { value: 45, color: '#2fbf64', label: 'Hyderabad' },
+                { value: 45, color: '#a855f7', label: 'Hyderabad' },
                 { value: 28, color: '#6366f1', label: 'Bangalore' },
                 { value: 18, color: '#818cf8', label: 'Mumbai' },
-                { value: 9, color: '#6ee09c', label: 'Others' },
+                { value: 9, color: '#c084fc', label: 'Others' },
               ]} />
               <div className="an-donut-legend">
                 {[
-                  { label: 'Hyderabad', val: '45%', color: '#2fbf64' },
+                  { label: 'Hyderabad', val: '45%', color: '#a855f7' },
                   { label: 'Bangalore', val: '28%', color: '#6366f1' },
                   { label: 'Mumbai', val: '18%', color: '#818cf8' },
-                  { label: 'Others', val: '9%', color: '#6ee09c' },
+                  { label: 'Others', val: '9%', color: '#c084fc' },
                 ].map(l => (
                   <div className="an-legend-item" key={l.label}>
                     <div className="an-legend-dot" style={{ background: l.color }} />
@@ -192,10 +192,10 @@ function PremiumContent() {
             <div className="an-panel-title"> Top Candidate Skills</div>
             <div className="an-skills-list">
               {[
-                { skill: 'React.js', count: 68, color: '#2fbf64' },
+                { skill: 'React.js', count: 68, color: '#a855f7' },
                 { skill: 'Python', count: 54, color: '#6366f1' },
                 { skill: 'Node.js', count: 41, color: '#818cf8' },
-                { skill: 'Figma', count: 29, color: '#6ee09c' },
+                { skill: 'Figma', count: 29, color: '#c084fc' },
                 { skill: 'SQL', count: 22, color: '#a78bfa' },
               ].map(s => (
                 <Bar key={s.skill} label={s.skill} value={s.count} max={68} color={s.color} />

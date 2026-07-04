@@ -30,8 +30,8 @@ const STAGE_COLORS: Record<Stage, { bg: string; border: string; text: string; he
   Applied: { bg: 'rgba(99,102,241,.1)', border: 'rgba(99,102,241,.25)', text: '#a5b4fc', head: '#6366f1' },
   Reviewed: { bg: 'rgba(59,130,246,.1)', border: 'rgba(59,130,246,.25)', text: '#93c5fd', head: '#3b82f6' },
   Interview: { bg: 'rgba(245,158,11,.1)', border: 'rgba(245,158,11,.25)', text: '#fbbf24', head: '#f59e0b' },
-  Offer: { bg: 'rgba(47,191,100,.12)', border: 'rgba(47,191,100,.3)', text: '#6ee09c', head: '#2fbf64' },
-  Hired: { bg: 'rgba(34,197,94,.1)', border: 'rgba(34,197,94,.25)', text: '#86efac', head: '#22c55e' },
+  Offer: { bg: 'rgba(168, 85, 247,.12)', border: 'rgba(168, 85, 247,.3)', text: '#c084fc', head: '#a855f7' },
+  Hired: { bg: 'rgba(168, 85, 247,.1)', border: 'rgba(168, 85, 247,.25)', text: '#86efac', head: '#22c55e' },
   Rejected: { bg: 'rgba(239,68,68,.07)', border: 'rgba(239,68,68,.18)', text: '#fca5a5', head: '#ef4444' },
 };
 
@@ -55,27 +55,27 @@ export default function ApplicantsPage() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .ap-page { font-family: Inter, sans-serif; }
         .ap-header { margin-bottom: 28px; }
-        .ap-title { font-size: 26px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; }
-        .ap-sub { font-size: 13px; color: #4a8a5e; margin-top: 4px; }
-        .ap-premium-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 6px 14px; border-radius: 99px; background: rgba(47,191,100,.1); border: 1px solid rgba(47,191,100,.25); font-size: 12px; color: #6ee09c; font-weight: 600; }
+        .ap-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
+        .ap-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
+        .ap-premium-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 6px 14px; border-radius: 99px; background: rgba(168, 85, 247,.1); border: 1px solid rgba(168, 85, 247,.25); font-size: 12px; color: #c084fc; font-weight: 600; }
         .ap-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; }
         .ap-col { min-width: 210px; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; }
         .ap-col-head { padding: 12px 14px; border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: space-between; }
         .ap-col-name { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
         .ap-col-count { font-size: 12px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.12); }
         .ap-col-body { flex: 1; border-radius: 0 0 12px 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
-        .ap-card { background: linear-gradient(145deg, rgba(4,18,8,.95), rgba(2,12,5,.95)); border: 1px solid rgba(47,191,100,.14); border-radius: 14px; padding: 14px; cursor: pointer; transition: all .18s; }
-        .ap-card:hover { border-color: rgba(47,191,100,.4); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.35); }
-        .ap-card.selected { border-color: rgba(47,191,100,.65); box-shadow: 0 0 0 2px rgba(47,191,100,.25); }
+        .ap-card { background: linear-gradient(145deg, rgba(13, 7, 24,.95), rgba(8, 4, 26,.95)); border: 1px solid rgba(168, 85, 247,.14); border-radius: 14px; padding: 14px; cursor: pointer; transition: all .18s; }
+        .ap-card:hover { border-color: rgba(168, 85, 247,.4); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+        .ap-card.selected { border-color: rgba(168, 85, 247,.65); box-shadow: 0 0 0 2px rgba(168, 85, 247,.25); }
         .ap-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .ap-av { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); display:grid; place-items:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
-        .ap-cn { font-size: 13px; font-weight: 600; color: #d4f5e2; }
-        .ap-cr { font-size: 11px; color: #4a8a5e; margin-top: 2px; }
-        .ap-match { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(47,191,100,.15); color: #6ee09c; margin-bottom: 8px; }
-        .ap-time { font-size: 10.5px; color: #2e5040; }
+        .ap-av { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#a855f7,#7c3aed); display:grid; place-items:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+        .ap-cn { font-size: 13px; font-weight: 600; color: #e2d9ff; }
+        .ap-cr { font-size: 11px; color: #7c6d9e; margin-top: 2px; }
+        .ap-match { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(168, 85, 247,.15); color: #c084fc; margin-bottom: 8px; }
+        .ap-time { font-size: 10.5px; color: #4a3f5c; }
         .ap-moves { display: flex; gap: 6px; margin-top: 10px; }
-        .ap-move-btn { flex: 1; padding: 6px; border-radius: 7px; border: 1px solid rgba(47,191,100,.2); background: rgba(47,191,100,.07); color: #6ee09c; font: 600 11px Inter; cursor: pointer; transition: all .15s; }
-        .ap-move-btn:hover { background: rgba(47,191,100,.18); }
+        .ap-move-btn { flex: 1; padding: 6px; border-radius: 7px; border: 1px solid rgba(168, 85, 247,.2); background: rgba(168, 85, 247,.07); color: #c084fc; font: 600 11px Inter; cursor: pointer; transition: all .15s; }
+        .ap-move-btn:hover { background: rgba(168, 85, 247,.18); }
         .ap-move-btn:disabled { opacity: .35; cursor: not-allowed; }
         @media (max-width: 700px) { .ap-board { gap: 12px; } .ap-col { min-width: 170px; } }
       `}</style>
@@ -118,7 +118,7 @@ export default function ApplicantsPage() {
                     </div>
                   ))}
                   {col.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '24px 10px', color: '#2e5040', fontSize: 12 }}>No candidates</div>
+                    <div style={{ textAlign: 'center', padding: '24px 10px', color: '#4a3f5c', fontSize: 12 }}>No candidates</div>
                   )}
                 </div>
               </div>

@@ -64,32 +64,32 @@ function PremiumContent() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .jd-page { font-family: Inter, sans-serif; }
         .jd-header { margin-bottom: 28px; }
-        .jd-title { font-size: 26px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; }
-        .jd-sub { font-size: 13px; color: #4a8a5e; margin-top: 4px; }
-        .jd-ai-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 16px; border-radius: 99px; background: linear-gradient(135deg,rgba(47,191,100,.2),rgba(26,158,74,.15)); border: 1px solid rgba(47,191,100,.4); font-size: 12px; color: #6ee09c; font-weight: 700; }
+        .jd-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
+        .jd-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
+        .jd-ai-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 16px; border-radius: 99px; background: linear-gradient(135deg,rgba(168, 85, 247,.2),rgba(124, 58, 237,.15)); border: 1px solid rgba(168, 85, 247,.4); font-size: 12px; color: #c084fc; font-weight: 700; }
         .jd-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-        .jd-panel { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 22px; padding: 28px; }
-        .jd-panel-title { font-size: 15px; font-weight: 700; color: #d4f5e2; margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
+        .jd-panel { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); border-radius: 22px; padding: 28px; }
+        .jd-panel-title { font-size: 15px; font-weight: 700; color: #e2d9ff; margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
         .jd-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-        .jd-label { font-size: 12px; font-weight: 600; color: #5cb87a; letter-spacing: .03em; text-transform: uppercase; }
-        .jd-input, .jd-select { width: 100%; padding: 11px 13px; border-radius: 11px; background: rgba(255,255,255,.03); border: 1px solid rgba(47,191,100,.15); color: #e8faf0; font: 500 13.5px Inter; outline: none; transition: all .2s; }
-        .jd-input::placeholder { color: #2e5040; }
-        .jd-input:focus, .jd-select:focus { border-color: rgba(47,191,100,.55); box-shadow: 0 0 0 4px rgba(47,191,100,.12); }
-        .jd-select option { background: #041208; }
-        .jd-gen-btn { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); color:#fff; font: 700 14px Inter; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 10px 28px rgba(47,191,100,.38); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .jd-gen-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(47,191,100,.5); }
+        .jd-label { font-size: 12px; font-weight: 600; color: #9d7ec7; letter-spacing: .03em; text-transform: uppercase; }
+        .jd-input, .jd-select { width: 100%; padding: 11px 13px; border-radius: 11px; background: rgba(255,255,255,.03); border: 1px solid rgba(168, 85, 247,.15); color: #f1eeff; font: 500 13.5px Inter; outline: none; transition: all .2s; }
+        .jd-input::placeholder { color: #4a3f5c; }
+        .jd-input:focus, .jd-select:focus { border-color: rgba(168, 85, 247,.55); box-shadow: 0 0 0 4px rgba(168, 85, 247,.12); }
+        .jd-select option { background: #0d0718; }
+        .jd-gen-btn { width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 14px Inter; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 10px 28px rgba(168, 85, 247,.38); margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .jd-gen-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(168, 85, 247,.5); }
         .jd-gen-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
         .jd-output { }
         .jd-output-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-        .jd-copy-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(47,191,100,.3); background: rgba(47,191,100,.1); color: #6ee09c; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
-        .jd-copy-btn:hover { background: rgba(47,191,100,.2); }
-        .jd-use-btn { padding: 8px 16px; border-radius: 10px; border: none; background: linear-gradient(135deg,#2fbf64,#1a9e4a); color:#fff; font: 700 12px Inter; cursor: pointer; transition: all .15s; }
+        .jd-copy-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(168, 85, 247,.3); background: rgba(168, 85, 247,.1); color: #c084fc; font: 600 12px Inter; cursor: pointer; transition: all .15s; }
+        .jd-copy-btn:hover { background: rgba(168, 85, 247,.2); }
+        .jd-use-btn { padding: 8px 16px; border-radius: 10px; border: none; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 12px Inter; cursor: pointer; transition: all .15s; }
         .jd-use-btn:hover { transform: translateY(-1px); }
-        .jd-output-body { background: rgba(255,255,255,.025); border: 1px solid rgba(47,191,100,.12); border-radius: 14px; padding: 20px; max-height: 520px; overflow-y: auto; white-space: pre-wrap; font: 500 13.5px/1.7 Inter; color: #d4c9f0; }
+        .jd-output-body { background: rgba(255,255,255,.025); border: 1px solid rgba(168, 85, 247,.12); border-radius: 14px; padding: 20px; max-height: 520px; overflow-y: auto; white-space: pre-wrap; font: 500 13.5px/1.7 Inter; color: #d4c9f0; }
         .jd-skeleton { display: flex; flex-direction: column; gap: 12px; }
-        .jd-skel-line { border-radius: 8px; background: rgba(47,191,100,.08); animation: skelpulse 1.2s ease-in-out infinite; }
+        .jd-skel-line { border-radius: 8px; background: rgba(168, 85, 247,.08); animation: skelpulse 1.2s ease-in-out infinite; }
         @keyframes skelpulse { 0%,100% { opacity:.4; } 50% { opacity:.9; } }
-        .jd-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #2e5040; text-align: center; }
+        .jd-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; color: #4a3f5c; text-align: center; }
         .jd-placeholder-icon { font-size: 48px; margin-bottom: 14px; }
         .jd-placeholder p { font-size: 13px; line-height: 1.6; max-width: 240px; }
         @media (max-width: 800px) { .jd-layout { grid-template-columns: 1fr; } }

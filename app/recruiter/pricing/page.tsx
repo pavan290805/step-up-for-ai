@@ -46,62 +46,62 @@ export default function PricingPage() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .pr-page { font-family: Inter, sans-serif; max-width: 960px; margin: 0 auto; }
         .pr-header { text-align: center; margin-bottom: 48px; }
-        .pr-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 16px; border-radius: 99px; background: rgba(47,191,100,.15); border: 1px solid rgba(47,191,100,.3); color: #6ee09c; font: 700 12px Inter; margin-bottom: 18px; }
-        .pr-title { font-size: 42px; font-weight: 800; color: #e8faf0; letter-spacing: -.03em; line-height: 1.1; margin-bottom: 14px; }
-        .pr-title span { color: #2fbf64; }
-        .pr-sub { font-size: 16px; color: #4a8a5e; line-height: 1.7; max-width: 500px; margin: 0 auto; }
+        .pr-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 16px; border-radius: 99px; background: rgba(168, 85, 247,.15); border: 1px solid rgba(168, 85, 247,.3); color: #c084fc; font: 700 12px Inter; margin-bottom: 18px; }
+        .pr-title { font-size: 42px; font-weight: 800; color: #f1eeff; letter-spacing: -.03em; line-height: 1.1; margin-bottom: 14px; }
+        .pr-title span { color: #a855f7; }
+        .pr-sub { font-size: 16px; color: #7c6d9e; line-height: 1.7; max-width: 500px; margin: 0 auto; }
         .pr-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 60px; }
         .pr-card { border-radius: 28px; padding: 36px; position: relative; overflow: hidden; transition: all .2s; }
-        .pr-card.free { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); }
-        .pr-card.free:hover { border-color: rgba(47,191,100,.3); }
-        .pr-card.premium { background: linear-gradient(145deg, rgba(5,30,15,.95), rgba(3,18,9,.98)); border: 2px solid rgba(47,191,100,.5); box-shadow: 0 0 0 1px rgba(47,191,100,.15), 0 40px 80px rgba(47,191,100,.15); }
-        .pr-card.premium:hover { box-shadow: 0 0 0 1px rgba(47,191,100,.25), 0 50px 100px rgba(47,191,100,.2); transform: translateY(-4px); }
-        .pr-popular { position: absolute; top: 20px; right: 20px; padding: 5px 14px; border-radius: 99px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); color:#fff; font: 700 11px Inter; letter-spacing: .04em; }
-        .pr-glow { position: absolute; top: -80px; right: -80px; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(47,191,100,.2) 0%, transparent 70%); pointer-events: none; }
+        .pr-card.free { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); }
+        .pr-card.free:hover { border-color: rgba(168, 85, 247,.3); }
+        .pr-card.premium { background: linear-gradient(145deg, rgba(30, 10, 60,.95), rgba(18, 6, 40,.98)); border: 2px solid rgba(168, 85, 247,.5); box-shadow: 0 0 0 1px rgba(168, 85, 247,.15), 0 40px 80px rgba(168, 85, 247,.15); }
+        .pr-card.premium:hover { box-shadow: 0 0 0 1px rgba(168, 85, 247,.25), 0 50px 100px rgba(168, 85, 247,.2); transform: translateY(-4px); }
+        .pr-popular { position: absolute; top: 20px; right: 20px; padding: 5px 14px; border-radius: 99px; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 11px Inter; letter-spacing: .04em; }
+        .pr-glow { position: absolute; top: -80px; right: -80px; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(168, 85, 247,.2) 0%, transparent 70%); pointer-events: none; }
         .pr-plan-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 8px; font: 700 12px Inter; margin-bottom: 12px; }
         .pr-plan-badge.free { background: rgba(255,255,255,.06); color: #9ca3af; }
-        .pr-plan-badge.premium { background: rgba(47,191,100,.18); color: #6ee09c; border: 1px solid rgba(47,191,100,.3); }
+        .pr-plan-badge.premium { background: rgba(168, 85, 247,.18); color: #c084fc; border: 1px solid rgba(168, 85, 247,.3); }
         .pr-price { display: flex; align-items: flex-end; gap: 4px; margin: 12px 0 6px; }
-        .pr-currency { font-size: 22px; font-weight: 700; color: #e8faf0; padding-bottom: 6px; }
-        .pr-amount { font-size: 60px; font-weight: 800; color: #e8faf0; letter-spacing: -.03em; line-height: 1; }
-        .pr-period { font-size: 14px; color: #4a8a5e; padding-bottom: 6px; }
+        .pr-currency { font-size: 22px; font-weight: 700; color: #f1eeff; padding-bottom: 6px; }
+        .pr-amount { font-size: 60px; font-weight: 800; color: #f1eeff; letter-spacing: -.03em; line-height: 1; }
+        .pr-period { font-size: 14px; color: #7c6d9e; padding-bottom: 6px; }
         .pr-save { font-size: 12px; color: #86efac; font-weight: 600; margin-bottom: 20px; }
-        .pr-desc { font-size: 14px; color: #4a8a5e; line-height: 1.6; margin-bottom: 28px; }
+        .pr-desc { font-size: 14px; color: #7c6d9e; line-height: 1.6; margin-bottom: 28px; }
         .pr-cta { display: block; width: 100%; padding: 15px; border-radius: 14px; text-align: center; text-decoration: none; font: 700 15px Inter; transition: all .2s; margin-bottom: 28px; }
-        .pr-cta.free-btn { border: 1px solid rgba(47,191,100,.3); background: rgba(47,191,100,.08); color: #6ee09c; }
-        .pr-cta.free-btn:hover { background: rgba(47,191,100,.15); }
-        .pr-cta.premium-btn { background: linear-gradient(135deg,#2fbf64,#1a9e4a); color: #fff; box-shadow: 0 12px 30px rgba(47,191,100,.4); }
-        .pr-cta.premium-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(47,191,100,.55); }
-        .pr-divider { height: 1px; background: rgba(47,191,100,.1); margin: 0 0 24px; }
+        .pr-cta.free-btn { border: 1px solid rgba(168, 85, 247,.3); background: rgba(168, 85, 247,.08); color: #c084fc; }
+        .pr-cta.free-btn:hover { background: rgba(168, 85, 247,.15); }
+        .pr-cta.premium-btn { background: linear-gradient(135deg,#a855f7,#7c3aed); color: #fff; box-shadow: 0 12px 30px rgba(168, 85, 247,.4); }
+        .pr-cta.premium-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(168, 85, 247,.55); }
+        .pr-divider { height: 1px; background: rgba(168, 85, 247,.1); margin: 0 0 24px; }
         .pr-feat-list { display: flex; flex-direction: column; gap: 12px; }
         .pr-feat { display: flex; align-items: center; gap: 12px; font-size: 14px; }
-        .pr-feat.included { color: #d4f5e2; }
-        .pr-feat.excluded { color: #2e5040; }
+        .pr-feat.included { color: #e2d9ff; }
+        .pr-feat.excluded { color: #4a3f5c; }
         .pr-feat-icon { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-        .pr-feat-icon.check { background: rgba(47,191,100,.2); color: #2fbf64; }
+        .pr-feat-icon.check { background: rgba(168, 85, 247,.2); color: #a855f7; }
         .pr-feat-icon.cross { background: rgba(107,114,128,.1); color: #4b5563; }
         .pr-comparison { margin-bottom: 60px; }
-        .pr-comp-title { text-align: center; font-size: 28px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; margin-bottom: 28px; }
+        .pr-comp-title { text-align: center; font-size: 28px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; margin-bottom: 28px; }
         .pr-table { width: 100%; border-collapse: collapse; }
-        .pr-table th { padding: 14px 18px; font-size: 13px; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(47,191,100,.12); }
+        .pr-table th { padding: 14px 18px; font-size: 13px; font-weight: 700; text-align: center; border-bottom: 1px solid rgba(168, 85, 247,.12); }
         .pr-table th:first-child { text-align: left; }
         .pr-table th.pr-th-free { color: #9ca3af; }
-        .pr-table th.pr-th-premium { color: #6ee09c; }
-        .pr-table td { padding: 14px 18px; font-size: 13.5px; color: #c4b5e4; border-bottom: 1px solid rgba(47,191,100,.06); text-align: center; }
-        .pr-table td:first-child { text-align: left; color: #5cb87a; }
-        .pr-table tr:hover td { background: rgba(47,191,100,.04); }
-        .pr-check { color: #2fbf64; font-size: 16px; font-weight: 700; }
+        .pr-table th.pr-th-premium { color: #c084fc; }
+        .pr-table td { padding: 14px 18px; font-size: 13.5px; color: #c4b5e4; border-bottom: 1px solid rgba(168, 85, 247,.06); text-align: center; }
+        .pr-table td:first-child { text-align: left; color: #9d7ec7; }
+        .pr-table tr:hover td { background: rgba(168, 85, 247,.04); }
+        .pr-check { color: #a855f7; font-size: 16px; font-weight: 700; }
         .pr-cross { color: #374151; font-size: 16px; }
         .pr-faq { margin-bottom: 48px; }
-        .pr-faq-title { text-align: center; font-size: 26px; font-weight: 800; color: #e8faf0; margin-bottom: 24px; letter-spacing: -.02em; }
-        .pr-faq-item { background: linear-gradient(145deg,rgba(4,18,8,.9),rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.12); border-radius: 16px; padding: 20px 22px; margin-bottom: 12px; }
-        .pr-faq-q { font-size: 14px; font-weight: 700; color: #d4f5e2; margin-bottom: 8px; }
-        .pr-faq-a { font-size: 13.5px; color: #4a8a5e; line-height: 1.7; }
-        .pr-bottom-cta { background: linear-gradient(135deg,rgba(47,191,100,.18),rgba(26,158,74,.12)); border: 1px solid rgba(47,191,100,.35); border-radius: 24px; padding: 48px; text-align: center; }
-        .pr-bottom-cta h2 { font-size: 30px; font-weight: 800; color: #e8faf0; margin-bottom: 12px; letter-spacing: -.02em; }
-        .pr-bottom-cta p { font-size: 15px; color: #4a8a5e; margin-bottom: 28px; }
-        .pr-bottom-btn { display: inline-flex; padding: 15px 40px; border-radius: 14px; background: linear-gradient(135deg,#2fbf64,#1a9e4a); color:#fff; font: 700 15px Inter; text-decoration: none; transition: all .2s; box-shadow: 0 12px 30px rgba(47,191,100,.4); }
-        .pr-bottom-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(47,191,100,.55); }
+        .pr-faq-title { text-align: center; font-size: 26px; font-weight: 800; color: #f1eeff; margin-bottom: 24px; letter-spacing: -.02em; }
+        .pr-faq-item { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.12); border-radius: 16px; padding: 20px 22px; margin-bottom: 12px; }
+        .pr-faq-q { font-size: 14px; font-weight: 700; color: #e2d9ff; margin-bottom: 8px; }
+        .pr-faq-a { font-size: 13.5px; color: #7c6d9e; line-height: 1.7; }
+        .pr-bottom-cta { background: linear-gradient(135deg,rgba(168, 85, 247,.18),rgba(124, 58, 237,.12)); border: 1px solid rgba(168, 85, 247,.35); border-radius: 24px; padding: 48px; text-align: center; }
+        .pr-bottom-cta h2 { font-size: 30px; font-weight: 800; color: #f1eeff; margin-bottom: 12px; letter-spacing: -.02em; }
+        .pr-bottom-cta p { font-size: 15px; color: #7c6d9e; margin-bottom: 28px; }
+        .pr-bottom-btn { display: inline-flex; padding: 15px 40px; border-radius: 14px; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 15px Inter; text-decoration: none; transition: all .2s; box-shadow: 0 12px 30px rgba(168, 85, 247,.4); }
+        .pr-bottom-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(168, 85, 247,.55); }
         @media (max-width: 700px) { .pr-cards { grid-template-columns: 1fr; } .pr-title { font-size: 30px; } }
       `}</style>
       <div className="pr-page">
@@ -144,7 +144,7 @@ export default function PricingPage() {
             <div className="pr-plan-badge premium"> Premium Plan</div>
             <div className="pr-price">
               <span className="pr-currency">₹</span>
-              <span className="pr-amount" style={{ color: '#6ee09c' }}>999</span>
+              <span className="pr-amount" style={{ color: '#c084fc' }}>999</span>
               <span className="pr-period">/month</span>
             </div>
             <div className="pr-save"> Save 30% with annual billing — ₹8,390/year</div>
@@ -192,8 +192,8 @@ export default function PricingPage() {
               ].map(([feat, free, prem]) => (
                 <tr key={String(feat)}>
                   <td>{feat}</td>
-                  <td>{free === true ? <span className="pr-check"></span> : free === false ? <span className="pr-cross">—</span> : <span style={{ color: '#5cb87a' }}>{free}</span>}</td>
-                  <td>{prem === true ? <span className="pr-check"></span> : <span style={{ color: '#6ee09c', fontWeight: 700 }}>{prem}</span>}</td>
+                  <td>{free === true ? <span className="pr-check"></span> : free === false ? <span className="pr-cross">—</span> : <span style={{ color: '#9d7ec7' }}>{free}</span>}</td>
+                  <td>{prem === true ? <span className="pr-check"></span> : <span style={{ color: '#c084fc', fontWeight: 700 }}>{prem}</span>}</td>
                 </tr>
               ))}
             </tbody>

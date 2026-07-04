@@ -18,8 +18,8 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
     }}>
       <style>{`
         .pg-card {
-          background: linear-gradient(145deg, rgba(4,18,8,.95), rgba(2,12,5,.98));
-          border: 1px solid rgba(47,191,100,.35);
+          background: linear-gradient(145deg, rgba(13, 7, 24,.95), rgba(8, 4, 26,.98));
+          border: 1px solid rgba(168, 85, 247,.35);
           border-radius: 28px;
           padding: 56px 48px;
           text-align: center;
@@ -27,7 +27,7 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
           width: 100%;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 30px 80px rgba(47,191,100,.12), 0 0 0 1px rgba(47,191,100,.1);
+          box-shadow: 0 30px 80px rgba(168, 85, 247,.12), 0 0 0 1px rgba(168, 85, 247,.1);
           animation: pgIn .5s cubic-bezier(.16,1,.3,1);
         }
         @keyframes pgIn { from { opacity:0; transform:translateY(20px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
@@ -37,14 +37,14 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
           transform: translateX(-50%);
           width: 220px; height: 220px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(47,191,100,.25) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(168, 85, 247,.25) 0%, transparent 70%);
           pointer-events: none;
         }
         .pg-icon {
           width: 72px; height: 72px;
           border-radius: 20px;
-          background: linear-gradient(135deg, rgba(47,191,100,.25), rgba(26,158,74,.25));
-          border: 1px solid rgba(47,191,100,.4);
+          background: linear-gradient(135deg, rgba(168, 85, 247,.25), rgba(124, 58, 237,.25));
+          border: 1px solid rgba(168, 85, 247,.4);
           display: grid;
           place-items: center;
           margin: 0 auto 24px;
@@ -56,9 +56,9 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
           gap: 6px;
           padding: 5px 12px;
           border-radius: 99px;
-          background: rgba(47,191,100,.15);
-          border: 1px solid rgba(47,191,100,.3);
-          color: #6ee09c;
+          background: rgba(168, 85, 247,.15);
+          border: 1px solid rgba(168, 85, 247,.3);
+          color: #c084fc;
           font-size: 11px;
           font-weight: 700;
           letter-spacing: .06em;
@@ -67,12 +67,12 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
         .pg-title {
           font-size: 26px;
           font-weight: 800;
-          color: #e8faf0;
+          color: #f1eeff;
           margin-bottom: 12px;
           letter-spacing: -.01em;
         }
         .pg-desc {
-          color: #5cb87a;
+          color: #9d7ec7;
           font-size: 14.5px;
           line-height: 1.7;
           margin-bottom: 32px;
@@ -94,12 +94,12 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
         .pg-perk-dot {
           width: 20px; height: 20px;
           border-radius: 50%;
-          background: rgba(47,191,100,.2);
-          border: 1px solid rgba(47,191,100,.4);
+          background: rgba(168, 85, 247,.2);
+          border: 1px solid rgba(168, 85, 247,.4);
           display: grid;
           place-items: center;
           flex-shrink: 0;
-          color: #2fbf64;
+          color: #a855f7;
           font-size: 11px;
           font-weight: 700;
         }
@@ -108,17 +108,17 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
           width: 100%;
           padding: 14px;
           border-radius: 12px;
-          background: linear-gradient(135deg, #2fbf64, #1a9e4a);
+          background: linear-gradient(135deg, #a855f7, #7c3aed);
           color: #fff;
           font: 700 15px Inter;
           text-decoration: none;
           text-align: center;
           transition: all .2s;
-          box-shadow: 0 12px 30px rgba(47,191,100,.35);
+          box-shadow: 0 12px 30px rgba(168, 85, 247,.35);
         }
         .pg-cta:hover {
           transform: translateY(-2px);
-          box-shadow: 0 16px 40px rgba(47,191,100,.45);
+          box-shadow: 0 16px 40px rgba(168, 85, 247,.45);
           filter: brightness(1.08);
         }
       `}</style>
