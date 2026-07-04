@@ -44,10 +44,9 @@ function LogoIcon() {
     <img 
       src="/logos/logo-recruiter.jpeg" 
       alt="StepUp Logo" 
-      width={40} 
-      height={40} 
+      height={52} 
       className="r-logo-img"
-      style={{ borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} 
+      style={{ borderRadius: '10px', objectFit: 'contain', flexShrink: 0 }} 
     />
   );
 }
@@ -64,9 +63,8 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         body { margin: 0; }
         .r-shell { min-height: 100vh; display: flex; background: #080511; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f1eeff; }
         .r-sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0d0718 0%, #08041a 100%); border-right: 1px solid rgba(168, 85, 247,.12); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; flex-shrink: 0; }
-        .r-sidebar-logo { padding: 24px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(168, 85, 247,.08); }
-        .r-logo-text { font-size: 17px; font-weight: 800; color: #f1eeff; line-height: 1.15; letter-spacing: -.02em; }
-        .r-logo-text span { display: block; font-size: 11px; font-weight: 500; color: #7c6d9e; letter-spacing: .02em; margin-top: 2px; }
+        .r-sidebar-logo { padding: 24px 20px; display: flex; justify-content: center; border-bottom: 1px solid rgba(168, 85, 247,.08); }
+        .r-logo-text { display: none; }
         .r-nav { flex: 1; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
         .r-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: #5a8868; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: all .15s; position: relative; }
         .r-nav-item:hover { color: #c8f0d4; background: rgba(168, 85, 247,.07); }
@@ -93,10 +91,6 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         <aside className={`r-sidebar${sidebarOpen ? ' open' : ''}`}>
           <div className="r-sidebar-logo">
             <LogoIcon />
-            <div className="r-logo-text">
-              StepUp
-              <span>Recruiter Portal</span>
-            </div>
           </div>
 
           <nav className="r-nav">
