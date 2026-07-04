@@ -15,7 +15,7 @@ const RANKED = [
 
 function RankBadge({ rank }: { rank: number }) {
   const colors = ['#fbbf24', '#94a3b8', '#cd7c5b'];
-  const icons = ['🥇', '🥈', '🥉'];
+  const icons = ['', '', ''];
   return (
     <span style={{ fontSize: rank <= 3 ? 22 : 14, color: rank <= 3 ? colors[rank - 1] : '#3d6b52', fontWeight: 700, minWidth: 32, textAlign: 'center' }}>
       {rank <= 3 ? icons[rank - 1] : `#${rank}`}
@@ -71,7 +71,7 @@ function PremiumContent() {
         <div className="ar-header">
           <h1 className="ar-title">AI Candidate Ranking</h1>
           <p className="ar-sub">Our AI scores and ranks candidates by fit for each listing.</p>
-          <div className="ar-ai-badge">🤖 Powered by StepUp AI Engine</div>
+          <div className="ar-ai-badge"> Powered by StepUp AI Engine</div>
         </div>
 
         <div className="ar-controls">
@@ -80,7 +80,7 @@ function PremiumContent() {
             <option>Data Science Intern</option>
             <option>UI/UX Design Intern</option>
           </select>
-          <button className="ar-btn">🔄 Re-rank Candidates</button>
+          <button className="ar-btn"> Re-rank Candidates</button>
         </div>
 
         <div className="ar-list">
@@ -96,7 +96,7 @@ function PremiumContent() {
                   <div><div className="ar-bar-label">Experience</div><ScoreBar value={c.exp} color="#818cf8" /></div>
                   <div><div className="ar-bar-label">Culture Fit</div><ScoreBar value={c.culture} color="#6ee09c" /></div>
                 </div>
-                <div className="ar-reason"><span className="ar-reason-icon">💡</span>{c.reason}</div>
+                <div className="ar-reason"><span className="ar-reason-icon"></span>{c.reason}</div>
               </div>
               <div className="ar-score-bubble">
                 <div className="ar-score-val">{c.score}</div>

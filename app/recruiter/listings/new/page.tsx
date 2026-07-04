@@ -25,7 +25,7 @@ export default function NewListingPage() {
       `}</style>
       <div className="nl-success">
         <div className="ns-card">
-          <div className="ns-icon">🎉</div>
+          <div className="ns-icon"></div>
           <div className="ns-title">Listing Published!</div>
           <p className="ns-sub">Your internship listing is now live. Candidates can start applying immediately.</p>
           <Link href="/recruiter/listings" className="ns-btn">View All Listings →</Link>
@@ -84,7 +84,7 @@ export default function NewListingPage() {
         <form onSubmit={handleSubmit}>
           {/* Basic Info */}
           <div className="nl-card">
-            <div className="nl-card-title"><span>📋</span> Basic Information</div>
+            <div className="nl-card-title"><span></span> Basic Information</div>
             <div className="nl-grid">
               <div className="nl-field full">
                 <label className="nl-label">Job Title *</label>
@@ -139,7 +139,7 @@ export default function NewListingPage() {
 
           {/* Description */}
           <div className="nl-card">
-            <div className="nl-card-title"><span>📝</span> Job Description</div>
+            <div className="nl-card-title"><span></span> Job Description</div>
             <div className="nl-grid">
               <div className="nl-field full">
                 <label className="nl-label">About the Role *</label>
@@ -158,7 +158,7 @@ export default function NewListingPage() {
 
           {/* Skills */}
           <div className="nl-card">
-            <div className="nl-card-title"><span>🛠️</span> Required Skills</div>
+            <div className="nl-card-title"><span></span> Required Skills</div>
             <div className="nl-skills-row">
               {['React.js', 'TypeScript', 'Tailwind CSS', 'Git'].map(s => (
                 <div key={s} className="nl-skill-tag">
@@ -171,7 +171,7 @@ export default function NewListingPage() {
 
           {/* Perks */}
           <div className="nl-card">
-            <div className="nl-card-title"><span>🎁</span> Perks & Benefits</div>
+            <div className="nl-card-title"><span></span> Perks & Benefits</div>
             <div className="nl-perks-grid">
               {['Certificate on completion', 'Letter of Recommendation', 'Pre-placement offer possibility', 'Flexible hours', 'Mentorship program', 'Equity / ESOP'].map(p => (
                 <label key={p} className="nl-perk-toggle">
@@ -183,7 +183,7 @@ export default function NewListingPage() {
           </div>
 
           <div className="nl-submit-row">
-            <button type="submit" className="nl-submit-btn">🚀 Publish Listing</button>
+            <button type="submit" className="nl-submit-btn"> Publish Listing</button>
             <button type="button" className="nl-draft-btn">Save as Draft</button>
           </div>
         </form>

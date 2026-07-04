@@ -62,7 +62,7 @@ export default function ListingsPage() {
             <p className="li-sub">Manage your internship postings and track applicants.</p>
           </div>
           <Link href="/recruiter/listings/new" className="li-post-btn">
-            ➕ Post New Listing
+             Post New Listing
           </Link>
         </div>
 
@@ -79,14 +79,14 @@ export default function ListingsPage() {
         <div className="li-grid">
           {filtered.length === 0 ? (
             <div className="li-empty">
-              <div className="li-empty-icon">📋</div>
+              <div className="li-empty-icon"></div>
               <h3>No listings found</h3>
               <p>Post your first internship to start getting applicants.</p>
             </div>
           ) : (
             filtered.map((l) => (
               <div className="li-card" key={l.id}>
-                <div className="li-icon">💼</div>
+                <div className="li-icon"></div>
                 <div className="li-info">
                   <div className="li-job-title">{l.title}</div>
                   <div className="li-tags">
@@ -107,8 +107,8 @@ export default function ListingsPage() {
                   </div>
                 </div>
                 <div className="li-actions">
-                  <button className="li-action-btn edit">✏️ Edit</button>
-                  <button className="li-action-btn del">🗑️</button>
+                  <button className="li-action-btn edit"> Edit</button>
+                  <button className="li-action-btn del"></button>
                 </div>
               </div>
             ))

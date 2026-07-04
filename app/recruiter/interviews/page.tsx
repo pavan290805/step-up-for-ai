@@ -80,7 +80,7 @@ function PremiumContent() {
         <div className="iv-layout">
           {/* Scheduled list */}
           <div className="iv-panel">
-            <div className="iv-panel-title">📅 Upcoming Interviews</div>
+            <div className="iv-panel-title"> Upcoming Interviews</div>
             <div className="iv-scheduled-list">
               {SCHEDULED.map(s => (
                 <div className="iv-sched-card" key={s.id}>
@@ -89,9 +89,9 @@ function PremiumContent() {
                     <div className="iv-name">{s.name}</div>
                     <div className="iv-role">{s.role}</div>
                     <div className="iv-datetime">
-                      <span>📅 {s.date}</span>
+                      <span> {s.date}</span>
                       <span>⏰ {s.time}</span>
-                      <span>🎥 {s.type}</span>
+                      <span> {s.type}</span>
                     </div>
                   </div>
                   <div className={`iv-status ${s.status.toLowerCase()}`}>{s.status}</div>
@@ -102,7 +102,7 @@ function PremiumContent() {
 
           {/* Scheduler */}
           <div className="iv-panel">
-            <div className="iv-panel-title">🗓 Schedule New Interview — July 2026</div>
+            <div className="iv-panel-title"> Schedule New Interview — July 2026</div>
             <div className="iv-cal-header">
               {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
                 <div key={i} className="iv-cal-day-label">{d}</div>
@@ -137,9 +137,9 @@ function PremiumContent() {
                   ))}
                 </div>
                 <button className="iv-send-btn" onClick={send} disabled={!selectedTime}>
-                  📩 Send Interview Invite
+                   Send Interview Invite
                 </button>
-                {sent && <div className="iv-sent-msg">✓ Invite sent! The candidate will be notified.</div>}
+                {sent && <div className="iv-sent-msg"> Invite sent! The candidate will be notified.</div>}
               </div>
             )}
           </div>

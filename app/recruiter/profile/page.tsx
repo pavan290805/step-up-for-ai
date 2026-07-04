@@ -59,13 +59,13 @@ export default function CompanyProfilePage() {
         <form onSubmit={handleSave}>
           {/* Logo & Basic */}
           <div className="cp-card">
-            <div className="cp-card-title"><span>🏢</span> Company Identity</div>
+            <div className="cp-card-title"><span></span> Company Identity</div>
             <div className="cp-logo-section">
-              <div className="cp-logo-box">🏢</div>
+              <div className="cp-logo-box"></div>
               <div className="cp-logo-info">
                 <h4>Company Logo</h4>
                 <p>Upload a square logo (PNG, JPG)<br />Recommended: 400×400px</p>
-                <div className="cp-logo-upload">📤 Upload Logo</div>
+                <div className="cp-logo-upload"> Upload Logo</div>
               </div>
             </div>
             <div className="cp-divider" />
@@ -117,7 +117,7 @@ export default function CompanyProfilePage() {
 
           {/* Contact */}
           <div className="cp-card">
-            <div className="cp-card-title"><span>📬</span> Contact Information</div>
+            <div className="cp-card-title"><span></span> Contact Information</div>
             <div className="cp-form-grid">
               <div className="cp-field">
                 <label className="cp-label">HR Contact Name</label>
@@ -140,13 +140,13 @@ export default function CompanyProfilePage() {
 
           {/* Social */}
           <div className="cp-card">
-            <div className="cp-card-title"><span>🔗</span> Social & Web Presence</div>
+            <div className="cp-card-title"><span></span> Social & Web Presence</div>
             <div className="cp-social-grid">
               {[
-                { icon: '💼', label: 'LinkedIn', placeholder: 'linkedin.com/company/...' },
-                { icon: '🐦', label: 'Twitter / X', placeholder: 'twitter.com/...' },
-                { icon: '📷', label: 'Instagram', placeholder: 'instagram.com/...' },
-                { icon: '🐙', label: 'GitHub', placeholder: 'github.com/...' },
+                { icon: '', label: 'LinkedIn', placeholder: 'linkedin.com/company/...' },
+                { icon: '', label: 'Twitter / X', placeholder: 'twitter.com/...' },
+                { icon: '', label: 'Instagram', placeholder: 'instagram.com/...' },
+                { icon: '', label: 'GitHub', placeholder: 'github.com/...' },
               ].map((s) => (
                 <div key={s.label} className="cp-field">
                   <label className="cp-label">{s.label}</label>
@@ -161,8 +161,8 @@ export default function CompanyProfilePage() {
 
           {/* Save */}
           <div className="cp-save-row">
-            <button type="submit" className="cp-save-btn">💾 Save Profile</button>
-            <span className={`cp-save-msg${saved ? ' show' : ''}`}>✓ Profile saved successfully!</span>
+            <button type="submit" className="cp-save-btn"> Save Profile</button>
+            <span className={`cp-save-msg${saved ? ' show' : ''}`}> Profile saved successfully!</span>
           </div>
         </form>
       </div>

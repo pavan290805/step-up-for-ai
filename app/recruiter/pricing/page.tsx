@@ -107,7 +107,7 @@ export default function PricingPage() {
       <div className="pr-page">
         {/* Header */}
         <div className="pr-header">
-          <div className="pr-badge">⚡ Simple, Transparent Pricing</div>
+          <div className="pr-badge"> Simple, Transparent Pricing</div>
           <h1 className="pr-title">Find the right plan for<br /><span>your hiring needs</span></h1>
           <p className="pr-sub">Start free, upgrade when you need more power. No hidden fees, no contracts.</p>
         </div>
@@ -129,7 +129,7 @@ export default function PricingPage() {
               {FREE_FEATURES.map(f => (
                 <div key={f.label} className={`pr-feat ${f.included ? 'included' : 'excluded'}`}>
                   <span className={`pr-feat-icon ${f.included ? 'check' : 'cross'}`}>
-                    {f.included ? '✓' : '×'}
+                    {f.included ? '' : '×'}
                   </span>
                   {f.label}
                 </div>
@@ -141,21 +141,21 @@ export default function PricingPage() {
           <div className="pr-card premium">
             <div className="pr-glow" />
             <div className="pr-popular">Most Popular</div>
-            <div className="pr-plan-badge premium">⚡ Premium Plan</div>
+            <div className="pr-plan-badge premium"> Premium Plan</div>
             <div className="pr-price">
               <span className="pr-currency">₹</span>
               <span className="pr-amount" style={{ color: '#6ee09c' }}>999</span>
               <span className="pr-period">/month</span>
             </div>
-            <div className="pr-save">💚 Save 30% with annual billing — ₹8,390/year</div>
+            <div className="pr-save"> Save 30% with annual billing — ₹8,390/year</div>
             <p className="pr-desc">Unlock the full power of AI-driven hiring for serious recruiters.</p>
-            <Link href="#" className="pr-cta premium-btn">⚡ Upgrade to Premium</Link>
+            <Link href="#" className="pr-cta premium-btn"> Upgrade to Premium</Link>
             <div className="pr-divider" />
             <div className="pr-feat-list">
               {PREMIUM_FEATURES.map(f => (
                 <div key={f.label} className={`pr-feat ${f.included ? 'included' : 'excluded'}`}>
                   <span className={`pr-feat-icon ${f.included ? 'check' : 'cross'}`}>
-                    {f.included ? '✓' : '×'}
+                    {f.included ? '' : '×'}
                   </span>
                   {f.label}
                 </div>
@@ -192,8 +192,8 @@ export default function PricingPage() {
               ].map(([feat, free, prem]) => (
                 <tr key={String(feat)}>
                   <td>{feat}</td>
-                  <td>{free === true ? <span className="pr-check">✓</span> : free === false ? <span className="pr-cross">—</span> : <span style={{ color: '#5cb87a' }}>{free}</span>}</td>
-                  <td>{prem === true ? <span className="pr-check">✓</span> : <span style={{ color: '#6ee09c', fontWeight: 700 }}>{prem}</span>}</td>
+                  <td>{free === true ? <span className="pr-check"></span> : free === false ? <span className="pr-cross">—</span> : <span style={{ color: '#5cb87a' }}>{free}</span>}</td>
+                  <td>{prem === true ? <span className="pr-check"></span> : <span style={{ color: '#6ee09c', fontWeight: 700 }}>{prem}</span>}</td>
                 </tr>
               ))}
             </tbody>
@@ -205,7 +205,7 @@ export default function PricingPage() {
           <h2 className="pr-faq-title">Frequently Asked Questions</h2>
           {FAQ.map(f => (
             <div className="pr-faq-item" key={f.q}>
-              <div className="pr-faq-q">❓ {f.q}</div>
+              <div className="pr-faq-q"> {f.q}</div>
               <div className="pr-faq-a">{f.a}</div>
             </div>
           ))}
@@ -215,7 +215,7 @@ export default function PricingPage() {
         <div className="pr-bottom-cta">
           <h2>Ready to hire smarter?</h2>
           <p>Join 500+ companies already using StepUp Recruiter to find top intern talent faster.</p>
-          <Link href="#" className="pr-bottom-btn">⚡ Start Your 14-Day Free Trial</Link>
+          <Link href="#" className="pr-bottom-btn"> Start Your 14-Day Free Trial</Link>
         </div>
       </div>
     </>

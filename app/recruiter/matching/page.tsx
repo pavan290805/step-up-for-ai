@@ -84,7 +84,7 @@ function PremiumContent() {
         <div className="sm-header">
           <h1 className="sm-title">Smart Candidate Matching</h1>
           <p className="sm-sub">AI finds the best-fit candidates for each of your open listings.</p>
-          <div className="sm-ai-badge">🎯 Powered by StepUp AI Engine</div>
+          <div className="sm-ai-badge"> Powered by StepUp AI Engine</div>
         </div>
 
         <div className="sm-controls">
@@ -94,13 +94,13 @@ function PremiumContent() {
             <option>UI/UX Design Intern</option>
           </select>
           <button className="sm-run-btn" onClick={run} disabled={loading}>
-            {loading ? '⏳ Matching...' : '🎯 Find Matches'}
+            {loading ? '⏳ Matching...' : ' Find Matches'}
           </button>
         </div>
 
         {!ran && !loading && (
           <div className="sm-placeholder">
-            <div className="sm-placeholder-icon">🎯</div>
+            <div className="sm-placeholder-icon"></div>
             <p style={{ fontSize: 14, color: '#3d6b52' }}>Select a listing and click <strong>Find Matches</strong> to discover your best candidates.</p>
           </div>
         )}
@@ -114,10 +114,10 @@ function PremiumContent() {
                   <div className="sm-name">{c.name}</div>
                   <div className="sm-meta">{c.role} · {c.college}</div>
                   <div className="sm-skills">{c.skills.map(s => <span key={s} className="sm-skill">{s}</span>)}</div>
-                  <div className="sm-why">💡 {c.why}</div>
+                  <div className="sm-why"> {c.why}</div>
                   <div className="sm-actions">
-                    <button className="sm-btn-ghost">👁 View Profile</button>
-                    <button className="sm-btn-solid">📩 Invite to Apply</button>
+                    <button className="sm-btn-ghost"> View Profile</button>
+                    <button className="sm-btn-solid"> Invite to Apply</button>
                   </div>
                 </div>
                 <MatchRing value={c.match} />

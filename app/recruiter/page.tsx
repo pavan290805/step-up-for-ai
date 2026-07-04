@@ -2,11 +2,23 @@
 
 import Link from 'next/link';
 
+function StatIcon({ type }: { type: string }) {
+  const s = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  return (
+    <svg viewBox="0 0 24 24" width={24} height={24}>
+      {type === 'listings' && <><rect x="3" y="4" width="18" height="17" rx="2" {...s} /><path d="M8 2v4M16 2v4M3 10h18M8 14h2M14 14h2M8 18h2" {...s} /></>}
+      {type === 'applicants' && <><circle cx="9" cy="7" r="3" {...s} /><path d="M3 21v-1a6 6 0 0 1 6-6h.5" {...s} /><circle cx="17" cy="11" r="3" {...s} /><path d="M21 21v-1a6 6 0 0 0-6-6h-.5" {...s} /></>}
+      {type === 'downloads' && <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" {...s} /><path d="M7 10l5 5 5-5" {...s} /><path d="M12 15V3" {...s} /></>}
+      {type === 'interviews' && <><rect x="3" y="4" width="18" height="18" rx="2" {...s} /><path d="M16 2v4M8 2v4M3 10h18" {...s} /></>}
+    </svg>
+  );
+}
+
 const STATS = [
-  { label: 'Active Listings', value: '3', sub: 'Unlimited listings', icon: '📋', accent: '#2fbf64' },
-  { label: 'Total Applicants', value: '127', sub: '+18 this week', icon: '👥', accent: '#818cf8' },
-  { label: 'Resume Downloads', value: '5', sub: 'Unlimited downloads', icon: '📄', accent: '#6ee09c' },
-  { label: 'Interview Scheduled', value: '4', sub: 'This month', icon: '📅', accent: '#a78bfa' },
+  { label: 'Active Listings', value: '3', sub: 'Unlimited listings', iconType: 'listings', accent: '#2fbf64' },
+  { label: 'Total Applicants', value: '127', sub: '+18 this week', iconType: 'applicants', accent: '#818cf8' },
+  { label: 'Resume Downloads', value: '5', sub: 'Unlimited downloads', iconType: 'downloads', accent: '#6ee09c' },
+  { label: 'Interviews Scheduled', value: '4', sub: 'This month', iconType: 'interviews', accent: '#a78bfa' },
 ];
 
 const RECENT_APPLICANTS = [
@@ -31,11 +43,11 @@ const STATUS_TEXT: Record<string, string> = {
 };
 
 const QUICK_ACTIONS = [
-  { label: 'Post New Listing', href: '/recruiter/listings/new', icon: '➕', sub: 'Add a new internship' },
-  { label: 'View Candidates', href: '/recruiter/candidates', icon: '👤', sub: 'Browse talent pool' },
-  { label: 'Track Applicants', href: '/recruiter/applicants', icon: '📊', sub: 'Manage pipeline' },
-  { label: 'AI Ranking', href: '/recruiter/ai-ranking', icon: '🤖', sub: 'AI-powered candidate scores' },
-  { label: 'Smart Matching', href: '/recruiter/matching', icon: '🎯', sub: 'Match candidates to roles' },
+  { label: 'Post New Listing', href: '/recruiter/listings/new', sub: 'Add a new internship' },
+  { label: 'View Candidates', href: '/recruiter/candidates', sub: 'Browse talent pool' },
+  { label: 'Track Applicants', href: '/recruiter/applicants', sub: 'Manage pipeline' },
+  { label: 'AI Ranking', href: '/recruiter/ai-ranking', sub: 'AI-powered candidate scores' },
+  { label: 'Smart Matching', href: '/recruiter/matching', sub: 'Match candidates to roles' },
 ];
 
 export default function RecruiterDashboard() {
@@ -49,20 +61,20 @@ export default function RecruiterDashboard() {
         .dash-greeting span { color: #2fbf64; }
         .dash-sub { color: #4a8a5e; font-size: 14px; margin-top: 6px; }
         .dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 36px; }
-        .stat-card { background: linear-gradient(145deg, rgba(4,18,8,.9), rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 20px; padding: 24px; position: relative; overflow: hidden; transition: border-color .2s, transform .2s; }
-        .stat-card:hover { border-color: rgba(47,191,100,.35); transform: translateY(-3px); }
-        .stat-glow { position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; opacity: .15; pointer-events: none; }
-        .stat-icon { font-size: 26px; margin-bottom: 14px; }
+        .stat-card { background: linear-gradient(145deg, rgba(8,26,14,.85), rgba(5,15,7,.9)); border: 1px solid rgba(47,191,100,.12); border-radius: 18px; padding: 24px; position: relative; overflow: hidden; transition: border-color .2s, transform .2s; }
+        .stat-card:hover { border-color: rgba(47,191,100,.3); transform: translateY(-3px); }
+        .stat-glow { position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; border-radius: 50%; opacity: .12; pointer-events: none; }
+        .stat-icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; }
         .stat-value { font-size: 34px; font-weight: 800; color: #e8faf0; letter-spacing: -.02em; margin-bottom: 4px; }
         .stat-label { font-size: 13px; font-weight: 600; color: #5cb87a; }
         .stat-sub { font-size: 11.5px; color: #3d6b52; margin-top: 4px; }
         .dash-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; margin-bottom: 28px; }
-        .dash-panel { background: linear-gradient(145deg, rgba(4,18,8,.9), rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 20px; padding: 28px; }
+        .dash-panel { background: linear-gradient(145deg, rgba(8,26,14,.85), rgba(5,15,7,.9)); border: 1px solid rgba(47,191,100,.12); border-radius: 18px; padding: 28px; }
         .panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
         .panel-title { font-size: 16px; font-weight: 700; color: #e8faf0; }
-        .panel-link { font-size: 12px; color: #2fbf64; text-decoration: none; font-weight: 600; }
-        .panel-link:hover { text-decoration: underline; }
-        .applicant-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(47,191,100,.08); }
+        .panel-link { font-size: 12px; color: #2fbf64; text-decoration: none; font-weight: 600; transition: color .15s; }
+        .panel-link:hover { color: #6ee09c; }
+        .applicant-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(47,191,100,.06); }
         .applicant-row:last-child { border-bottom: none; }
         .a-avatar { width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, #2fbf64, #1a9e4a); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: #fff; flex-shrink: 0; }
         .a-info { flex: 1; min-width: 0; }
@@ -71,32 +83,30 @@ export default function RecruiterDashboard() {
         .a-right { text-align: right; flex-shrink: 0; }
         .a-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
         .a-time { font-size: 11px; color: #3d6b52; margin-top: 4px; }
-        .quick-actions { display: flex; flex-direction: column; gap: 12px; }
-        .qa-card { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: rgba(47,191,100,.06); border: 1px solid rgba(47,191,100,.12); text-decoration: none; transition: all .18s; cursor: pointer; }
-        .qa-card:hover { background: rgba(47,191,100,.12); border-color: rgba(47,191,100,.3); transform: translateX(4px); }
-        .qa-card.highlight { background: linear-gradient(135deg, rgba(47,191,100,.2), rgba(26,158,74,.15)); border-color: rgba(47,191,100,.4); }
-        .qa-card.highlight:hover { background: linear-gradient(135deg, rgba(47,191,100,.28), rgba(26,158,74,.22)); }
-        .qa-icon { font-size: 22px; flex-shrink: 0; }
-        .qa-text { }
+        .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+        .qa-card { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; background: rgba(47,191,100,.04); border: 1px solid rgba(47,191,100,.1); text-decoration: none; transition: all .18s; cursor: pointer; }
+        .qa-card:hover { background: rgba(47,191,100,.1); border-color: rgba(47,191,100,.25); transform: translateX(3px); }
+        .qa-arrow { color: #3d6b52; transition: color .15s; font-size: 16px; margin-left: auto; }
+        .qa-card:hover .qa-arrow { color: #2fbf64; }
         .qa-label { font-size: 13.5px; font-weight: 600; color: #d4f5e2; }
         .qa-sub { font-size: 11.5px; color: #4a8a5e; margin-top: 2px; }
-        .upgrade-banner { display: none; }
         @media (max-width: 1100px) { .dash-stats { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 800px) { .dash-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 540px) { .dash-stats { grid-template-columns: 1fr 1fr; } .upgrade-banner { flex-direction: column; } }
+        @media (max-width: 540px) { .dash-stats { grid-template-columns: 1fr 1fr; } }
       `}</style>
       <div className="dash-page">
         <div className="dash-header">
-          <h1 className="dash-greeting">Good morning, <span>Recruiter</span> 👋</h1>
-          <p className="dash-sub">Here's what's happening with your hiring pipeline today.</p>
+          <h1 className="dash-greeting">Welcome back, <span>Recruiter</span></h1>
+          <p className="dash-sub">Here&apos;s what&apos;s happening with your hiring pipeline today.</p>
         </div>
 
-        {/* Stats */}
         <div className="dash-stats">
           {STATS.map((s) => (
             <div className="stat-card" key={s.label}>
               <div className="stat-glow" style={{ background: s.accent }} />
-              <div className="stat-icon">{s.icon}</div>
+              <div className="stat-icon-wrap" style={{ background: `${s.accent}18`, color: s.accent }}>
+                <StatIcon type={s.iconType} />
+              </div>
               <div className="stat-value">{s.value}</div>
               <div className="stat-label">{s.label}</div>
               <div className="stat-sub">{s.sub}</div>
@@ -104,9 +114,7 @@ export default function RecruiterDashboard() {
           ))}
         </div>
 
-        {/* Main grid */}
         <div className="dash-grid">
-          {/* Recent applicants */}
           <div className="dash-panel">
             <div className="panel-head">
               <span className="panel-title">Recent Applicants</span>
@@ -129,19 +137,18 @@ export default function RecruiterDashboard() {
             ))}
           </div>
 
-          {/* Quick actions */}
           <div className="dash-panel">
             <div className="panel-head">
               <span className="panel-title">Quick Actions</span>
             </div>
             <div className="quick-actions">
               {QUICK_ACTIONS.map((qa) => (
-                <Link href={qa.href} key={qa.label} className={`qa-card${qa.highlight ? ' highlight' : ''}`}>
-                  <span className="qa-icon">{qa.icon}</span>
-                  <div className="qa-text">
+                <Link href={qa.href} key={qa.label} className="qa-card">
+                  <div>
                     <div className="qa-label">{qa.label}</div>
                     <div className="qa-sub">{qa.sub}</div>
                   </div>
+                  <span className="qa-arrow">→</span>
                 </Link>
               ))}
             </div>

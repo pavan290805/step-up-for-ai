@@ -124,7 +124,7 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
       `}</style>
       <div className="pg-card">
         <div className="pg-glow" />
-        <div className="pg-icon">⚡</div>
+        <div className="pg-icon"></div>
         <div className="pg-badge">PREMIUM FEATURE</div>
         <h2 className="pg-title">{feature}</h2>
         <p className="pg-desc">
@@ -139,13 +139,13 @@ export default function PremiumGate({ feature, description }: PremiumGateProps) 
             'Featured Listing Placement',
           ].map((perk) => (
             <div className="pg-perk" key={perk}>
-              <span className="pg-perk-dot">✓</span>
+              <span className="pg-perk-dot"></span>
               {perk}
             </div>
           ))}
         </div>
         <Link href="/recruiter/pricing" className="pg-cta">
-          ⚡ Upgrade to Premium
+           Upgrade to Premium
         </Link>
       </div>
     </div>

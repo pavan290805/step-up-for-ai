@@ -112,9 +112,9 @@ function PremiumContent() {
         {/* KPIs */}
         <div className="an-kpi-row">
           {[
-            { icon: '👁', val: '3,420', label: 'Listing Views', delta: '+18%', dir: 'up' },
-            { icon: '📩', val: '127', label: 'Applications', delta: '+12%', dir: 'up' },
-            { icon: '🎯', val: '68%', label: 'Response Rate', delta: '-3%', dir: 'down' },
+            { icon: '', val: '3,420', label: 'Listing Views', delta: '+18%', dir: 'up' },
+            { icon: '', val: '127', label: 'Applications', delta: '+12%', dir: 'up' },
+            { icon: '', val: '68%', label: 'Response Rate', delta: '-3%', dir: 'down' },
             { icon: '⏱', val: '4.2d', label: 'Avg Time to Hire', delta: '-1.1d', dir: 'up' },
           ].map(k => (
             <div className="an-kpi" key={k.label}>
@@ -129,7 +129,7 @@ function PremiumContent() {
         <div className="an-grid">
           {/* Views chart */}
           <div className="an-panel">
-            <div className="an-panel-title">📈 Daily Listing Views</div>
+            <div className="an-panel-title"> Daily Listing Views</div>
             <div className="an-chart-bars">
               {[{ d: 'Mon', v: 340 }, { d: 'Tue', v: 520 }, { d: 'Wed', v: 480 }, { d: 'Thu', v: 610 }, { d: 'Fri', v: 580 }, { d: 'Sat', v: 390 }, { d: 'Sun', v: 290 }].map(b => (
                 <div className="an-chart-bar-wrap" key={b.d}>
@@ -143,7 +143,7 @@ function PremiumContent() {
 
           {/* Funnel */}
           <div className="an-panel">
-            <div className="an-panel-title">📊 Application Funnel</div>
+            <div className="an-panel-title"> Application Funnel</div>
             <div className="an-funnel">
               {[
                 { label: 'Viewed', n: 3420, pct: 100, color: '#6366f1' },
@@ -162,7 +162,7 @@ function PremiumContent() {
 
           {/* Location donut */}
           <div className="an-panel">
-            <div className="an-panel-title">🗺 Applicant Locations</div>
+            <div className="an-panel-title"> Applicant Locations</div>
             <div className="an-donut-row">
               <MiniDonut slices={[
                 { value: 45, color: '#2fbf64', label: 'Hyderabad' },
@@ -189,7 +189,7 @@ function PremiumContent() {
 
           {/* Top skills */}
           <div className="an-panel">
-            <div className="an-panel-title">🛠 Top Candidate Skills</div>
+            <div className="an-panel-title"> Top Candidate Skills</div>
             <div className="an-skills-list">
               {[
                 { skill: 'React.js', count: 68, color: '#2fbf64' },

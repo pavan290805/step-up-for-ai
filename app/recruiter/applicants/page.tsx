@@ -109,7 +109,7 @@ export default function ApplicantsPage() {
                           <div className="ap-cr">{a.role}</div>
                         </div>
                       </div>
-                      <div className="ap-match">🎯 {a.match}% match</div>
+                      <div className="ap-match"> {a.match}% match</div>
                       <div className="ap-time">Applied {a.applied}</div>
                       <div className="ap-moves">
                         <button className="ap-move-btn" disabled={STAGES.indexOf(stage) === 0} onClick={e => { e.stopPropagation(); move(a.id, 'back'); }}>← Back</button>

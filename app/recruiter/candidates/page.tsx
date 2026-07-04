@@ -70,7 +70,7 @@ export default function CandidatesPage() {
             <p className="cd-sub">Browse and download resumes from our verified talent pool.</p>
           </div>
           <div className="cd-search">
-            <span className="cd-search-icon">🔍</span>
+            <span className="cd-search-icon"></span>
             <input
               className="cd-search-input"
               type="text"
@@ -90,7 +90,7 @@ export default function CandidatesPage() {
                 <div>
                   <div className="cd-name">{c.name}</div>
                   <div className="cd-role">{c.role}</div>
-                  <div className="cd-location">📍 {c.location}</div>
+                  <div className="cd-location"> {c.location}</div>
                 </div>
               </div>
               <div className="cd-divider" />
@@ -108,12 +108,12 @@ export default function CandidatesPage() {
                 {c.skills.map(s => <span key={s} className="cd-skill">{s}</span>)}
               </div>
               <div className="cd-btn-row">
-                <button className="cd-view-btn">👁 View Profile</button>
+                <button className="cd-view-btn"> View Profile</button>
                 <button
                   className={`cd-dl-btn${c.downloaded ? ' downloaded' : ''}`}
                   onClick={handleDownload}
                 >
-                  {c.downloaded ? '✓ Downloaded' : '📄 Resume'}
+                  {c.downloaded ? ' Downloaded' : ' Resume'}
                 </button>
               </div>
             </div>

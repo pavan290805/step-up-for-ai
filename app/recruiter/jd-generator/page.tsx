@@ -27,11 +27,11 @@ We are looking for a passionate Frontend Developer Intern to join our engineerin
 - Strong problem-solving skills and attention to detail
 
 ### What We Offer
-✅ Certificate of Completion  
-✅ Letter of Recommendation  
-✅ Pre-Placement Offer opportunity  
-✅ Mentorship from senior engineers  
-✅ Flexible work hours  
+ Certificate of Completion  
+ Letter of Recommendation  
+ Pre-Placement Offer opportunity  
+ Mentorship from senior engineers  
+ Flexible work hours  
 
 *We are an equal opportunity employer committed to diversity and inclusion.*`;
 
@@ -98,13 +98,13 @@ function PremiumContent() {
         <div className="jd-header">
           <h1 className="jd-title">AI JD Generator</h1>
           <p className="jd-sub">Describe your role and let AI write a compelling job description in seconds.</p>
-          <div className="jd-ai-badge">🤖 Powered by StepUp AI Engine</div>
+          <div className="jd-ai-badge"> Powered by StepUp AI Engine</div>
         </div>
 
         <div className="jd-layout">
           {/* Input */}
           <div className="jd-panel">
-            <div className="jd-panel-title">📝 Role Details</div>
+            <div className="jd-panel-title"> Role Details</div>
             <div className="jd-field">
               <label className="jd-label">Job Title</label>
               <input className="jd-input" value={role} onChange={e => setRole(e.target.value)} placeholder="e.g. Frontend Developer Intern" />
@@ -137,18 +137,18 @@ function PremiumContent() {
               <input className="jd-input" value={stipend} onChange={e => setStipend(e.target.value)} type="number" placeholder="e.g. 8000" />
             </div>
             <button className="jd-gen-btn" onClick={generate} disabled={loading}>
-              {loading ? '⏳ Generating...' : '✨ Generate Job Description'}
+              {loading ? '⏳ Generating...' : ' Generate Job Description'}
             </button>
           </div>
 
           {/* Output */}
           <div className="jd-panel jd-output">
             <div className="jd-output-head">
-              <div className="jd-panel-title" style={{ marginBottom: 0 }}>📄 Generated JD</div>
+              <div className="jd-panel-title" style={{ marginBottom: 0 }}> Generated JD</div>
               {generated && (
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="jd-copy-btn" onClick={copy}>{copied ? '✓ Copied!' : '📋 Copy'}</button>
-                  <button className="jd-use-btn">✅ Use This JD</button>
+                  <button className="jd-copy-btn" onClick={copy}>{copied ? ' Copied!' : ' Copy'}</button>
+                  <button className="jd-use-btn"> Use This JD</button>
                 </div>
               )}
             </div>
@@ -163,7 +163,7 @@ function PremiumContent() {
               <div className="jd-output-body">{SAMPLE_JD}</div>
             ) : (
               <div className="jd-placeholder">
-                <div className="jd-placeholder-icon">✨</div>
+                <div className="jd-placeholder-icon"></div>
                 <p>Fill in the role details and click <strong>Generate</strong> to create a professional job description.</p>
               </div>
             )}
