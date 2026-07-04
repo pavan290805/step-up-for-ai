@@ -1,7 +1,7 @@
 'use client';
 
 // Toggle this to true to preview premium view
-const IS_PREMIUM = false;
+const IS_PREMIUM = true;
 
 import PremiumGate from '@/Components/recruiter/PremiumGate';
 

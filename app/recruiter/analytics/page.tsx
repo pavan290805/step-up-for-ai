@@ -1,6 +1,6 @@
 'use client';
 
-const IS_PREMIUM = false;
+const IS_PREMIUM = true;
 
 import PremiumGate from '@/Components/recruiter/PremiumGate';
 

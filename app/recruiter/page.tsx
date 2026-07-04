@@ -3,9 +3,9 @@
 import Link from 'next/link';
 
 const STATS = [
-  { label: 'Active Listings', value: '3', sub: '3/3 free limit', icon: '📋', accent: '#2fbf64' },
+  { label: 'Active Listings', value: '3', sub: 'Unlimited listings', icon: '📋', accent: '#2fbf64' },
   { label: 'Total Applicants', value: '127', sub: '+18 this week', icon: '👥', accent: '#818cf8' },
-  { label: 'Resume Downloads', value: '5', sub: '5/5 free limit', icon: '📄', accent: '#6ee09c' },
+  { label: 'Resume Downloads', value: '5', sub: 'Unlimited downloads', icon: '📄', accent: '#6ee09c' },
   { label: 'Interview Scheduled', value: '4', sub: 'This month', icon: '📅', accent: '#a78bfa' },
 ];
 
@@ -34,7 +34,8 @@ const QUICK_ACTIONS = [
   { label: 'Post New Listing', href: '/recruiter/listings/new', icon: '➕', sub: 'Add a new internship' },
   { label: 'View Candidates', href: '/recruiter/candidates', icon: '👤', sub: 'Browse talent pool' },
   { label: 'Track Applicants', href: '/recruiter/applicants', icon: '📊', sub: 'Manage pipeline' },
-  { label: 'Upgrade to Pro', href: '/recruiter/pricing', icon: '⚡', sub: 'Unlock all features', highlight: true },
+  { label: 'AI Ranking', href: '/recruiter/ai-ranking', icon: '🤖', sub: 'AI-powered candidate scores' },
+  { label: 'Smart Matching', href: '/recruiter/matching', icon: '🎯', sub: 'Match candidates to roles' },
 ];
 
 export default function RecruiterDashboard() {
@@ -79,12 +80,7 @@ export default function RecruiterDashboard() {
         .qa-text { }
         .qa-label { font-size: 13.5px; font-weight: 600; color: #d4f5e2; }
         .qa-sub { font-size: 11.5px; color: #4a8a5e; margin-top: 2px; }
-        .upgrade-banner { background: linear-gradient(135deg, rgba(47,191,100,.15), rgba(26,158,74,.1)); border: 1px solid rgba(47,191,100,.3); border-radius: 18px; padding: 24px 28px; display: flex; align-items: center; gap: 20px; }
-        .ub-text { flex: 1; }
-        .ub-title { font-size: 16px; font-weight: 700; color: #e8faf0; margin-bottom: 6px; }
-        .ub-desc { font-size: 13px; color: #5cb87a; line-height: 1.6; }
-        .ub-btn { flex-shrink: 0; padding: 12px 24px; border-radius: 12px; background: linear-gradient(135deg, #2fbf64, #1a9e4a); color: #fff; font: 700 13px Inter; text-decoration: none; transition: all .2s; box-shadow: 0 8px 20px rgba(47,191,100,.35); white-space: nowrap; }
-        .ub-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(47,191,100,.45); }
+        .upgrade-banner { display: none; }
         @media (max-width: 1100px) { .dash-stats { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 800px) { .dash-grid { grid-template-columns: 1fr; } }
         @media (max-width: 540px) { .dash-stats { grid-template-columns: 1fr 1fr; } .upgrade-banner { flex-direction: column; } }
@@ -150,17 +146,6 @@ export default function RecruiterDashboard() {
               ))}
             </div>
           </div>
-        </div>
-
-        {/* Upgrade banner */}
-        <div className="upgrade-banner">
-          <div style={{ fontSize: 40 }}>⚡</div>
-          <div className="ub-text">
-            <div className="ub-title">Unlock the full power of StepUp Recruiter</div>
-            <div className="ub-desc">Get AI Candidate Ranking, Smart Matching, Advanced Analytics, and more with Premium — starting at ₹999/month.</div>
-          </div>
-          <Link href="/recruiter/pricing" className="ub-btn">View Pricing →</Link>
-        </div>
       </div>
     </>
   );

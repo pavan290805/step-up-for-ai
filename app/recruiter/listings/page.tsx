@@ -23,13 +23,7 @@ export default function ListingsPage() {
         .li-sub { font-size: 13px; color: #4a8a5e; margin-top: 4px; }
         .li-post-btn { padding: 12px 22px; border-radius: 12px; background: linear-gradient(135deg, #2fbf64, #1a9e4a); color: #fff; font: 700 13px Inter; text-decoration: none; transition: all .2s; box-shadow: 0 8px 20px rgba(47,191,100,.35); white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
         .li-post-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(47,191,100,.48); }
-        .limit-banner { background: linear-gradient(135deg, rgba(251,191,36,.1), rgba(245,158,11,.07)); border: 1px solid rgba(251,191,36,.3); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-        .lb-icon { font-size: 22px; flex-shrink: 0; }
-        .lb-text { flex: 1; }
-        .lb-title { font-size: 13.5px; font-weight: 700; color: #fbbf24; }
-        .lb-sub { font-size: 12px; color: #d97706; margin-top: 3px; }
-        .lb-link { padding: 8px 16px; border-radius: 9px; background: rgba(251,191,36,.15); border: 1px solid rgba(251,191,36,.35); color: #fbbf24; font: 700 12px Inter; text-decoration: none; white-space: nowrap; transition: all .15s; }
-        .lb-link:hover { background: rgba(251,191,36,.25); }
+
         .li-filters { display: flex; gap: 8px; margin-bottom: 22px; }
         .li-filter-btn { padding: 8px 18px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(47,191,100,.15); color: #4a8a5e; font: 600 13px Inter; cursor: pointer; transition: all .15s; }
         .li-filter-btn.active { background: rgba(47,191,100,.18); border-color: rgba(47,191,100,.4); color: #6ee09c; }
@@ -70,16 +64,6 @@ export default function ListingsPage() {
           <Link href="/recruiter/listings/new" className="li-post-btn">
             ➕ Post New Listing
           </Link>
-        </div>
-
-        {/* Free limit banner */}
-        <div className="limit-banner">
-          <span className="lb-icon">⚠️</span>
-          <div className="lb-text">
-            <div className="lb-title">You've used 3/3 free listing slots</div>
-            <div className="lb-sub">Upgrade to Premium for unlimited internship listings and featured placement.</div>
-          </div>
-          <Link href="/recruiter/pricing" className="lb-link">Upgrade →</Link>
         </div>
 
         {/* Filters */}

@@ -11,10 +11,9 @@ const CANDIDATES = [
   { id: 5, name: 'Karan Patel', role: 'Full Stack Developer', location: 'Mumbai', skills: ['Next.js', 'MongoDB', 'AWS'], gpa: '8.2', college: 'IIIT Hyderabad', avatar: 'K', downloaded: false },
 ];
 
-const FREE_LIMIT = 5;
+
 
 export default function CandidatesPage() {
-  const [downloadsUsed, setDownloadsUsed] = useState(2);
   const [search, setSearch] = useState('');
 
   const filtered = CANDIDATES.filter(c =>
@@ -23,9 +22,8 @@ export default function CandidatesPage() {
     c.skills.some(s => s.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleDownload = () => {
-    if (downloadsUsed < FREE_LIMIT) setDownloadsUsed(d => d + 1);
-  };
+  const handleDownload = () => {};
+
 
   return (
     <>
@@ -40,14 +38,7 @@ export default function CandidatesPage() {
         .cd-search-input::placeholder { color: #2e5040; }
         .cd-search-input:focus { border-color: rgba(47,191,100,.5); box-shadow: 0 0 0 4px rgba(47,191,100,.1); }
         .cd-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #2e5040; font-size: 14px; }
-        .cd-limit-bar { background: rgba(255,255,255,.04); border: 1px solid rgba(47,191,100,.15); border-radius: 14px; padding: 14px 20px; margin-bottom: 22px; display: flex; align-items: center; gap: 16px; }
-        .cd-limit-info { flex: 1; }
-        .cd-limit-label { font-size: 13px; font-weight: 600; color: #d4f5e2; margin-bottom: 8px; }
-        .cd-limit-track { height: 6px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
-        .cd-limit-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #2fbf64, #1a9e4a); transition: width .4s; }
-        .cd-limit-sub { font-size: 11px; color: #4a8a5e; margin-top: 5px; }
-        .cd-limit-upgrade { padding: 9px 18px; border-radius: 10px; background: linear-gradient(135deg, #2fbf64, #1a9e4a); color: #fff; font: 700 12px Inter; text-decoration: none; white-space: nowrap; transition: all .2s; }
-        .cd-limit-upgrade:hover { transform: translateY(-1px); }
+
         .cd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px; }
         .cd-card { background: linear-gradient(145deg, rgba(4,18,8,.9), rgba(2,12,5,.9)); border: 1px solid rgba(47,191,100,.15); border-radius: 20px; padding: 24px; transition: all .2s; }
         .cd-card:hover { border-color: rgba(47,191,100,.35); transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.35); }
@@ -90,18 +81,6 @@ export default function CandidatesPage() {
           </div>
         </div>
 
-        {/* Download limit */}
-        <div className="cd-limit-bar">
-          <div className="cd-limit-info">
-            <div className="cd-limit-label">Resume Downloads — {downloadsUsed}/{FREE_LIMIT} used</div>
-            <div className="cd-limit-track">
-              <div className="cd-limit-fill" style={{ width: `${(downloadsUsed / FREE_LIMIT) * 100}%` }} />
-            </div>
-            <div className="cd-limit-sub">Upgrade to Premium for unlimited resume downloads.</div>
-          </div>
-          <Link href="/recruiter/pricing" className="cd-limit-upgrade">Upgrade →</Link>
-        </div>
-
         {/* Cards */}
         <div className="cd-grid">
           {filtered.map(c => (
@@ -133,7 +112,6 @@ export default function CandidatesPage() {
                 <button
                   className={`cd-dl-btn${c.downloaded ? ' downloaded' : ''}`}
                   onClick={handleDownload}
-                  disabled={downloadsUsed >= FREE_LIMIT && !c.downloaded}
                 >
                   {c.downloaded ? '✓ Downloaded' : '📄 Resume'}
                 </button>

@@ -83,7 +83,6 @@ export default function ApplicantsPage() {
         <div className="ap-header">
           <h1 className="ap-title">Applicant Tracking</h1>
           <p className="ap-sub">Track your candidates through the hiring pipeline.</p>
-          <div className="ap-premium-note">⚡ Drag & drop, bulk actions, and filters available in Premium</div>
         </div>
 
         <div className="ap-board">
