@@ -44,9 +44,8 @@ function LogoIcon() {
     <img 
       src="/logos/logo-recruiter.jpeg" 
       alt="StepUp Logo" 
-      height={52} 
       className="r-logo-img"
-      style={{ borderRadius: '10px', objectFit: 'contain', flexShrink: 0 }} 
+      style={{ width: '160px', height: 'auto', borderRadius: '12px', flexShrink: 0 }} 
     />
   );
 }
@@ -63,7 +62,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         body { margin: 0; }
         .r-shell { min-height: 100vh; display: flex; background: #080511; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #f1eeff; }
         .r-sidebar { width: 260px; min-height: 100vh; background: linear-gradient(180deg, #0d0718 0%, #08041a 100%); border-right: 1px solid rgba(168, 85, 247,.12); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; z-index: 100; flex-shrink: 0; }
-        .r-sidebar-logo { padding: 24px 20px; display: flex; justify-content: center; border-bottom: 1px solid rgba(168, 85, 247,.08); }
+        .r-sidebar-logo { padding: 32px 20px 24px; display: flex; justify-content: center; border-bottom: 1px solid rgba(168, 85, 247,.08); }
         .r-logo-text { display: none; }
         .r-nav { flex: 1; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 2px; }
         .r-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: #5a8868; font-size: 13.5px; font-weight: 500; text-decoration: none; transition: all .15s; position: relative; }
