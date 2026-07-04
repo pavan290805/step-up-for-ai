@@ -66,8 +66,7 @@ function PremiumContent() {
         .jd-header { margin-bottom: 28px; }
         .jd-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
         .jd-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
-        .jd-ai-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 16px; border-radius: 99px; background: linear-gradient(135deg,rgba(168, 85, 247,.2),rgba(124, 58, 237,.15)); border: 1px solid rgba(168, 85, 247,.4); font-size: 12px; color: #c084fc; font-weight: 700; }
-        .jd-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+                .jd-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
         .jd-panel { background: linear-gradient(145deg,rgba(13, 7, 24,.9),rgba(8, 4, 26,.9)); border: 1px solid rgba(168, 85, 247,.15); border-radius: 22px; padding: 28px; }
         .jd-panel-title { font-size: 15px; font-weight: 700; color: #e2d9ff; margin-bottom: 22px; display: flex; align-items: center; gap: 8px; }
         .jd-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
@@ -98,8 +97,7 @@ function PremiumContent() {
         <div className="jd-header">
           <h1 className="jd-title">AI JD Generator</h1>
           <p className="jd-sub">Describe your role and let AI write a compelling job description in seconds.</p>
-          <div className="jd-ai-badge"> Powered by StepUp AI Engine</div>
-        </div>
+                  </div>
 
         <div className="jd-layout">
           {/* Input */}

@@ -43,8 +43,7 @@ function PremiumContent() {
         .ar-header { margin-bottom: 28px; }
         .ar-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
         .ar-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
-        .ar-ai-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 16px; border-radius: 99px; background: linear-gradient(135deg,rgba(168, 85, 247,.2),rgba(124, 58, 237,.15)); border: 1px solid rgba(168, 85, 247,.4); font-size: 12px; color: #c084fc; font-weight: 700; }
-        .ar-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+                .ar-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
         .ar-select { padding: 10px 14px; border-radius: 11px; background: rgba(255,255,255,.04); border: 1px solid rgba(168, 85, 247,.18); color: #f1eeff; font: 500 13px Inter; outline: none; transition: all .2s; cursor: pointer; }
         .ar-select option { background: #0d0718; }
         .ar-select:focus { border-color: rgba(168, 85, 247,.5); }
@@ -71,8 +70,7 @@ function PremiumContent() {
         <div className="ar-header">
           <h1 className="ar-title">AI Candidate Ranking</h1>
           <p className="ar-sub">Our AI scores and ranks candidates by fit for each listing.</p>
-          <div className="ar-ai-badge"> Powered by StepUp AI Engine</div>
-        </div>
+                  </div>
 
         <div className="ar-controls">
           <select className="ar-select">

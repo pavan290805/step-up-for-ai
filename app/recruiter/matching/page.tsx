@@ -56,8 +56,7 @@ function PremiumContent() {
         .sm-header { margin-bottom: 28px; }
         .sm-title { font-size: 26px; font-weight: 800; color: #f1eeff; letter-spacing: -.02em; }
         .sm-sub { font-size: 13px; color: #7c6d9e; margin-top: 4px; }
-        .sm-ai-badge { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; padding: 7px 16px; border-radius: 99px; background: linear-gradient(135deg,rgba(168, 85, 247,.2),rgba(124, 58, 237,.15)); border: 1px solid rgba(168, 85, 247,.4); font-size: 12px; color: #c084fc; font-weight: 700; }
-        .sm-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
+                .sm-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; flex-wrap: wrap; }
         .sm-select { padding: 11px 14px; border-radius: 11px; background: rgba(255,255,255,.04); border: 1px solid rgba(168, 85, 247,.18); color: #f1eeff; font: 500 13px Inter; outline: none; cursor: pointer; min-width: 240px; }
         .sm-select option { background: #0d0718; }
         .sm-run-btn { padding: 11px 24px; border-radius: 11px; background: linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; font: 700 13px Inter; border: none; cursor: pointer; transition: all .2s; box-shadow: 0 8px 20px rgba(168, 85, 247,.35); display:flex; align-items:center; gap:7px; }
@@ -84,8 +83,7 @@ function PremiumContent() {
         <div className="sm-header">
           <h1 className="sm-title">Smart Candidate Matching</h1>
           <p className="sm-sub">AI finds the best-fit candidates for each of your open listings.</p>
-          <div className="sm-ai-badge"> Powered by StepUp AI Engine</div>
-        </div>
+                  </div>
 
         <div className="sm-controls">
           <select className="sm-select" value={selectedListing} onChange={e => setSelectedListing(e.target.value)}>
