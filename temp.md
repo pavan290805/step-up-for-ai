@@ -1,0 +1,53 @@
+{
+  "name": "stepup-ai-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "StepUp for AI - Backend (Phase 1: Authentication)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "seed": "tsx scripts/seed.ts",
+    "seed:plans": "tsx database/seeders/seed-plans.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0",
+    "@google/generative-ai": "^0.17.0",
+    "bcryptjs": "2.4.3",
+    "better-auth": "1.1.3",
+    "cloudinary": "^2.4.0",
+    "dotenv": "16.4.5",
+    "mongodb": "^6.7.0",
+    "mongoose": "8.5.2",
+    "nanoid": "5.0.7",
+    "next": "^14.2.35",
+    "openai": "^4.56.0",
+    "otplib": "12.0.1",
+    "pino": "9.3.2",
+    "pino-pretty": "11.2.2",
+    "razorpay": "^2.9.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "swagger-jsdoc": "6.2.8",
+    "swagger-ui-dist": "^5.32.8",
+    "swagger-ui-react": "^5.32.8",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "2.4.6",
+    "@types/node": "20.14.15",
+    "@types/react": "18.3.3",
+    "@types/supertest": "6.0.2",
+    "@types/swagger-jsdoc": "6.0.4",
+    "@types/swagger-ui-react": "^5.18.0",
+    "mongodb-memory-server": "9.4.1",
+    "supertest": "7.0.0",  
+    "tsx": "4.16.5",
+    "typescript": "5.5.4",
+    "vitest": "2.0.5"
+  } 
+}
