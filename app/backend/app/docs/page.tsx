@@ -14,7 +14,7 @@ export default function DocsPage() {
         // Using a stable CDN for swagger-ui styles
         href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"
       />
-      <SwaggerUI url="/api/v1/docs" />
+      <SwaggerUI url="/backend/api/v1/docs" />
     </>
   );
 }
