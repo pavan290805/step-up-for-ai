@@ -1,6 +1,10 @@
 import type { NextRequest, NextResponse } from "next/server";
 import { env } from "@/config/env";
-import type { RouteHandler, RouteContext } from "@/middlewares/error-handler.middleware";
+import {
+  resolveRouteContext,
+  type RouteHandler,
+  type RouteContext,
+} from "@/middlewares/error-handler.middleware";
 
 /**
  * Helmet-equivalent security headers. Next.js has no built-in Helmet, so
@@ -8,7 +12,7 @@ import type { RouteHandler, RouteContext } from "@/middlewares/error-handler.mid
  */
 export function withSecurityHeaders(handler: RouteHandler): RouteHandler {
   return async (request: NextRequest, context?: RouteContext) => {
-    const response = (await handler(request, context)) as NextResponse;
+    const response = (await handler(request, await resolveRouteContext(context))) as NextResponse;
 
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("X-Frame-Options", "DENY");

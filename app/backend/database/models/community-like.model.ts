@@ -1,12 +1,12 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const LIKE_TARGET_TYPES = ["post", "comment"] as const;
 export type LikeTargetType = (typeof LIKE_TARGET_TYPES)[number];
 
 export interface ICommunityLike {
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   targetType: LikeTargetType;
-  targetId: Schema.Types.ObjectId;
+  targetId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }

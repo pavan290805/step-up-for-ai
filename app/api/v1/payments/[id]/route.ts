@@ -5,14 +5,13 @@ import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
 import { withAuth, type AuthContext } from "@/middlewares/auth.middleware";
-import type { RouteContext } from "@/middlewares/error-handler.middleware";
 
-async function getHandler(request: NextRequest, context?: RouteContext) {
+async function getHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return paymentController.getById(request, { params: context?.params });
+  return paymentController.getById(request, context);
 }
 
-export const GET = withSecurityHeaders(withRequestLogger(withErrorHandler(withAuth(getHandler as unknown as (req: NextRequest, ctx: AuthContext) => Promise<Response>))));
+export const GET = withSecurityHeaders(withRequestLogger(withErrorHandler(withAuth(getHandler))));
 
 /**
  * @openapi

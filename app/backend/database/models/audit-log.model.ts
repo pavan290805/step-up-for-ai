@@ -1,7 +1,7 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IAuditLog {
-  actorId: Schema.Types.ObjectId;
+  actorId: Types.ObjectId;
   action: string;
   targetType: string;
   targetId: string | null;

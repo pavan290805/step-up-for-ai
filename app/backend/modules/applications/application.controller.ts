@@ -1,6 +1,10 @@
 import type { NextRequest } from "next/server";
 import { applicationService } from "@/modules/applications/application.service";
-import { applicationListQuerySchema, createApplicationSchema } from "@/modules/applications/application.validators";
+import {
+  applicationListQuerySchema,
+  createApplicationSchema,
+  updateApplicationStatusSchema,
+} from "@/modules/applications/application.validators";
 import { ApiResponse } from "@/shared/response/api-response";
 import { ValidationError } from "@/shared/errors";
 import { parseJsonBody } from "@/shared/utils/request";
@@ -43,5 +47,44 @@ export const applicationController = {
       query.data.status
     );
     return ApiResponse.success(result, "Application history retrieved");
+  },
+
+  async listForRecruiter(request: NextRequest, context: AuthContext) {
+    const query = applicationListQuerySchema.safeParse(
+      Object.fromEntries(request.nextUrl.searchParams.entries())
+    );
+    if (!query.success) {
+      throw new ValidationError("Invalid query parameters", query.error.flatten());
+    }
+
+    const result = await applicationService.getForRecruiter(
+      context.user.id,
+      query.data.cursor,
+      query.data.limit,
+      query.data.status,
+      query.data.internshipId
+    );
+    return ApiResponse.success(result, "Applicants retrieved");
+  },
+
+  async updateStatus(request: NextRequest, context: AuthContext) {
+    const applicationId = context.params?.id;
+    if (!applicationId) {
+      throw new ValidationError("Application id is required");
+    }
+
+    const body = await parseJsonBody(request);
+    const parsed = updateApplicationStatusSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new ValidationError("Invalid status payload", parsed.error.flatten());
+    }
+
+    const result = await applicationService.updateStatus(
+      applicationId,
+      context.user.id,
+      parsed.data.status,
+      parsed.data.note
+    );
+    return ApiResponse.success(result, "Application status updated");
   },
 };

@@ -1,13 +1,13 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const INVOICE_STATUSES = ["issued", "paid", "void"] as const;
 export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
 
 export interface IInvoice {
   invoiceNumber: string;
-  userId: Schema.Types.ObjectId;
-  paymentId: Schema.Types.ObjectId;
-  subscriptionId: Schema.Types.ObjectId | null;
+  userId: Types.ObjectId;
+  paymentId: Types.ObjectId;
+  subscriptionId: Types.ObjectId | null;
   amountInPaise: number;
   currency: string;
   status: InvoiceStatus;

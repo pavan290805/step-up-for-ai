@@ -7,11 +7,12 @@ import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
 import { withAuth, type AuthContext } from "@/middlewares/auth.middleware";
 import { withRole } from "@/middlewares/rbac.middleware";
 import { ROLES } from "@/shared/constants/roles";
-import type { RouteContext } from "@/middlewares/error-handler.middleware";
+import { resolveRouteContext, type RouteContext } from "@/middlewares/error-handler.middleware";
 
 async function getHandler(request: NextRequest, context?: RouteContext) {
   await connectToDatabase();
-  return eventController.getById(request, { params: context?.params });
+  const resolvedContext = await resolveRouteContext(context);
+  return eventController.getById(request, { params: resolvedContext?.params });
 }
 
 async function putHandler(request: NextRequest, context: AuthContext) {

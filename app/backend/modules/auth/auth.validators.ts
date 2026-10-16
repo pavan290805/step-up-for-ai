@@ -6,10 +6,9 @@ export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   confirmPassword: z.string(),
-  role: z.enum(
-    SELF_REGISTERABLE_ROLES as [string, ...string[]],
-    { errorMap: () => ({ message: "Role must be one of: student, recruiter, investor, mentor" }) }
-  ),
+  role: z.enum(SELF_REGISTERABLE_ROLES, {
+    errorMap: () => ({ message: "Role must be one of: student, recruiter, investor, mentor" }),
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],

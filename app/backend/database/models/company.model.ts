@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const COMPANY_SIZE = ["1-10", "11-50", "51-200", "201-500", "501-1000", "1000+"] as const;
 export type CompanySize = (typeof COMPANY_SIZE)[number];
@@ -12,7 +12,7 @@ export interface ICompany {
   size: CompanySize | null;
   description: string | null;
   verifiedByAdmin: boolean;
-  createdBy: Schema.Types.ObjectId;
+  createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }

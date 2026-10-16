@@ -1,8 +1,8 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface ICommunityBookmark {
-  userId: Schema.Types.ObjectId;
-  postId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
+  postId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }

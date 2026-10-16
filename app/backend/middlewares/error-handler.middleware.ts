@@ -7,9 +7,32 @@ import { createModuleLogger } from "@/config/logger.config";
 
 const logger = createModuleLogger("error-handler");
 
-export type RouteContext = { params?: Record<string, string> };
+export type RouteContext = { params?: Record<string, string> | Promise<object> };
+export type ResolvedRouteContext = { params?: Record<string, string> };
 
 export type RouteHandler = (request: NextRequest, context?: RouteContext) => Promise<NextResponse>;
+
+export async function resolveRouteContext(
+  context?: RouteContext
+): Promise<ResolvedRouteContext | undefined> {
+  const params = context?.params;
+  if (!params) return context ? {} : undefined;
+
+  const resolvedParams = await params;
+  if (!isStringRecord(resolvedParams)) {
+    throw new Error("Route parameters must be strings.");
+  }
+  return { params: resolvedParams };
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Object.values(value).every((entry) => typeof entry === "string")
+  );
+}
 
 /**
  * Wraps every route handler so a thrown error anywhere in the
@@ -23,7 +46,7 @@ export function withErrorHandler(handler: RouteHandler): RouteHandler {
     const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
 
     try {
-      return await handler(request, context);
+      return await handler(request, await resolveRouteContext(context));
     } catch (error) {
       return handleError(error, requestId, request);
     }

@@ -1,11 +1,11 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const REGISTRATION_STATUSES = ["registered", "waitlisted", "cancelled", "attended", "no_show"] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 
 export interface IEventRegistration {
-  eventId: Schema.Types.ObjectId;
-  userId: Schema.Types.ObjectId;
+  eventId: Types.ObjectId;
+  userId: Types.ObjectId;
   status: RegistrationStatus;
   registeredAt: Date;
   cancelledAt: Date | null;

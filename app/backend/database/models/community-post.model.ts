@@ -1,10 +1,10 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const COMMUNITY_POST_STATUSES = ["published", "hidden", "removed"] as const;
 export type CommunityPostStatus = (typeof COMMUNITY_POST_STATUSES)[number];
 
 export interface ICommunityPost {
-  authorId: Schema.Types.ObjectId;
+  authorId: Types.ObjectId;
   title: string;
   content: string;
   category: string | null;
@@ -13,7 +13,7 @@ export interface ICommunityPost {
   likeCount: number;
   commentCount: number;
   bookmarkCount: number;
-  moderatedBy: Schema.Types.ObjectId | null;
+  moderatedBy: Types.ObjectId | null;
   moderationReason: string | null;
   createdAt: Date;
   updatedAt: Date;

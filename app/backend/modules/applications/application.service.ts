@@ -75,8 +75,14 @@ export const applicationService = {
     return buildPaginatedResult(results, limit);
   },
 
-  async getForRecruiter(recruiterId: string, cursor: string | undefined, limit: number, status?: string) {
-    const results = await applicationRepository.findByRecruiter(recruiterId, cursor, limit, status);
+  async getForRecruiter(
+    recruiterId: string,
+    cursor: string | undefined,
+    limit: number,
+    status?: string,
+    internshipId?: string
+  ) {
+    const results = await applicationRepository.findByRecruiter(recruiterId, cursor, limit, status, internshipId);
     return buildPaginatedResult(results, limit);
   },
 

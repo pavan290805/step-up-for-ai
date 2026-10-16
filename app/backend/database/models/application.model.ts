@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const APPLICATION_STATUSES = [
   "applied",
@@ -17,10 +17,10 @@ export interface IApplicationTimelineEntry {
 }
 
 export interface IApplication {
-  studentId: Schema.Types.ObjectId;
-  internshipId: Schema.Types.ObjectId;
-  recruiterId: Schema.Types.ObjectId;
-  resumeId: Schema.Types.ObjectId;
+  studentId: Types.ObjectId;
+  internshipId: Types.ObjectId;
+  recruiterId: Types.ObjectId;
+  resumeId: Types.ObjectId;
   status: ApplicationStatus;
   aiMatchScore: number | null;
   coverNote: string | null;

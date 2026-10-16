@@ -1,4 +1,5 @@
 import { ApplicationModel, type ApplicationStatus } from "@/database/models/application.model";
+import { StudentProfileModel } from "@/database/models/student-profile.model";
 
 export interface CreateApplicationData {
   studentId: string;
@@ -34,6 +35,7 @@ export const applicationRepository = {
     return ApplicationModel.find(query)
       .sort({ _id: -1 })
       .limit(limit + 1)
+      .populate({ path: "internshipId", select: "title location type" })
       .lean()
       .exec();
   },
@@ -46,20 +48,42 @@ export const applicationRepository = {
     return ApplicationModel.find(query)
       .sort({ _id: -1 })
       .limit(limit + 1)
+      .populate({ path: "internshipId", select: "title location type" })
+      .populate({ path: "studentId", select: "email" })
       .lean()
       .exec();
   },
 
-  async findByRecruiter(recruiterId: string, cursor: string | undefined, limit: number, status?: string) {
+  async findByRecruiter(
+    recruiterId: string,
+    cursor: string | undefined,
+    limit: number,
+    status?: string,
+    internshipId?: string
+  ) {
     const query: Record<string, unknown> = { recruiterId };
     if (status) query.status = status;
+    if (internshipId) query.internshipId = internshipId;
     if (cursor) query._id = { $lt: cursor };
 
-    return ApplicationModel.find(query)
+    const applications = await ApplicationModel.find(query)
       .sort({ _id: -1 })
       .limit(limit + 1)
+      .populate({ path: "internshipId", select: "title location type" })
       .lean()
       .exec();
+
+    const studentIds = applications.map((application) => String(application.studentId));
+    const profiles = await StudentProfileModel.find({ userId: { $in: studentIds } })
+      .select("userId fullName headline")
+      .lean()
+      .exec();
+    const profilesByUserId = new Map(profiles.map((profile) => [String(profile.userId), profile]));
+
+    return applications.map((application) => ({
+      ...application,
+      studentProfile: profilesByUserId.get(String(application.studentId)) ?? null,
+    }));
   },
 
   async updateStatus(id: string, status: ApplicationStatus, note?: string) {

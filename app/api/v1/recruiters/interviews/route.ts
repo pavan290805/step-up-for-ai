@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { connectToDatabase } from "@/config/db.config";
-import { interviewController } from "@/modules/interviews/interview.controller";
+import { recruiterController } from "@/modules/recruiters/recruiter.controller";
 import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
@@ -10,12 +10,12 @@ import { ROLES } from "@/shared/constants/roles";
 
 async function postHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return interviewController.schedule(request, context);
+  return recruiterController.scheduleInterview(request, context);
 }
 
 async function getHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return interviewController.listForRecruiter(request, context);
+  return recruiterController.listInterviews(request, context);
 }
 
 export const POST = withSecurityHeaders(withRequestLogger(withErrorHandler(withAuth((r, c) => withRole([ROLES.RECRUITER], postHandler)(r, c)))));

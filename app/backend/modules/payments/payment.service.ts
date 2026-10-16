@@ -80,8 +80,7 @@ export const paymentService = {
   async processWebhook(rawBody: string, signatureHeader: string | null): Promise<{ processed: boolean }> {
     const { event, dedupeKey } = webhookHandler.verifyAndParse(rawBody, signatureHeader);
 
-    const isNewEvent = await webhookEventRepository.recordIfNew(dedupeKey, event.event);
-    if (!isNewEvent) {
+    if (await webhookEventRepository.hasProcessed(dedupeKey)) {
       logger.info({ dedupeKey }, "Duplicate webhook event ignored (already processed)");
       return { processed: false };
     }
@@ -105,6 +104,7 @@ export const paymentService = {
         logger.info({ eventType: event.event }, "Unhandled webhook event type (recorded, no action taken)");
     }
 
+    await webhookEventRepository.recordIfNew(dedupeKey, event.event);
     return { processed: true };
   },
 

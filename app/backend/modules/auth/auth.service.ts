@@ -69,10 +69,8 @@ export const authService = {
 
     logger.info({ userId: String(user._id), role: input.role }, "User registered");
 
-    // The raw token is handed back to the controller, which (in a later
-    // phase / via the email queue) dispatches it through Resend. We never
-    // persist the raw token — only its hash — so returning it here is the
-    // one and only place it exists outside the user's inbox.
+    // The controller sends the raw token and exposes it only as a
+    // development fallback when email delivery is not configured.
     return { userId: String(user._id), verificationToken: rawToken };
   },
 

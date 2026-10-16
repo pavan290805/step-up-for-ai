@@ -1,4 +1,5 @@
 import { recruiterRepository, companyRepository, interviewRepository } from "@/modules/recruiters/recruiter.repository";
+import { applicationRepository } from "@/modules/applications/application.repository";
 import { applicationService } from "@/modules/applications/application.service";
 import { internshipRepository } from "@/modules/internships/internship.repository";
 import { jdGeneratorService } from "@/ai/services/jd-generator.service";
@@ -82,9 +83,9 @@ export const recruiterService = {
   },
 
   async getDashboard(recruiterId: string) {
-    const [internships, applicationCount] = await Promise.all([
+    const [internships, totalApplications] = await Promise.all([
       internshipRepository.findByRecruiter(recruiterId, undefined, 100),
-      applicationService.getForRecruiter(recruiterId, undefined, 1),
+      applicationRepository.countByRecruiter(recruiterId),
     ]);
 
     const publishedCount = internships.filter((i) => i.status === "published").length;
@@ -96,7 +97,7 @@ export const recruiterService = {
       publishedCount,
       draftCount,
       closedCount,
-      totalApplicationsSample: applicationCount.items.length,
+      totalApplications,
     };
   },
 

@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const INTERVIEW_MODES = ["online", "onsite"] as const;
 export type InterviewMode = (typeof INTERVIEW_MODES)[number];
@@ -7,9 +7,9 @@ export const INTERVIEW_STATUSES = ["scheduled", "completed", "cancelled"] as con
 export type InterviewStatus = (typeof INTERVIEW_STATUSES)[number];
 
 export interface IInterview {
-  applicationId: Schema.Types.ObjectId;
-  recruiterId: Schema.Types.ObjectId;
-  studentId: Schema.Types.ObjectId;
+  applicationId: Types.ObjectId;
+  recruiterId: Types.ObjectId;
+  studentId: Types.ObjectId;
   scheduledAt: Date;
   mode: InterviewMode;
   status: InterviewStatus;

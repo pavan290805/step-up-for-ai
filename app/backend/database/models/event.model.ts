@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const EVENT_TYPES = [
   "webinar",
@@ -19,7 +19,7 @@ export interface IEvent {
   title: string;
   description: string;
   type: EventType;
-  organizerId: Schema.Types.ObjectId;
+  organizerId: Types.ObjectId;
   status: EventStatus;
   startAt: Date;
   endAt: Date;

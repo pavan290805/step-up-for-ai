@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const INTERNSHIP_TYPES = ["internship", "full-time", "hybrid", "remote"] as const;
 export type InternshipType = (typeof INTERNSHIP_TYPES)[number];
@@ -7,8 +7,9 @@ export const INTERNSHIP_STATUSES = ["draft", "published", "closed", "expired"] a
 export type InternshipStatus = (typeof INTERNSHIP_STATUSES)[number];
 
 export interface IInternship {
-  recruiterId: Schema.Types.ObjectId;
-  companyId: Schema.Types.ObjectId;
+  _id: Types.ObjectId;
+  recruiterId: Types.ObjectId;
+  companyId: Types.ObjectId;
   title: string;
   description: string;
   skillsRequired: string[];

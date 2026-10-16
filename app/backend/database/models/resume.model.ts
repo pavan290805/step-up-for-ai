@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IResumeAiAnalysis {
   score: number;
@@ -10,7 +10,7 @@ export interface IResumeAiAnalysis {
 }
 
 export interface IResume {
-  studentId: Schema.Types.ObjectId;
+  studentId: Types.ObjectId;
   fileUrl: string;
   fileName: string;
   cloudinaryPublicId: string;

@@ -1,11 +1,11 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const DEAL_STAGES = ["interested", "contacted", "diligence", "term-sheet", "invested", "passed"] as const;
 export type DealStage = (typeof DEAL_STAGES)[number];
 
 export interface IDeal {
-  investorId: Schema.Types.ObjectId;
-  startupId: Schema.Types.ObjectId;
+  investorId: Types.ObjectId;
+  startupId: Types.ObjectId;
   stage: DealStage;
   notes: string | null;
   createdAt: Date;

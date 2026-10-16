@@ -3,6 +3,7 @@ import { authService } from "@/modules/auth/auth.service";
 import { COOKIE_NAMES } from "@/shared/constants/cookies";
 import { UnauthorizedError } from "@/shared/errors";
 import type { AuthenticatedUser } from "@/modules/auth/auth.types";
+import { resolveRouteContext, type RouteContext } from "@/middlewares/error-handler.middleware";
 
 /**
  * Route handlers wrapped with `withAuth` receive the authenticated user as
@@ -21,7 +22,8 @@ export type AuthenticatedRouteHandler = (
 ) => Promise<NextResponse>;
 
 export function withAuth(handler: AuthenticatedRouteHandler) {
-  return async (request: NextRequest, context?: { params?: Record<string, string> }) => {
+  return async (request: NextRequest, context?: RouteContext) => {
+    const resolvedContext = await resolveRouteContext(context);
     const sessionToken = request.cookies.get(COOKIE_NAMES.SESSION)?.value;
 
     if (!sessionToken) {
@@ -30,6 +32,6 @@ export function withAuth(handler: AuthenticatedRouteHandler) {
 
     const user = await authService.getSessionUser(sessionToken);
 
-    return handler(request, { params: context?.params, user });
+    return handler(request, { params: resolvedContext?.params, user });
   };
 }

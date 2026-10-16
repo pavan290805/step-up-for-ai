@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IEducationEntry {
   institution: string;
@@ -18,21 +18,21 @@ export interface IExperienceEntry {
 }
 
 export interface IStudentProfile {
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   fullName: string;
   headline: string | null;
   bio: string | null;
   skills: string[];
   education: IEducationEntry[];
   experience: IExperienceEntry[];
-  resumeIds: Schema.Types.ObjectId[];
-  activeResumeId: Schema.Types.ObjectId | null;
+  resumeIds: Types.ObjectId[];
+  activeResumeId: Types.ObjectId | null;
   githubUrl: string | null;
   linkedinUrl: string | null;
   portfolioUrl: string | null;
   avatarUrl: string | null;
   resumeScore: number | null;
-  savedInternshipIds: Schema.Types.ObjectId[];
+  savedInternshipIds: Types.ObjectId[];
   subscriptionTier: "free" | "premium";
   createdAt: Date;
   updatedAt: Date;

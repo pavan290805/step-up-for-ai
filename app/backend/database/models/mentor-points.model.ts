@@ -1,8 +1,8 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IMentorPointsLedgerEntry {
-  mentorId: Schema.Types.ObjectId;
-  sessionId: Schema.Types.ObjectId | null;
+  mentorId: Types.ObjectId;
+  sessionId: Types.ObjectId | null;
   points: number;
   reason: string;
   createdAt: Date;

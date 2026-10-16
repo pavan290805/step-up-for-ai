@@ -5,11 +5,12 @@ import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
 import { withAuth, type AuthContext } from "@/middlewares/auth.middleware";
-import type { RouteContext } from "@/middlewares/error-handler.middleware";
+import { resolveRouteContext, type RouteContext } from "@/middlewares/error-handler.middleware";
 
 async function getHandler(request: NextRequest, context?: RouteContext) {
   await connectToDatabase();
-  return communityController.getComments(request, { params: context?.params });
+  const resolvedContext = await resolveRouteContext(context);
+  return communityController.getComments(request, { params: resolvedContext?.params });
 }
 
 async function postHandler(request: NextRequest, context: AuthContext) {

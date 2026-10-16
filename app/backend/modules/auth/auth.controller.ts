@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { authService } from "@/modules/auth/auth.service";
+import { authEmailService } from "@/modules/auth/email.service";
 import {
   confirmTwoFactorSchema,
   forgotPasswordSchema,
@@ -13,7 +14,8 @@ import { HTTP_STATUS } from "@/shared/constants/http-status";
 import { COOKIE_NAMES, REFRESH_COOKIE_MAX_AGE_SECONDS, SESSION_COOKIE_MAX_AGE_SECONDS } from "@/shared/constants/cookies";
 import { UnauthorizedError, ValidationError } from "@/shared/errors";
 import { parseJsonBody } from "@/shared/utils/request";
-import { env } from "@/config/env";
+import { env, getEmailConfig } from "@/config/env";
+import { createModuleLogger } from "@/config/logger.config";
 import type { AuthenticatedUser } from "@/modules/auth/auth.types";
 import type { Role } from "@/shared/constants/roles";
 
@@ -30,6 +32,8 @@ const cookieOptions = {
   path: "/",
 };
 
+const logger = createModuleLogger("auth.controller");
+
 export const authController = {
   async register(request: NextRequest) {
     const body = await parseJsonBody(request);
@@ -39,17 +43,60 @@ export const authController = {
     }
 
     const { email, password, role } = parsed.data;
+    if (env.NODE_ENV === "production") getEmailConfig();
     const result = await authService.register({ email, password, role: role as Role });
 
-    // Phase 1 note: the raw verification token is included in the response
-    // only until the Email module (Phase-adjacent, queued via Resend) is
-    // wired up. It must be removed from the response body once emails are
-    // dispatched for real — see modules/auth/auth.controller.ts TODO tracker
-    // in the project board, not in code.
+    let developmentToken: string | undefined;
+    try {
+      await authEmailService.sendVerificationEmail(email, result.verificationToken);
+    } catch (error) {
+      if (env.NODE_ENV === "production") throw error;
+      logger.warn(
+        { userId: result.userId, err: error },
+        "Verification email unavailable; returning a development-only verification token",
+      );
+      developmentToken = result.verificationToken;
+    }
+
     return ApiResponse.created(
-      { userId: result.userId, verificationToken: result.verificationToken },
+      { userId: result.userId, ...(developmentToken ? { verificationToken: developmentToken } : {}) },
       "Registration successful. Please verify your email before logging in.",
     );
+  },
+
+  async resendVerificationEmail(request: NextRequest) {
+    const body = await parseJsonBody(request);
+    const parsed = forgotPasswordSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new ValidationError("Invalid payload", parsed.error.flatten());
+    }
+    if (env.NODE_ENV === "production") getEmailConfig();
+
+    const result = await authService.resendVerificationEmail(parsed.data.email);
+    if (!result) {
+      return ApiResponse.success(
+        { verificationToken: null },
+        "If the account exists and is unverified, a verification email has been sent.",
+      );
+    }
+
+    try {
+      await authEmailService.sendVerificationEmail(parsed.data.email, result.verificationToken);
+      return ApiResponse.success(
+        { verificationToken: null },
+        "If the account exists and is unverified, a verification email has been sent.",
+      );
+    } catch (error) {
+      if (env.NODE_ENV === "production") throw error;
+      logger.warn(
+        { userId: result.userId, err: error },
+        "Verification email unavailable; returning a development-only verification token",
+      );
+      return ApiResponse.success(
+        { verificationToken: result.verificationToken },
+        "Email delivery is not configured. Use the development verification link.",
+      );
+    }
   },
 
   async login(request: NextRequest) {
@@ -139,12 +186,27 @@ export const authController = {
       throw new ValidationError("Invalid payload", parsed.error.flatten());
     }
 
+    if (env.NODE_ENV === "production") getEmailConfig();
     const result = await authService.forgotPassword(parsed.data.email);
+
+    let developmentToken: string | null = null;
+    if (result) {
+      try {
+        await authEmailService.sendPasswordResetEmail(parsed.data.email, result.resetToken);
+      } catch (error) {
+        if (env.NODE_ENV === "production") throw error;
+        logger.warn(
+          { err: error },
+          "Password reset email unavailable; returning a development-only reset token",
+        );
+        developmentToken = result.resetToken;
+      }
+    }
 
     // Always return the same generic message, whether or not the account
     // exists, to prevent user enumeration.
     return ApiResponse.success(
-      env.NODE_ENV === "production" ? null : { resetToken: result?.resetToken ?? null },
+      env.NODE_ENV === "production" ? null : { resetToken: developmentToken },
       "If an account with that email exists, a password reset link has been sent."
     );
   },

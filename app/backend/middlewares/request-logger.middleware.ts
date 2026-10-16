@@ -1,6 +1,10 @@
 import type { NextRequest, NextResponse } from "next/server";
 import { createModuleLogger } from "@/config/logger.config";
-import type { RouteHandler, RouteContext } from "@/middlewares/error-handler.middleware";
+import {
+  resolveRouteContext,
+  type RouteHandler,
+  type RouteContext,
+} from "@/middlewares/error-handler.middleware";
 
 const logger = createModuleLogger("http");
 
@@ -9,7 +13,7 @@ export function withRequestLogger(handler: RouteHandler): RouteHandler {
     const start = Date.now();
     const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
 
-    const response = (await handler(request, context)) as NextResponse;
+    const response = (await handler(request, await resolveRouteContext(context))) as NextResponse;
     response.headers.set("x-request-id", requestId);
 
     const durationMs = Date.now() - start;

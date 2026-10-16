@@ -8,7 +8,7 @@ import { withAuth, type AuthContext } from "@/middlewares/auth.middleware";
 
 async function postHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return paymentController.checkout(request, context);
+  return paymentController.createCheckoutOrder(request, context);
 }
 
 export const POST = withSecurityHeaders(withRequestLogger(withErrorHandler(withAuth(postHandler))));

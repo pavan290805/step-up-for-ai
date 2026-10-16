@@ -11,7 +11,7 @@ import { ROLES } from "@/shared/constants/roles";
 
 async function postHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return recruiterController.generateJd(request, context);
+  return recruiterController.generateJobDescription(request, context);
 }
 
 export const POST = withSecurityHeaders(

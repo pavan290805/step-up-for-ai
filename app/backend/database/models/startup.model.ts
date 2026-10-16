@@ -1,10 +1,10 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const STARTUP_STAGES = ["idea", "pre-seed", "seed", "series-a", "series-b-plus", "growth"] as const;
 export type StartupStage = (typeof STARTUP_STAGES)[number];
 
 export interface IStartup {
-  founderId: Schema.Types.ObjectId;
+  founderId: Types.ObjectId;
   name: string;
   tagline: string;
   description: string;

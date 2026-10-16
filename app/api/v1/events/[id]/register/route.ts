@@ -13,7 +13,7 @@ async function postHandler(request: NextRequest, context: AuthContext) {
 
 async function deleteHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return registrationController.cancelRegistration(request, context);
+  return registrationController.cancel(request, context);
 }
 
 export const POST = withSecurityHeaders(withRequestLogger(withErrorHandler(withAuth(postHandler))));

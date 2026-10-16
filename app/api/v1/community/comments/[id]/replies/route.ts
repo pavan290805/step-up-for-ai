@@ -7,11 +7,12 @@ import { ValidationError } from "@/shared/errors";
 import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
-import type { RouteContext } from "@/middlewares/error-handler.middleware";
+import { resolveRouteContext, type RouteContext } from "@/middlewares/error-handler.middleware";
 
 async function getHandler(request: NextRequest, context?: RouteContext) {
   await connectToDatabase();
-  const commentId = context?.params?.id;
+  const resolvedContext = await resolveRouteContext(context);
+  const commentId = resolvedContext?.params?.id;
   if (!commentId) throw new ValidationError("Comment id is required");
 
   const parsed = commentListQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams.entries()));

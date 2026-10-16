@@ -1,7 +1,7 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IMentorProfile {
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   fullName: string;
   headline: string | null;
   bio: string | null;

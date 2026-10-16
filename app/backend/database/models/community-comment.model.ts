@@ -1,10 +1,10 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 import { COMMUNITY_POST_STATUSES, type CommunityPostStatus } from "@/database/models/community-post.model";
 
 export interface ICommunityComment {
-  postId: Schema.Types.ObjectId;
-  authorId: Schema.Types.ObjectId;
-  parentCommentId: Schema.Types.ObjectId | null;
+  postId: Types.ObjectId;
+  authorId: Types.ObjectId;
+  parentCommentId: Types.ObjectId | null;
   content: string;
   status: CommunityPostStatus;
   likeCount: number;

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { connectToDatabase } from "@/config/db.config";
-import { paymentController } from "@/modules/payments/payment.controller";
+import { planController } from "@/modules/plans/plan.controller";
 import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
@@ -10,12 +10,12 @@ import { ROLES } from "@/shared/constants/roles";
 
 async function getHandler(request: NextRequest) {
   await connectToDatabase();
-  return paymentController.listPlans(request);
+  return planController.list(request);
 }
 
 async function postHandler(request: NextRequest, context: AuthContext) {
   await connectToDatabase();
-  return paymentController.createPlan(request, context);
+  return planController.create(request, context);
 }
 
 export const GET = withSecurityHeaders(withRequestLogger(withErrorHandler(getHandler)));

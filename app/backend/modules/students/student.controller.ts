@@ -5,6 +5,7 @@ import { analyzeResumeSchema } from "@/ai/ai.validators";
 import { ApiResponse } from "@/shared/response/api-response";
 import { ValidationError } from "@/shared/errors";
 import { parseJsonBody } from "@/shared/utils/request";
+import { validateResumeFile } from "@/storage/validators/file-validation";
 import type { AuthContext } from "@/middlewares/auth.middleware";
 
 export const studentController = {
@@ -32,6 +33,7 @@ export const studentController = {
       throw new ValidationError("A resume file must be provided under the 'file' field");
     }
 
+    validateResumeFile({ mimeType: file.type, sizeBytes: file.size, fileName: file.name });
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 

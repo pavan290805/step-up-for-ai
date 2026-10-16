@@ -16,7 +16,7 @@ const envSchema = z.object({
   BETTER_AUTH_URL: z.string().url(),
 
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().email().optional(),
+  EMAIL_FROM: z.string().optional(),
 
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
 
@@ -53,3 +53,20 @@ function loadEnv(): Env {
 }
 
 export const env = loadEnv();
+
+export function getEmailConfig() {
+  const schema = z.object({
+    RESEND_API_KEY: z.string().min(1, "RESEND_API_KEY is required"),
+    EMAIL_FROM: z.string().email("EMAIL_FROM must be a valid email address"),
+  });
+  const parsed = schema.safeParse(process.env);
+
+  if (!parsed.success) {
+    const formatted = parsed.error.issues
+      .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
+      .join("\n");
+    throw new Error(`Invalid email configuration:\n${formatted}`);
+  }
+
+  return parsed.data;
+}

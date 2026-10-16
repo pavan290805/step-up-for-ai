@@ -1,11 +1,11 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const SUBSCRIPTION_STATUSES = ["pending", "active", "cancelled", "expired", "past_due"] as const;
 export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUSES)[number];
 
 export interface ISubscription {
-  userId: Schema.Types.ObjectId;
-  planId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
+  planId: Types.ObjectId;
   status: SubscriptionStatus;
   razorpaySubscriptionId: string | null;
   razorpayCustomerId: string | null;

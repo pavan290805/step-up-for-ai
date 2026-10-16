@@ -1,11 +1,11 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const MENTOR_SESSION_STATUSES = ["requested", "confirmed", "completed", "cancelled"] as const;
 export type MentorSessionStatus = (typeof MENTOR_SESSION_STATUSES)[number];
 
 export interface IMentorSession {
-  mentorId: Schema.Types.ObjectId;
-  studentId: Schema.Types.ObjectId;
+  mentorId: Types.ObjectId;
+  studentId: Types.ObjectId;
   scheduledAt: Date;
   durationMinutes: number;
   topic: string;

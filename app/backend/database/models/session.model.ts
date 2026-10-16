@@ -1,7 +1,7 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface ISession {
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   sessionTokenHash: string;
   refreshTokenHash: string;
   ipAddress: string | null;

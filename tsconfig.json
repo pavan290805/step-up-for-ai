@@ -19,6 +19,17 @@
       }
     ],
     "paths": {
+      "@/api/*": ["./app/api/*"],
+      "@/ai/*": ["./app/backend/ai/*"],
+      "@/database/*": ["./app/backend/database/*"],
+      "@/events/*": ["./app/backend/events/*"],
+      "@/middlewares/*": ["./app/backend/middlewares/*"],
+      "@/modules/*": ["./app/backend/modules/*"],
+      "@/payments/*": ["./app/backend/payments/*"],
+      "@/frontend/*": ["./app/(frontend)/*"],
+      "@/shared/*": ["./app/shared/*"],
+      "@/storage/*": ["./app/backend/storage/*"],
+      "@/config/*": ["./config/*"],
       "@/*": ["./*"]
     }
   },

@@ -1,4 +1,4 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export const PAYMENT_STATUSES = ["created", "authorized", "captured", "failed", "refunded"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
@@ -7,9 +7,9 @@ export const PAYMENT_PURPOSES = ["subscription", "event"] as const;
 export type PaymentPurpose = (typeof PAYMENT_PURPOSES)[number];
 
 export interface IPayment {
-  userId: Schema.Types.ObjectId;
-  subscriptionId: Schema.Types.ObjectId | null;
-  planId: Schema.Types.ObjectId | null;
+  userId: Types.ObjectId;
+  subscriptionId: Types.ObjectId | null;
+  planId: Types.ObjectId | null;
   purpose: PaymentPurpose;
   razorpayOrderId: string;
   razorpayPaymentId: string | null;

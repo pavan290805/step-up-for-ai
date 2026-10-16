@@ -4,11 +4,12 @@ import { internshipController } from "@/modules/internships/internship.controlle
 import { withErrorHandler } from "@/middlewares/error-handler.middleware";
 import { withRequestLogger } from "@/middlewares/request-logger.middleware";
 import { withSecurityHeaders } from "@/middlewares/security-headers.middleware";
-import type { RouteContext } from "@/middlewares/error-handler.middleware";
+import { resolveRouteContext, type RouteContext } from "@/middlewares/error-handler.middleware";
 
 async function getHandler(request: NextRequest, context?: RouteContext) {
   await connectToDatabase();
-  return internshipController.getById(request, { params: context?.params });
+  const resolvedContext = await resolveRouteContext(context);
+  return internshipController.getById(request, { params: resolvedContext?.params });
 }
 
 export const GET = withSecurityHeaders(withRequestLogger(withErrorHandler(getHandler)));

@@ -82,6 +82,11 @@ export const paymentRepository = {
 export type PaymentRepository = typeof paymentRepository;
 
 export const webhookEventRepository = {
+  async hasProcessed(razorpayEventId: string): Promise<boolean> {
+    const event = await WebhookEventModel.exists({ razorpayEventId });
+    return event !== null;
+  },
+
   /** Returns true if this is a NEW event (and records it atomically); false if already processed. */
   async recordIfNew(razorpayEventId: string, eventType: string): Promise<boolean> {
     try {

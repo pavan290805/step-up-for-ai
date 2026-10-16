@@ -1,8 +1,8 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IRecruiterProfile {
-  userId: Schema.Types.ObjectId;
-  companyId: Schema.Types.ObjectId | null;
+  userId: Types.ObjectId;
+  companyId: Types.ObjectId | null;
   fullName: string;
   designation: string | null;
   verified: boolean;

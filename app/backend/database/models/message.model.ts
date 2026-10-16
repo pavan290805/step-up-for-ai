@@ -1,9 +1,9 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IMessage {
   conversationId: string;
-  senderId: Schema.Types.ObjectId;
-  receiverId: Schema.Types.ObjectId;
+  senderId: Types.ObjectId;
+  receiverId: Types.ObjectId;
   content: string;
   readAt: Date | null;
   createdAt: Date;

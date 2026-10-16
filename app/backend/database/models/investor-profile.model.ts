@@ -1,7 +1,7 @@
-import { Schema, model, models, type Model } from "mongoose";
+import {Schema, model, models, type Model, Types} from "mongoose";
 
 export interface IInvestorProfile {
-  userId: Schema.Types.ObjectId;
+  userId: Types.ObjectId;
   fullName: string;
   firmName: string | null;
   bio: string | null;
@@ -9,7 +9,7 @@ export interface IInvestorProfile {
   minTicketSizeInPaise: number | null;
   maxTicketSizeInPaise: number | null;
   verified: boolean;
-  savedStartupIds: Schema.Types.ObjectId[];
+  savedStartupIds: Types.ObjectId[];
   subscriptionTier: "free" | "premium";
   createdAt: Date;
   updatedAt: Date;
