@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { apiRequest, getErrorMessage } from "../../_lib/api";
 
@@ -14,10 +16,22 @@ interface ResendResult {
 }
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="content-wrap"><div className="surface empty-state">Loading registration…</div></div>}>
+      <RegisterPageForm />
+    </Suspense>
+  );
+}
+
+function RegisterPageForm() {
+  const searchParams = useSearchParams();
+  const requestedRole = searchParams.get("role");
+  const initialRole = (["student", "recruiter", "mentor", "investor"] as const)
+    .find((roleOption) => roleOption === requestedRole) ?? "student";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("student");
+  const [role, setRole] = useState<string>(initialRole);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");

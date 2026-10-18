@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { apiRequest, getErrorMessage, getPageItems, type PageResult } from "../../_lib/api";
 import { useAuth } from "../../_context/AuthContext";
 
@@ -33,8 +34,17 @@ interface ExternalJob {
 const emptyFilters = { q: "", location: "", type: "" };
 
 export default function InternshipsPage() {
+  return (
+    <Suspense fallback={<div className="content-wrap"><div className="surface empty-state">Loading opportunities…</div></div>}>
+      <InternshipsPageContent />
+    </Suspense>
+  );
+}
+
+function InternshipsPageContent() {
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const [filters, setFilters] = useState(emptyFilters);
+  const [filters, setFilters] = useState({ ...emptyFilters, q: searchParams.get("q")?.trim() ?? "" });
   const [items, setItems] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

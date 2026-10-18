@@ -32,6 +32,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function getText(record: Record<string, unknown>, keys: string[]): string | null {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function getRecordTitle(record: Record<string, unknown>, fallback: string): string {
+  return getText(record, ["title", "name", "roleTitle", "fileName", "companyName", "email"]) ?? fallback;
+}
+
+function getRecordSummary(record: Record<string, unknown>): string | null {
+  return getText(record, ["description", "summary", "content", "tagline", "headline", "message"]);
+}
+
+function getRecordStatus(record: Record<string, unknown>): string | null {
+  return getText(record, ["status", "state", "stage"]);
+}
+
 type ActionValue = string | boolean;
 
 interface WorkspaceField {
@@ -411,6 +431,7 @@ export default function ApiWorkspacePage() {
   const [notice, setNotice] = useState("");
   const [actionResult, setActionResult] = useState<unknown>(null);
   const [actionValues, setActionValues] = useState<Record<string, ActionValue>>({});
+  const [recordSearch, setRecordSearch] = useState("");
 
   const title = useMemo(
     () => pathname.split("/").filter(Boolean).map(humanize).join(" / ") || "Workspace",
@@ -445,6 +466,11 @@ export default function ApiWorkspacePage() {
   }, [endpoint, reloadKey]);
 
   const records = getRecords(data);
+  const filteredRecords = useMemo(() => {
+    const query = recordSearch.trim().toLowerCase();
+    if (!query) return records;
+    return records.filter((record) => JSON.stringify(record).toLowerCase().includes(query));
+  }, [records, recordSearch]);
   const isNotFound = errorStatus === 404;
 
   async function runAction(action: WorkspaceAction, formValues: Record<string, ActionValue>) {
@@ -514,25 +540,61 @@ export default function ApiWorkspacePage() {
           <p>Items created for this workspace will appear here.</p>
         </div>
       ) : records.length > 0 ? (
+        <>
+          {records.length > 3 && (
+            <label className="field portal-workspace-search">
+              <span className="visually-hidden">Filter this workspace</span>
+              <input
+                className="field-input"
+                onChange={(event) => setRecordSearch(event.target.value)}
+                placeholder={`Filter ${records.length} records`}
+                type="search"
+                value={recordSearch}
+              />
+            </label>
+          )}
+          {filteredRecords.length === 0 ? (
+            <div className="surface empty-state"><h2>No matching records</h2><p>Try a different search term.</p></div>
+          ) : (
         <div className="list-stack">
-          {records.map((record, index) => {
+          {filteredRecords.map((record, index) => {
             const recordId = record._id ?? record.id;
             const detailHref = typeof recordId === "string" ? getDetailHref(pathname, recordId) : null;
+            const titleValue = getRecordTitle(record, `${title} ${index + 1}`);
+            const summary = getRecordSummary(record);
+            const status = getRecordStatus(record);
+            const summaryKey = ["description", "summary", "content", "tagline", "headline", "message"]
+              .find((key) => typeof record[key] === "string" && record[key] === summary);
+            const visibleEntries = Object.entries(record).filter(([key]) => key !== summaryKey && !["description", "summary", "content", "tagline", "headline", "message"].includes(key));
             return (
-              <article className="surface surface-pad" key={String(recordId ?? index)}>
-                <dl className="detail-grid" style={{ margin: 0 }}>
-                  {Object.entries(record).map(([key, value]) => (
-                    <div className="detail-item" key={key}>
-                      <dt className="field-label">{humanize(key)}</dt>
-                      <dd style={{ margin: "4px 0 0", overflowWrap: "anywhere" }}>{displayValue(value)}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {detailHref && <p style={{ margin: "16px 0 0" }}><Link className="text-link" href={detailHref}>View details</Link></p>}
+              <article className="surface surface-pad portal-workspace-record" key={String(recordId ?? index)}>
+                <div className="portal-card-heading">
+                  <div>
+                    <h2 className="portal-workspace-title">{titleValue}</h2>
+                    {summary && <p className="portal-workspace-summary">{summary}</p>}
+                  </div>
+                  {status && <span className="badge badge-blue">{status}</span>}
+                </div>
+                {visibleEntries.length > 0 && (
+                  <details className="portal-record-details">
+                    <summary>Record details</summary>
+                    <dl className="detail-grid">
+                      {visibleEntries.map(([key, value]) => (
+                        <div className="detail-item" key={key}>
+                          <dt className="field-label">{humanize(key)}</dt>
+                          <dd style={{ margin: "4px 0 0", overflowWrap: "anywhere" }}>{displayValue(value)}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </details>
+                )}
+                {detailHref && <p style={{ margin: "14px 0 0" }}><Link className="text-link" href={detailHref}>Open record →</Link></p>}
               </article>
             );
           })}
         </div>
+          )}
+        </>
       ) : null}
       {definition.actions?.map((action) => (
         <form
