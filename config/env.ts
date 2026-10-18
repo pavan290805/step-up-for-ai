@@ -17,6 +17,7 @@ const envSchema = z.object({
 
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
+  RAPIDAPI_KEY: z.string().optional(),
 
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
 
