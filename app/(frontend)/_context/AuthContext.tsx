@@ -29,6 +29,21 @@ interface AuthResponse {
   error?: { message?: string };
 }
 
+interface LoginResponse {
+  success: boolean;
+  data?: { user: User; requiresTwoFactor?: boolean };
+  message?: string;
+}
+
+const dashboardPaths: Record<User["role"], string> = {
+  student: "/students/dashboard",
+  recruiter: "/recruiters/dashboard",
+  mentor: "/mentors/dashboard",
+  investor: "/investors/dashboard",
+  admin: "/admin/dashboard",
+  super_admin: "/admin/dashboard",
+};
+
 async function fetchCurrentUser(): Promise<User | null> {
   const response = await fetch("/api/v1/auth/me");
   const data: AuthResponse = await response.json();
@@ -85,13 +100,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
     });
-    const data = await res.json();
-    if (data.success) {
+    const data: LoginResponse = await res.json();
+    if (data.success && data.data) {
       if (data.data.requiresTwoFactor) {
-         throw new Error("2FA_REQUIRED");
+        throw new Error("2FA_REQUIRED");
       }
       setUser(data.data.user);
-      router.push(`/${data.data.user.role}/dashboard`);
+      router.push(dashboardPaths[data.data.user.role]);
     } else {
       throw new Error(data.message || "Login failed");
     }
