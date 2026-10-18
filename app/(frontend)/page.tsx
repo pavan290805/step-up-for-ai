@@ -4,7 +4,7 @@ import Link from "next/link";
 const roles = [
   {
     title: "For students",
-    description: "Find internships that fit your skills, keep your applications organized, and get practical AI-powered resume feedback.",
+    description: "Find internships that fit your skills, keep your applications organized, and get practical AI-powered resume feedback...",
     href: "/students/internships",
     action: "Explore internships",
   },
