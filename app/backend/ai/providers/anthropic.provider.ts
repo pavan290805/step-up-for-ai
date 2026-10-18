@@ -38,12 +38,11 @@ export class AnthropicProvider implements AIProvider {
       }
 
       return { content: textBlock.text, provider: this.name, model: MODEL };
-    } catch (error) {
+    } catch {
       throw new AppError(
         "The AI provider failed to generate a response. Please try again.",
         HTTP_STATUS.SERVICE_UNAVAILABLE,
-        "AI_PROVIDER_ERROR",
-        error instanceof Error ? error.message : undefined
+        "AI_PROVIDER_ERROR"
       );
     }
   }

@@ -10,6 +10,7 @@ interface Resume {
   fileUrl: string;
   version: number;
   createdAt: string;
+  parsedText?: string | null;
   aiAnalysis?: { score: number };
 }
 
@@ -111,7 +112,7 @@ export default function ResumePage() {
       {notice && <div className="alert alert-success" role="status" style={{ marginBottom: 14 }}>{notice}</div>}
       <form className="surface surface-pad form-grid" onSubmit={upload}>
         <h2 style={{ margin: 0, fontSize: 18 }}>Upload a resume</h2>
-        <label className="field"><span className="field-label">Resume file</span><input className="field-input" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => setFile(event.target.files?.[0] ?? null)} required /><span className="help-text">PDF or DOCX. Upload limits are enforced by the server.</span></label>
+        <label className="field"><span className="field-label">Resume file</span><input className="field-input" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onChange={(event) => setFile(event.target.files?.[0] ?? null)} required /><span className="help-text">Text-based PDF or DOCX, up to 10 MB. Scanned image-only PDFs need OCR before upload.</span></label>
         <div><button className="button" type="submit" disabled={uploading}>{uploading ? "Uploading…" : "Upload resume"}</button></div>
       </form>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "26px 0 12px" }}><h2 style={{ margin: 0, fontSize: 18 }}>Your resumes</h2><Link className="text-link" href="/students/ai/resume-analyzer">Analyze resume →</Link></div>
@@ -121,7 +122,7 @@ export default function ResumePage() {
         <div className="list-stack">
           {resumes.map((resume) => (
             <article className="list-row" key={resume._id}>
-              <div><h3 className="list-title">{resume.fileName}</h3><div className="list-meta"><span>Version {resume.version}</span><span>Uploaded {new Date(resume.createdAt).toLocaleDateString()}</span>{resume.aiAnalysis && <span>AI score {resume.aiAnalysis.score}/100</span>}</div>{activeId === resume._id && <span className="badge badge-green" style={{ marginTop: 10 }}>Active resume</span>}</div>
+              <div><h3 className="list-title">{resume.fileName}</h3><div className="list-meta"><span>Version {resume.version}</span><span>Uploaded {new Date(resume.createdAt).toLocaleDateString()}</span>{resume.parsedText ? <span>Ready for AI review</span> : <span>Re-upload to enable AI review</span>}{resume.aiAnalysis && <span>AI score {resume.aiAnalysis.score}/100</span>}</div>{activeId === resume._id && <span className="badge badge-green" style={{ marginTop: 10 }}>Active resume</span>}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 <a className="button button-secondary" href={resume.fileUrl} target="_blank" rel="noreferrer">View file</a>
                 {activeId !== resume._id && <button className="button button-secondary" onClick={() => void setActive(resume._id)} disabled={busyId === resume._id}>Set active</button>}

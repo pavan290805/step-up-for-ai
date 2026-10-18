@@ -3,7 +3,7 @@ import type { AICompletionOptions, AICompletionResult, AIProvider } from "@/ai/p
 import { AppError } from "@/shared/errors";
 import { HTTP_STATUS } from "@/shared/constants/http-status";
 
-const MODEL = "gemini-1.5-flash";
+const MODEL = "gemini-2.5-flash";
 
 export class GeminiProvider implements AIProvider {
   readonly name = "gemini" as const;
@@ -40,12 +40,11 @@ export class GeminiProvider implements AIProvider {
       }
 
       return { content, provider: this.name, model: MODEL };
-    } catch (error) {
+    } catch {
       throw new AppError(
         "The AI provider failed to generate a response. Please try again.",
         HTTP_STATUS.SERVICE_UNAVAILABLE,
-        "AI_PROVIDER_ERROR",
-        error instanceof Error ? error.message : undefined
+        "AI_PROVIDER_ERROR"
       );
     }
   }

@@ -24,7 +24,7 @@ These settings are validated when the related feature is first used, so the core
 | `RAPIDAPI_KEY` | JSearch job-search API via RapidAPI | Searching external job listings |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Checkout and payment webhooks | Processing subscriptions or payments |
 
-`DEFAULT_AI_PROVIDER` selects `openai`, `anthropic`, `gemini`, or `groq` and defaults to `openai`. Configure the matching API key before using AI features. The current implementation uses `RESEND_API_KEY` / `EMAIL_FROM`; SMTP, `JWT_SECRET`, and `COOKIE_SECRET` are not read by the checked-in application configuration.
+`DEFAULT_AI_PROVIDER` selects `openai`, `anthropic`, `gemini`, or `groq` and defaults to `groq`. Configure the matching API key before using AI features. The current implementation uses `RESEND_API_KEY` / `EMAIL_FROM`; SMTP, `JWT_SECRET`, and `COOKIE_SECRET` are not read by the checked-in application configuration.
 
 ## Optional operational settings
 

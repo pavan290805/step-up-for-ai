@@ -95,6 +95,13 @@ export const jsearchService = {
 
     if (!response.ok) {
       logger.error({ statusCode: response.status }, "JSearch returned an unsuccessful response");
+      if (response.status === 404) {
+        throw new AppError(
+          "JSearch does not recognize the configured /search endpoint. Check that the JSearch API and endpoint are enabled in RapidAPI.",
+          502,
+          "EXTERNAL_JOBS_ENDPOINT_NOT_FOUND"
+        );
+      }
       if (response.status === 401 || response.status === 403) {
         throw new AppError(
           "JSearch rejected the RapidAPI key or subscription. Check RAPIDAPI_KEY and confirm JSearch is subscribed in RapidAPI.",

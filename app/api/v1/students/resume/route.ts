@@ -57,7 +57,8 @@ export const GET = withSecurityHeaders(withRequestLogger(withErrorHandler(withAu
  *     summary: Upload a new resume (PDF or DOCX)
  *     description: |
  *       Accepts a `multipart/form-data` upload containing the resume file
- *       under the key `file`. The file is stored in Cloudinary.
+ *       under the key `file`. Text is extracted from supported PDF and
+ *       DOCX files for AI review before the file is stored in Cloudinary.
  *       Maximum file size and accepted MIME types are enforced server-side.
  *     tags:
  *       - Students

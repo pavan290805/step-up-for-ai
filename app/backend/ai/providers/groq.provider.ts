@@ -3,7 +3,7 @@ import type { AICompletionOptions, AICompletionResult, AIProvider } from "@/ai/p
 import { AppError } from "@/shared/errors";
 import { HTTP_STATUS } from "@/shared/constants/http-status";
 
-const MODEL = "llama-3.1-70b-versatile";
+const MODEL = "openai/gpt-oss-120b";
 const GROQ_BASE_URL = "https://api.groq.com/openai/v1";
 
 /**
@@ -36,12 +36,11 @@ export class GroqProvider implements AIProvider {
       }
 
       return { content, provider: this.name, model: MODEL };
-    } catch (error) {
+    } catch {
       throw new AppError(
         "The AI provider failed to generate a response. Please try again.",
         HTTP_STATUS.SERVICE_UNAVAILABLE,
-        "AI_PROVIDER_ERROR",
-        error instanceof Error ? error.message : undefined
+        "AI_PROVIDER_ERROR"
       );
     }
   }

@@ -33,9 +33,10 @@ export const POST = withSecurityHeaders(
  *     summary: AI-powered resume analysis
  *     description: |
  *       Analyzes a resume against a target role using AI. Provide either a
- *       stored `resumeId` (uses the parsed text from the database) or raw
- *       `resumeText` (minimum 50 characters). Returns a structured analysis
- *       including strengths, gaps, and improvement suggestions.
+ *       stored `resumeId` (uses the extracted text saved with an uploaded
+ *       resume) or raw `resumeText` (minimum 50 characters), but not both.
+ *       Returns a structured analysis including strengths, gaps, and
+ *       improvement suggestions. Analysis of a saved resume is persisted.
  *
  *       Rate-limited to **10 requests per minute** per user.
  *     tags:

@@ -1,21 +1,14 @@
 import { z } from "zod";
 import { mongoIdSchema } from "@/shared/types/common.schemas";
 
-/**
- * Accepts either a stored resumeId (uses its parsedText if the parsing
- * pipeline has populated it) or raw resumeText directly, since full resume
- * parsing is architecture-only in this phase (see Phase 2 scope: "Resume
- * Parser architecture"). This keeps the AI endpoint usable end-to-end today
- * without blocking on that pipeline.
- */
 export const analyzeResumeSchema = z
   .object({
     resumeId: mongoIdSchema.optional(),
-    resumeText: z.string().min(50).max(20_000).optional(),
-    targetRole: z.string().max(150).optional(),
+    resumeText: z.string().trim().min(50).max(20_000).optional(),
+    targetRole: z.string().trim().max(150).optional(),
   })
-  .refine((data) => Boolean(data.resumeId) || Boolean(data.resumeText), {
-    message: "Either resumeId or resumeText must be provided",
+  .refine((data) => Boolean(data.resumeId) !== Boolean(data.resumeText), {
+    message: "Provide either a saved resumeId or resumeText, but not both",
   });
 
 export type AnalyzeResumeDto = z.infer<typeof analyzeResumeSchema>;

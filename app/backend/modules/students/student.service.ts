@@ -2,6 +2,7 @@ import { studentRepository, resumeRepository } from "@/modules/students/student.
 import { applicationService } from "@/modules/applications/application.service";
 import { uploadService } from "@/storage/upload.service";
 import { resumeAnalyzerService } from "@/ai/services/resume-analyzer.service";
+import { extractResumeText } from "@/modules/students/resume-text-extractor";
 import { ForbiddenError, NotFoundError } from "@/shared/errors";
 import { createModuleLogger } from "@/config/logger.config";
 import type { IncomingFile } from "@/storage/validators/file-validation";
@@ -34,6 +35,7 @@ export const studentService = {
       );
     }
 
+    const parsedText = await extractResumeText(fileBuffer, meta.mimeType);
     const uploadResult = await uploadService.uploadResume(fileBuffer, meta, userId);
 
     const resume = await resumeRepository.create(userId, {
@@ -41,6 +43,7 @@ export const studentService = {
       fileName: meta.fileName,
       cloudinaryPublicId: uploadResult.publicId,
       version: existingCount + 1,
+      parsedText,
     });
 
     await studentRepository.addResume(userId, String(resume._id));
@@ -89,7 +92,7 @@ export const studentService = {
       }
       if (!resume.parsedText) {
         throw new NotFoundError(
-          "This resume has no extracted text yet. Provide resumeText directly, or wait for parsing to complete."
+          "Text extraction is unavailable for this older resume. Re-upload it from your resume library or paste its text into the analyzer."
         );
       }
       textToAnalyze = resume.parsedText;
@@ -101,6 +104,7 @@ export const studentService = {
     }
 
     const analysis = await resumeAnalyzerService.analyze(textToAnalyze, targetRole);
+    const analyzedAt = new Date();
 
     if (targetResumeId) {
       await resumeRepository.setAiAnalysis(targetResumeId, {
@@ -108,7 +112,7 @@ export const studentService = {
         strengths: analysis.strengths,
         weaknesses: analysis.weaknesses,
         suggestions: analysis.suggestions,
-        analyzedAt: new Date(),
+        analyzedAt,
         provider: analysis.provider,
       });
       await studentRepository.setResumeScore(userId, analysis.score);
@@ -116,7 +120,7 @@ export const studentService = {
 
     logger.info({ userId, resumeId: targetResumeId, score: analysis.score }, "Resume analyzed by AI");
 
-    return analysis;
+    return targetResumeId ? { ...analysis, analyzedAt } : analysis;
   },
 
   async unsaveInternship(userId: string, internshipId: string) {

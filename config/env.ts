@@ -29,7 +29,7 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
 
-  DEFAULT_AI_PROVIDER: z.enum(["openai", "anthropic", "gemini", "groq"]).default("openai"),
+  DEFAULT_AI_PROVIDER: z.enum(["openai", "anthropic", "gemini", "groq"]).default("groq"),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),

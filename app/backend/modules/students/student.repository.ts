@@ -69,7 +69,13 @@ export const studentRepository = {
 };
 
 export const resumeRepository = {
-  async create(studentId: string, data: { fileUrl: string; fileName: string; cloudinaryPublicId: string; version: number }) {
+  async create(studentId: string, data: {
+    fileUrl: string;
+    fileName: string;
+    cloudinaryPublicId: string;
+    version: number;
+    parsedText: string;
+  }) {
     const resume = await ResumeModel.create({ ...data, studentId });
     return resume.toObject();
   },
